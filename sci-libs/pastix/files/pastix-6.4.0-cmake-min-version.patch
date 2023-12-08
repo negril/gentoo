@@ -1,0 +1,11 @@
+--- a/wrappers/fortran90/CMakeLists.txt
++++ b/wrappers/fortran90/CMakeLists.txt
+@@ -11,7 +11,7 @@
+ #  @date 2023-10-25
+ #
+ ###
+-cmake_minimum_required (VERSION 3.1)
++cmake_minimum_required (VERSION 3.5)
+ 
+ if ( NOT PASTIX_WITH_FORTRAN )
+   return()

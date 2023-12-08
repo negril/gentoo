@@ -1,0 +1,216 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -165,6 +165,9 @@ option(PASTIX_WITH_PARSEC
+   "Build PaStiX with PaRSEC runtime support" OFF)
+ 
+ # Internal options
++option(INSTALL_EXAMPLES
++  "Install example code" OFF)
++
+ option(PASTIX_GENERATE_MODEL
+   "Enable performances profiling for model generation" OFF)
+ 
+--- a/example/CMakeLists.txt
++++ b/example/CMakeLists.txt
+@@ -55,6 +55,7 @@ set (EXAMPLES
+ 
+ set (example_install_dir "${CMAKE_INSTALL_DOCDIR}/examples/c")
+ 
++if (BUILD_TESTING)
+ foreach (_file ${EXAMPLES})
+   get_filename_component(_name_we ${_file} NAME_WE)
+   add_executable(${_name_we} ${_file})
+@@ -65,14 +66,17 @@ foreach (_file ${EXAMPLES})
+     $<BUILD_INTERFACE:${PASTIX_BINARY_DIR}> )
+   target_link_libraries( ${_name_we} PRIVATE
+     pastix )
+-
+-  install(TARGETS ${_name_we} RUNTIME DESTINATION ${example_install_dir} )
+-  install(FILES   ${_file}            DESTINATION ${example_install_dir} )
+ endforeach()
+ 
+ target_link_libraries( schur     PRIVATE MORSE::LAPACKE )
+ target_link_libraries( reentrant PRIVATE Threads::Threads )
+ 
++endif()
++
++if (INSTALL_EXAMPLES)
++
++install(FILES ${EXAMPLES} DESTINATION ${example_install_dir} )
++
+ ### Install a makefile for user compilation test
+ set( EXAMPLE_LIBS ${DEPS_LIBRARIES} )
+ if ( EXAMPLE_LIBS )
+@@ -86,4 +90,6 @@ configure_file(
+ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/make/Makefile"
+   DESTINATION ${example_install_dir})
+ 
++endif (INSTALL_EXAMPLES)
++
+ include(CTestLists.txt)
+--- a/example/old/CMakeLists.txt
++++ b/example/old/CMakeLists.txt
+@@ -17,14 +17,17 @@ set (EXAMPLES
+ 
+ set (example_install_dir "${CMAKE_INSTALL_DOCDIR}/examples/c/old")
+ 
++if (BUILD_TESTING)
+ foreach (_file ${EXAMPLES})
+   get_filename_component(_name_we ${_file} NAME_WE)
+   add_executable("old_${_name_we}" ${_file})
+   target_link_libraries("old_${_name_we}" pastix)
+-
+-  install(TARGETS old_${_name_we} RUNTIME DESTINATION ${example_install_dir} )
+-  install(FILES   ${_file}                DESTINATION ${example_install_dir} )
+ endforeach()
++endif()
++
++if (INSTALL_EXAMPLES)
++
++install(FILES ${EXAMPLES} DESTINATION ${example_install_dir} )
+ 
+ ### Install a makefile for user compilation test
+ set( EXAMPLE_LIBS ${DEPS_LIBRARIES} )
+@@ -39,3 +42,4 @@ configure_file(
+ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/make/Makefile"
+   DESTINATION ${example_install_dir} )
+ 
++endif (INSTALL_EXAMPLES)
+--- a/spm/wrappers/fortran90/CMakeLists.txt
++++ b/spm/wrappers/fortran90/CMakeLists.txt
+@@ -87,6 +87,7 @@ if (SPM_WITH_MPI)
+   list( APPEND RUNTYPE mpi )
+ endif()
+ 
++if (BUILD_TESTING)
+ foreach (_file ${EXAMPLES})
+   get_filename_component(_name_we ${_file} NAME_WE)
+ 
+@@ -99,9 +100,6 @@ foreach (_file ${EXAMPLES})
+     target_compile_definitions( ${_name_we} PUBLIC "SPM_WITH_MPI=1" )
+   endif()
+ 
+-  install(TARGETS ${_name_we}       RUNTIME DESTINATION ${example_install_dir} )
+-  install(FILES   examples/${_file}         DESTINATION ${example_install_dir} )
+-
+   foreach( version ${RUNTYPE} )
+     unset( exe )
+     if( version STREQUAL "shm" )
+@@ -115,3 +113,10 @@ foreach (_file ${EXAMPLES})
+   endforeach()
+ 
+ endforeach()
++endif()
++
++if (INSTALL_EXAMPLES)
++  foreach (_file ${EXAMPLES})
++    install(FILES examples/${_file} DESTINATION ${example_install_dir} )
++  endforeach()
++endif()
+\ No newline at end of file
+--- a/spm/wrappers/python/CMakeLists.txt
++++ b/spm/wrappers/python/CMakeLists.txt
+@@ -49,11 +49,13 @@ install(FILES
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/python/spm )
+ 
+ # Install python examples
++if (INSTALL_EXAMPLES)
+ install(FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/spm_driver.py
+   ${CMAKE_CURRENT_SOURCE_DIR}/spm_scipy.py
+   DESTINATION examples
+   )
++endif()
+ 
+ # Documentation
+ # -------------
+--- a/wrappers/fortran90/CMakeLists.txt
++++ b/wrappers/fortran90/CMakeLists.txt
+@@ -94,6 +94,7 @@ if (PASTIX_WITH_MPI)
+   list( APPEND RUNTYPE mpi )
+ endif()
+ 
++if (BUILD_TESTING)
+ foreach (_file ${EXAMPLES})
+   get_filename_component(_name_we ${_file} NAME_WE)
+ 
+@@ -108,9 +109,6 @@ foreach (_file ${EXAMPLES})
+     target_compile_definitions( ${_name_we} PUBLIC "PASTIX_WITH_MPI=1" )
+   endif()
+ 
+-  install(TARGETS ${_name_we}       RUNTIME DESTINATION ${example_install_dir} )
+-  install(FILES   examples/${_file}         DESTINATION ${example_install_dir} )
+-
+   foreach( version ${RUNTYPE} )
+     unset( exe )
+     if( version STREQUAL "shm" )
+@@ -142,10 +140,16 @@ if ( PASTIX_WITH_MPI )
+   target_compile_definitions( ${_name_we} PRIVATE "PASTIX_WITH_MPI=1" )
+ endif()
+ 
+-install(TARGETS ${_name_we}       RUNTIME DESTINATION ${example_install_dir} )
+-install(FILES   examples/${_file}         DESTINATION ${example_install_dir} )
+-install(FILES   examples/test_seq.in      DESTINATION ${example_install_dir} )
+-install(FILES   examples/test_mt.in       DESTINATION ${example_install_dir} )
++endif (BUILD_TESTING)
++
++if (INSTALL_EXAMPLES)
++  foreach (_file ${EXAMPLES})
++    install(FILES examples/${_file} DESTINATION ${example_install_dir} )
++  endforeach()
++  install(FILES examples/fmultilap.f90 DESTINATION ${example_install_dir} )
++  install(FILES examples/test_seq.in DESTINATION ${example_install_dir} )
++  install(FILES examples/test_mt.in DESTINATION ${example_install_dir} )
++endif()
+ 
+ # Add OpenMP if available
+ find_package(OpenMP)
+--- a/wrappers/python/CMakeLists.txt
++++ b/wrappers/python/CMakeLists.txt
+@@ -56,6 +56,7 @@ install(FILES
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/python/pypastix )
+ 
+ # Install python examples
++if (INSTALL_EXAMPLES)
+ install(FILES
+   examples/simple.py
+   examples/simple_obj.py
+@@ -64,6 +65,7 @@ install(FILES
+   examples/step-by-step.py
+   DESTINATION "${CMAKE_INSTALL_DOCDIR}/examples/python"
+   )
++endif()
+ 
+ # Documentation
+ # -------------
+--- a/spm/examples/CMakeLists.txt
++++ b/spm/examples/CMakeLists.txt
+@@ -33,17 +33,19 @@ if (SPM_WITH_MPI)
+   list( APPEND RUNTYPE mpi )
+ endif()
+ 
++if (BUILD_TESTING)
+ foreach (_file ${EXAMPLES})
+   get_filename_component(_name_we ${_file} NAME_WE)
+ 
+   add_executable(${_name_we} ${_file})
+   target_link_libraries(${_name_we} PUBLIC spm)
+ 
+-  install(TARGETS ${_name_we} RUNTIME DESTINATION ${example_install_dir} )
+-  install(FILES   ${_file}            DESTINATION ${example_install_dir} )
+-
+   add_test( c_${_name_we} ${_name_we} )
+ endforeach()
++endif()
++
++if (INSTALL_EXAMPLES)
++install(FILES ${EXAMPLES} DESTINATION ${example_install_dir} )
+ 
+ ### Install a makefile for user compilation test
+ if ( NOT BUILD_SHARED_LIBS )
+@@ -55,3 +57,5 @@ configure_file(
+   "${CMAKE_CURRENT_BINARY_DIR}/make/Makefile" @ONLY)
+ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/make/Makefile"
+   DESTINATION ${example_install_dir})
++
++endif (INSTALL_EXAMPLES)
