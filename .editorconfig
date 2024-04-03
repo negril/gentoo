@@ -1,3 +1,6 @@
+# Copyright 1999-2024 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
 # https://editorconfig.org/
 root = true
 
@@ -9,3 +12,6 @@ indent_style = tab
 indent_size = 4
 trim_trailing_whitespace = true
 #max_line_length = 80
+
+[*.patch]
+trim_trailing_whitespace = false
