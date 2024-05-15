@@ -25,4 +25,5 @@ VE - NEC SX-Aurora TSUBASA vector engine target
 WebAssembly - WebAssembly backend
 X86 - X86 CPU target (includes amd64)
 XCore - XCore CPU target
+XE - Intel Xe (GPU) target
 Xtensa - Tensilica Xtensa (ESP32) CPU target [EXPERIMENTAL]

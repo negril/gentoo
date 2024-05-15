@@ -9,11 +9,20 @@
 		<remote-id type="github">ispc/ispc</remote-id>
 	</upstream>
 	<use>
+		<flag name="cross">
+			Build ISPC with cross compilation support.
+		</flag>
 		<flag name="gpu">
+			Enable Level0 GPU support in ispcrt.
+		</flag>
+		<flag name="l0">
 			Enable Level0 GPU support in ispcrt.
 		</flag>
 		<flag name="openmp">
 			Build with OpenMP task model (otherwise, TBB task model is used).
+		</flag>
+		<flag name="utils">
+			Build utils.
 		</flag>
 	</use>
 </pkgmetadata>

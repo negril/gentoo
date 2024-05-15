@@ -17,6 +17,10 @@
 
 #--- END OF EXAMPLES ---
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2024-05-15)
+# dev-util/intel-graphics-compiler is amd64 only.
+dev-lang/ispc -llvm_targets_XE
+
 # Andreas Sturmlechner <asturm@gentoo.org> (2024-06-23)
 # Pulls in kde-apps/kgpg is keyworded here
 >=kde-apps/kdeutils-meta-24.05.1 -gpg
@@ -76,7 +80,7 @@ sys-kernel/installkernel -grub
 
 # Michał Górny <mgorny@gentoo.org> (2023-12-31)
 # Requires dev-libs/level-zero.
-dev-lang/ispc -gpu
+dev-lang/ispc -gpu -l0
 
 # Andrew Ammerlaan <andrewammerlaan@gentoo.org> (2023-12-18)
 # Experimental and only available on a subset of architectures
