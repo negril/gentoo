@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>negril.nx+gentoo@gmail.com</email>
+		<name>Paul Zander</name>
+	</maintainer>
+	<maintainer type="project" proxied="proxy">
+		<email>proxy-maint@gentoo.org</email>
+		<name>Proxy Maintainers</name>
+	</maintainer>
+	<upstream>
+		<remote-id type="github">NVIDIA/cccl</remote-id>
+	</upstream>
+	<use>
+		<flag name="benchmarks">Enable CUDA C++ Core Library benchmarks.</flag>
+		<flag name="cpp">Generate build configurations that use CPP.</flag>
+		<flag name="cub">Enable the CUB developer build.</flag>
+		<flag name="cuda">Generate build configurations that use CUDA.</flag>
+		<flag name="cxx11">Generate C++11 build configurations.</flag>
+		<flag name="cxx14">Generate C++14 build configurations.</flag>
+		<flag name="cxx17">Generate C++17 build configurations.</flag>
+		<flag name="cxx20">Generate C++20 build configurations.</flag>
+		<flag name="examples">Enable CUDA C++ Core Library examples.</flag>
+		<flag name="examples-filecheck">Check example output with the LLVM FileCheck utility.</flag>
+		<flag name="libcudacxx">Enable the libcu++ developer build.</flag>
+		<flag name="multiconfig">Thrust: Enable multiconfig options for coverage testing.</flag>
+		<flag name="nvrtc">Test libcu++ with runtime compilation instead of offline compilation. Only runs device side tests</flag>
+		<flag name="openmp">Generate build configurations that use OpenMP.</flag>
+		<flag name="rdc">Thrust: Enable tests that require separable compilation.</flag>
+		<flag name="tbb">Generate build configurations that use TBB.</flag>
+		<flag name="test">Enable CUDA C++ Core Library tests.</flag>
+		<flag name="thrust">Enable the Thrust developer build.</flag>
+		<flag name="tuning">Build CUB tuning suite</flag>
+	</use>
+</pkgmetadata>
