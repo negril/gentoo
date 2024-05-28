@@ -46,9 +46,11 @@ COMMON_DEPEND="
 	sys-libs/pam
 	x11-libs/libXau
 	x11-libs/libxcb:=
-	elogind? ( sys-auth/elogind[pam] )
+	elogind? (
+		sys-auth/elogind[pam]
+		sys-power/upower
+	)
 	systemd? ( sys-apps/systemd:=[pam] )
-	!systemd? ( sys-power/upower )
 "
 DEPEND="${COMMON_DEPEND}
 	!qt6? ( test? (
@@ -60,7 +62,7 @@ DEPEND="${COMMON_DEPEND}
 "
 RDEPEND="${COMMON_DEPEND}
 	X? ( x11-base/xorg-server )
-	!systemd? ( gui-libs/display-manager-init )
+	elogind? ( gui-libs/display-manager-init )
 "
 BDEPEND="
 	dev-python/docutils
