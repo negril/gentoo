@@ -62,7 +62,7 @@ DEPEND="${COMMON_DEPEND}
 "
 RDEPEND="${COMMON_DEPEND}
 	X? ( x11-base/xorg-server )
-	!systemd? ( gui-libs/display-manager-init )
+	elogind? ( gui-libs/display-manager-init )
 "
 BDEPEND="
 	dev-python/docutils
