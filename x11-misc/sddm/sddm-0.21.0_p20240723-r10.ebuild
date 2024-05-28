@@ -53,13 +53,11 @@ COMMON_DEPEND="
 	systemd? ( sys-apps/systemd:=[pam] )
 "
 DEPEND="${COMMON_DEPEND}
-	test? (
-		!qt6? (
+	!qt6? ( test? (
 			>=dev-qt/qttest-${QT5MIN}:5
-		)
-		qt6? (
-			>=dev-qt/qtbase-${QT6MIN}:6[test]
-		)
+	) )
+	qt6? (
+		>=dev-qt/qtbase-${QT6MIN}:6[test?]
 	)
 "
 RDEPEND="${COMMON_DEPEND}
