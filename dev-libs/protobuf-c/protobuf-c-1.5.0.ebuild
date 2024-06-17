@@ -26,6 +26,11 @@ BDEPEND="
 DEPEND=">=dev-libs/protobuf-3:0=[${MULTILIB_USEDEP}]"
 RDEPEND="${DEPEND}"
 
+PATCHES=(
+# 	"${FILESDIR}/${PN}-1.5.0-Remove-HAVE_PROTO3-conditional.patch"
+	"${FILESDIR}/${PN}-1.5.0-Clean-CMake.patch"
+)
+
 src_prepare() {
 	default
 	eautoreconf
@@ -34,6 +39,7 @@ src_prepare() {
 multilib_src_configure() {
 	local myeconfargs=(
 		$(use_enable static-libs static)
+		--enable-year2038
 	)
 
 	ECONF_SOURCE="${S}" econf "${myeconfargs[@]}"

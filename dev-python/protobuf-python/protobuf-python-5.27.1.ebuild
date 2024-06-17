@@ -24,7 +24,7 @@ else
 		https://github.com/protocolbuffers/protobuf/archive/v${PARENT_PV}.tar.gz
 			-> ${PARENT_P}.tar.gz
 	"
-	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~loong ~mips ~ppc64 ~riscv ~x86 ~amd64-linux ~x86-linux ~x64-macos"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~loong ~mips ~ppc64 ~riscv ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos"
 fi
 
 DESCRIPTION="Google's Protocol Buffers - Python bindings"
@@ -34,7 +34,7 @@ HOMEPAGE="
 "
 
 LICENSE="BSD"
-SLOT="0/23.3.0"
+SLOT="0/27.1.0"
 
 S="${WORKDIR}/${PARENT_P}/python"
 
