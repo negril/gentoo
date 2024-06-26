@@ -10,7 +10,21 @@ inherit cmake flag-o-matic llvm-r1 rocm
 
 DESCRIPTION="AMD's Machine Intelligence Library"
 HOMEPAGE="https://github.com/ROCm/MIOpen"
-SRC_URI="https://github.com/ROCm/MIOpen/archive/rocm-${PV}.tar.gz -> MIOpen-${PV}.tar.gz"
+SRC_URI="
+	https://github.com/ROCm/MIOpen/archive/rocm-${PV}.tar.gz -> MIOpen-${PV}.tar.gz
+"
+kernels=(
+	gfx900
+	gfx906
+	gfx908
+	gfx90a
+	gfx942
+	gfx1030
+)
+for kernel in "${kernels[@]}"; do
+	SRC_URI+=" amdgpu_targets_${kernel}? ( https://github.com/ROCm/MIOpen/raw/rocm-${PV}/src/kernels/${kernel}.kdb.bz2 -> MIOpen-${PV}-${kernel}.kdb.bz2 )"
+done
+
 S="${WORKDIR}/MIOpen-rocm-${PV}"
 
 LICENSE="MIT"
@@ -21,17 +35,19 @@ IUSE="debug test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
+	app-arch/zstd
 	dev-util/hip
 	>=dev-db/sqlite-3.17
 	sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
 	sci-libs/composable-kernel:${SLOT}[${ROCM_USEDEP}]
 	dev-util/roctracer:${SLOT}[${ROCM_USEDEP}]
 	>=dev-libs/boost-1.72
-	dev-cpp/nlohmann_json
 	dev-cpp/frugally-deep
 "
 
-DEPEND="${RDEPEND}"
+DEPEND="${RDEPEND}
+	dev-cpp/nlohmann_json
+"
 
 BDEPEND="
 	>=dev-libs/half-1.12.0-r1
@@ -42,6 +58,14 @@ BDEPEND="
 PATCHES=(
 	"${FILESDIR}"/${PN}-6.1.1-build-all-tests.patch
 )
+
+src_unpack() {
+	unpack MIOpen-${PV}.tar.gz
+
+	for a in $(echo $A | tr ' ' '\n' | grep kdb); do
+		cp "${DISTDIR}/${a}" "${S}/src/kernels/${a##MIOpen-${PV}-}" || die "failed to copy file"
+	done
+}
 
 src_prepare() {
 	cmake_src_prepare
@@ -79,6 +103,7 @@ src_configure() {
 		-DMIOPEN_HIP_COMPILER="${ESYSROOT}/usr/bin/hipcc"
 		-DMIOPEN_AMDGCN_ASSEMBLER="$(get_llvm_prefix)/bin/clang"
 		-DHIP_OC_COMPILER="$(get_llvm_prefix)/bin/clang"
+		-DHIP_ROCCLR_HOME="${EPREFIX}/usr"
 	)
 
 	if use test; then
@@ -91,7 +116,7 @@ src_configure() {
 		check_amdgpu
 	fi
 
-	CXX=hipcc cmake_src_configure
+	CC=hipcc CXX=hipcc cmake_src_configure
 }
 
 src_test() {
