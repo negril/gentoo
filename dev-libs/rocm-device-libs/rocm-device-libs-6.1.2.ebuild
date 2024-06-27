@@ -65,6 +65,7 @@ src_prepare() {
 	cmake_src_prepare
 
 	# https://github.com/ROCm/llvm-project/issues/101
+	# Use the upstream commit to reverse
 	eapply -R -p3 "${FILESDIR}/${PN}-6.1.2-ockl-Dont-use-wave32-ballot-builtin.patch"
 }
 
