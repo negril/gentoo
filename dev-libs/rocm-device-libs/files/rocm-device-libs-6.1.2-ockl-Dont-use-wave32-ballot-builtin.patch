@@ -1,0 +1,165 @@
+From 96b2ba31ded4a892390dfba3767c413bd1a3a29d Mon Sep 17 00:00:00 2001
+From: Matt Arsenault <Matthew.Arsenault@amd.com>
+Date: Thu, 25 Apr 2024 10:43:11 +0200
+Subject: [PATCH] ockl: Don't use wave32 ballot builtin
+
+Wave32 and wave64 paths cannot really co-exist in the same function
+or callgraph. They need to be treated as a hard ABI incompatibility.
+We cannot handle the wave32 operation on wave64, but we can and do
+handle the wave64 operation on wave32. Given the current linking scheme,
+the most expedient fix for this not working is to pretend wave32 does
+not exist and just use the wave64 ballot. The optimizer will fold
+the 64-bit ballot intrinsic to the 32-bit one when it sees a 32-bit
+target.
+
+This was reported broken in
+https://github.com/llvm/llvm-project/issues/89332
+
+Change-Id: If897f631066e257e18d8adf574cd17d3f9278ca7
+---
+ amd/device-libs/ockl/src/dm.cl    | 50 ++++++-------------------------
+ amd/device-libs/ockl/src/wfaas.cl | 43 +++-----------------------
+ 2 files changed, 13 insertions(+), 80 deletions(-)
+
+diff --git a/amd/device-libs/ockl/src/dm.cl b/amd/device-libs/ockl/src/dm.cl
+index 829e016d30285..4820df6bb4e10 100644
+--- a/amd/device-libs/ockl/src/dm.cl
++++ b/amd/device-libs/ockl/src/dm.cl
+@@ -294,9 +294,14 @@ first(__global void * v)
+     return __builtin_astype(w2, __global void *);
+ }
+ 
+-REQUIRES_WAVE64
++// Read val from one active lane whose predicate is one.
++// If no lanes have the predicate set, return none
++// This is like first, except that first may not have its predicate set
+ static uint
+-elect_uint_wave64(int pred, uint val, uint none) {
++elect_uint(int pred, uint val, uint none)
++{
++  // Pretend wave32 doesn't exist. The wave64 ballot works, and the high half
++  // will fold out as 0.
+     uint ret = none;
+ 
+     ulong mask = __builtin_amdgcn_ballot_w64(pred != 0);
+@@ -308,49 +313,12 @@ elect_uint_wave64(int pred, uint val, uint none) {
+     return ret;
+ }
+ 
+-REQUIRES_WAVE32
+-static uint
+-elect_uint_wave32(int pred, uint val, uint none) {
+-    uint ret = none;
+-    uint mask = __builtin_amdgcn_ballot_w32(pred != 0);
+-    if (mask != 0U) {
+-        uint l = __ockl_ctz_u32(mask);
+-        ret = __builtin_amdgcn_ds_bpermute(l << 2, val);
+-    }
+-
+-    return ret;
+-}
+-
+-// Read val from one active lane whose predicate is one.
+-// If no lanes have the predicate set, return none
+-// This is like first, except that first may not have its predicate set
+-static uint
+-elect_uint(int pred, uint val, uint none)
+-{
+-    return __oclc_wavefrontsize64 ?  elect_uint_wave64(pred, val, none) : elect_uint_wave32(pred, val, none);
+-}
+-
+-REQUIRES_WAVE64
+-static uint
+-votes_wave64(bool b)
+-{
+-    ulong mask = __builtin_amdgcn_ballot_w64(b);
+-    return __builtin_popcountl(mask);
+-}
+-
+-REQUIRES_WAVE32
+-static uint
+-votes_wave32(bool b)
+-{
+-    uint mask = __builtin_amdgcn_ballot_w32(b);
+-    return __builtin_popcount(mask);
+-}
+-
+ // Count the number of nonzero arguments across the wave
+ static uint
+ votes(bool b)
+ {
+-    return __oclc_wavefrontsize64 ?  votes_wave64(b) : votes_wave32(b);
++    ulong mask = __builtin_amdgcn_ballot_w64(b);
++    return __builtin_popcountl(mask);
+ }
+ 
+ // The kind of the smallest block that can hold sz bytes
+diff --git a/amd/device-libs/ockl/src/wfaas.cl b/amd/device-libs/ockl/src/wfaas.cl
+index 60fe55ac97e44..562bafa8452f0 100644
+--- a/amd/device-libs/ockl/src/wfaas.cl
++++ b/amd/device-libs/ockl/src/wfaas.cl
+@@ -22,60 +22,25 @@ static int optimizationBarrierHack(int in_val)
+     return out_val;
+ }
+ 
+-REQUIRES_WAVE32
+-static bool wfany_impl_w32(int e) {
+-    return __builtin_amdgcn_ballot_w32(e) != 0;
+-}
+-
+-REQUIRES_WAVE64
+-static bool wfany_impl_w64(int e) {
+-    return __builtin_amdgcn_ballot_w64(e) != 0;
+-}
+-
+ ATTR bool
+ OCKL_MANGLE_I32(wfany)(int e)
+ {
+     e = optimizationBarrierHack(e);
+-    return __oclc_wavefrontsize64 ?
+-        wfany_impl_w64(e) : wfany_impl_w32(e);
+-}
+-
+-REQUIRES_WAVE32
+-static bool wfall_impl_w32(int e) {
+-    return __builtin_amdgcn_ballot_w32(e) == __builtin_amdgcn_read_exec_lo();
+-}
+-
+-REQUIRES_WAVE64
+-static bool wfall_impl_w64(int e) {
+-    return __builtin_amdgcn_ballot_w64(e) == __builtin_amdgcn_read_exec();
++    return __builtin_amdgcn_ballot_w64(e) != 0;
+ }
+ 
+ ATTR bool
+ OCKL_MANGLE_I32(wfall)(int e)
+ {
+     e = optimizationBarrierHack(e);
+-    return __oclc_wavefrontsize64 ?
+-        wfall_impl_w64(e) : wfall_impl_w32(e);
+-}
+-
+-
+-REQUIRES_WAVE32
+-static bool wfsame_impl_w32(int e) {
+-    uint u = __builtin_amdgcn_ballot_w32(e);
+-    return (u == 0) | (u == __builtin_amdgcn_read_exec_lo());
+-}
+-
+-REQUIRES_WAVE64
+-static bool wfsame_impl_w64(int e) {
+-    ulong u = __builtin_amdgcn_ballot_w64(e);
+-    return (u == 0UL) | (u == __builtin_amdgcn_read_exec());
++    return __builtin_amdgcn_ballot_w64(e) == __builtin_amdgcn_read_exec();
+ }
+ 
+ ATTR bool
+ OCKL_MANGLE_I32(wfsame)(int e)
+ {
+     e = optimizationBarrierHack(e);
+-    return __oclc_wavefrontsize64 ?
+-        wfsame_impl_w64(e) : wfsame_impl_w32(e);
++    ulong u = __builtin_amdgcn_ballot_w64(e);
++    return (u == 0UL) | (u == __builtin_amdgcn_read_exec());
+ }
+ 
