@@ -1,0 +1,29 @@
+From 9fc5a5be19b3775f24a97930f1d1183fa4d6417b Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Thu, 27 Jun 2024 20:43:52 +0200
+Subject: [PATCH] Correctly expand the packed parameters
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+---
+ Tensile/Parallel.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/Tensile/Parallel.py b/Tensile/Parallel.py
+index 1ffd487..ded5d7e 100644
+--- a/Tensile/Parallel.py
++++ b/Tensile/Parallel.py
+@@ -71,7 +71,10 @@ def ParallelMap(function, objects, message="", enable=True, multiArg=True):
+   
+   if threadCount <= 1 and globalParameters["ShowProgressBar"]:
+     # Provide a progress bar for single-threaded operation.
+-    return list(map(lambda objs: function(*objs), Utils.tqdm(objects, message)))
++    if isinstance(objects, zip):
++      return list(map(lambda  objs: function(*objs), Utils.tqdm(objects, message)))
++    else:
++      return list(map(lambda *objs: function(*objs), Utils.tqdm(objects, message)))
+   
+   countMessage = ""
+   try:
+-- 
+2.45.2
+
