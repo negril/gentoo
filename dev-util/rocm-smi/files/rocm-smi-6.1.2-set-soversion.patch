@@ -10,7 +10,7 @@ Switch from extracting version with git to version from ebuild filename.
 -
 -## Setup the package version based on git tags.
 -set(PKG_VERSION_GIT_TAG_PREFIX "rsmi_pkg_ver")
--get_package_version_number("7.0.0" ${PKG_VERSION_GIT_TAG_PREFIX} GIT)
+-get_package_version_number("7.2.0" ${PKG_VERSION_GIT_TAG_PREFIX} GIT)
 -message("Package version: ${PKG_VERSION_STR}")
 -set(${ROCM_SMI_LIBS_TARGET}_VERSION_MAJOR "${CPACK_PACKAGE_VERSION_MAJOR}")
 -set(${ROCM_SMI_LIBS_TARGET}_VERSION_MINOR "${CPACK_PACKAGE_VERSION_MINOR}")
@@ -53,36 +53,6 @@ Switch from extracting version with git to version from ebuild filename.
  if ( ${ROCM_PATCH_VERSION} )
      set ( VERSION_PATCH ${ROCM_PATCH_VERSION})
      set(SO_VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
---- a/python_smi_tools/rsmiBindings.py
-+++ b/python_smi_tools/rsmiBindings.py
-@@ -26,17 +26,7 @@ def initRsmiBindings(silent=False):
-     if (rocm_smi_lib_path != None):
-         path_librocm = rocm_smi_lib_path
-     else:
--        path_librocm = os.path.dirname(os.path.realpath(__file__)) + '/../../lib/librocm_smi64.so.7'
--
--    if not os.path.isfile(path_librocm):
--        print_silent('Unable to find %s . Trying /opt/rocm*' % path_librocm)
--        for root, dirs, files in os.walk('/opt', followlinks=True):
--            if 'librocm_smi64.so.7' in files:
--                path_librocm = os.path.join(os.path.realpath(root), 'librocm_smi64.so.7')
--        if os.path.isfile(path_librocm):
--            print_silent('Using lib from %s' % path_librocm)
--        else:
--            print('Unable to find librocm_smi64.so.7')
-+        path_librocm = 'librocm_smi64.so'
- 
-     # ----------> TODO: Support static libs as well as SO
-     try:
-@@ -44,7 +34,7 @@ def initRsmiBindings(silent=False):
-         return CDLL(path_librocm)
-     except OSError:
-         print('Unable to load the rocm_smi library.\n'\
--              'Set LD_LIBRARY_PATH to the folder containing librocm_smi64.so.7\n'\
-+              'Set LD_LIBRARY_PATH to the folder containing librocm_smi64.so\n'\
-               '{0}Please refer to https://github.com/'\
-               'RadeonOpenCompute/rocm_smi_lib for the installation guide.{1}'\
-               .format('\33[33m', '\033[0m'))
 --- a/python_smi_tools/rsmiBindings.py.in
 +++ b/python_smi_tools/rsmiBindings.py.in
 @@ -26,17 +26,7 @@ def initRsmiBindings(silent=False):

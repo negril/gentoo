@@ -64,6 +64,9 @@ src_prepare() {
 	sed -e "s:amdgcn/bitcode:lib/amdgcn/bitcode:" -i "${S}/cmake/OCL.cmake" || die
 	sed -e "s:amdgcn/bitcode:lib/amdgcn/bitcode:" -i "${S}/cmake/Packages.cmake" || die
 	cmake_src_prepare
+
+	# https://github.com/ROCm/llvm-project/issues/101
+	eapply -R -p3 "${FILESDIR}/${PN}-6.1.2-ockl-Dont-use-wave32-ballot-builtin.patch"
 }
 
 src_configure() {
