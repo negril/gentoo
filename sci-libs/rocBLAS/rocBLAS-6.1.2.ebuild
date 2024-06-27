@@ -17,15 +17,13 @@ S="${WORKDIR}/${PN}-rocm-${PV}"
 LICENSE="BSD"
 SLOT="0/$(ver_cut 1-2)"
 KEYWORDS="~amd64"
-IUSE="benchmark test video_cards_amdgpu"
+IUSE="benchmark test"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="${ROCM_REQUIRED_USE}"
 
 BDEPEND="
 	>=dev-build/rocm-cmake-5.3
-	video_cards_amdgpu? (
-		dev-util/Tensile:${SLOT}
-	)
+	dev-util/Tensile:${SLOT}
 	test? ( dev-cpp/gtest )
 "
 
@@ -67,26 +65,28 @@ src_configure() {
 		-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF
 		-DROCM_SYMLINK_LIBS=OFF
 		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
-		-DBUILD_WITH_TENSILE="$(usex video_cards_amdgpu)"
+		-DBUILD_WITH_TENSILE="yes"
 		-DCMAKE_INSTALL_INCLUDEDIR="include/rocblas"
 		-DBUILD_CLIENTS_SAMPLES=OFF
 		-DBUILD_CLIENTS_TESTS="$(usex test)"
 		-DBUILD_CLIENTS_BENCHMARKS="$(usex benchmark)"
 		-DBUILD_WITH_PIP=OFF
+
+		-DTensile_LOGIC="asm_full"
+		-DTensile_COMPILER="hipcc"
+		-DTensile_LIBRARY_FORMAT="msgpack"
+		-DTensile_CODE_OBJECT_VERSION="default"
+		-DTensile_ROOT="${EPREFIX}/usr/share/Tensile"
+		-DTensile_CPU_THREADS="$(makeopts_jobs)"
+		-DTENSILE_GPU_ARCHS="$(get_amdgpu_flags)"
+
+		# -DTensile_CPU_THREADS="1"
+		# -DTensile_SEPARATE_ARCHITECTURES=no
+		# -DTensile_LAZY_LIBRARY_LOADING=no
+		# -DTENSILE_USE_OPENMP="no"
 	)
 
-	if usex video_cards_amdgpu; then
-		mycmakeargs+=(
-			-DTensile_LOGIC="asm_full"
-			-DTensile_COMPILER="hipcc"
-			-DTensile_LIBRARY_FORMAT="msgpack"
-			-DTensile_CODE_OBJECT_VERSION="default"
-			-DTensile_ROOT="${EPREFIX}/usr/share/Tensile"
-			-DTensile_CPU_THREADS="$(makeopts_jobs)"
-		)
-	fi
-
-	CXX=hipcc cmake_src_configure
+	CC=hipcc CXX=hipcc cmake_src_configure
 }
 
 src_compile() {

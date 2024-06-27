@@ -1,0 +1,26 @@
+From c04615ac3d05880f3a0265e624c0fea848c51176 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Thu, 27 Jun 2024 20:29:55 +0200
+Subject: [PATCH] Disable Werror
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+---
+ hipamd/src/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hipamd/src/CMakeLists.txt b/hipamd/src/CMakeLists.txt
+index fdbefbc..ac20173 100644
+--- a/hipamd/src/CMakeLists.txt
++++ b/hipamd/src/CMakeLists.txt
+@@ -44,7 +44,7 @@ if(ADDRESS_SANITIZER)
+   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ASAN_LINKER_FLAGS} -Wl,--build-id=sha1")
+ endif()
+ 
+-if(CMAKE_COMPILER_IS_GNUCC)
++if(False)
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+-- 
+2.45.2
+

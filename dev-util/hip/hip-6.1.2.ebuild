@@ -39,7 +39,7 @@ REQUIRED_USE="
 
 DEPEND="
 	video_cards_amdgpu? (
-		>=dev-util/rocminfo-5
+		>=dev-util/rocminfo-${PV}
 		$(llvm_gen_dep '
 			sys-devel/clang:${LLVM_SLOT}
 		')
@@ -76,6 +76,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.7.1-no_asan_doc.patch"
 	"${FILESDIR}/${PN}-6.1.0-install.patch"
 	"${FILESDIR}/${PN}-6.1.1-fix-musl.patch"
+	"${FILESDIR}/${PN}-6.1.2-remove-Werror.patch"
 )
 
 hip_test_wrapper() {
@@ -171,11 +172,13 @@ src_configure() {
 
 	if use test; then
 		local mycmakeargs=(
+			-DCMAKE_DISABLE_FIND_PACKAGE_Git="yes"
 			-DCMAKE_MODULE_PATH="${TEST_S}/external/Catch2/cmake/Catch2"
 		)
 		if use video_cards_amdgpu; then
 			mycmakeargs+=(
-				-DROCM_PATH="${BUILD_DIR}/hipamd"
+				-DROCM_PATH="${EPREFIX}/usr"
+				# -DROCM_PATH="${BUILD_DIR}/hipamd"
 				-DHIP_PLATFORM="amd"
 			)
 		elif use video_cards_nvidia; then

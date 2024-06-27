@@ -53,6 +53,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-5.4.2-use-ninja.patch
 	"${FILESDIR}"/${PN}-6.1.1-fix-msgpack-dependency.patch
 	"${FILESDIR}"/${PN}-6.0.2-expand-isa-compatibility.patch
+	"${FILESDIR}/${PN}-6.1.2-Correctly-expand-the-packed-parameters.patch"
 )
 
 CMAKE_USE_DIR="${S}/${PN}/Source"
@@ -97,7 +98,7 @@ src_configure() {
 			-DTensile_LIBRARY_FORMAT=msgpack
 			-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
 		)
-		CXX=hipcc cmake_src_configure
+		CC=hipcc CXX=hipcc cmake_src_configure
 	fi
 }
 
