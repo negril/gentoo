@@ -1,6 +1,14 @@
 # Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2024-07-30)
+# Requires dev-utils/emscripten.
+dev-lang/ispc ispc_targets_WebAssembly
+
+# Paul Zander <negril.nx+gentoo@gmail.com> (2024-07-30)
+# dev-util/intel-graphics-compiler is amd64 only.
+dev-lang/ispc ispc_targets_XE
+
 # Paul Zander <negril.nx+gentoo@gmail.com> (2024-08-12)
 # Builds a amd vendored opencl runtime that causes collisions.
 # Hardly useful outside of maintainer testing. #934963, #936317
