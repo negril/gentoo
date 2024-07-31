@@ -22,12 +22,14 @@ S="${WORKDIR}/ATLAS"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux"
-IUSE="doc fortran generic lapack static-libs threads"
+IUSE="doc fortran generic lapack static-libs test threads"
+RESTRICT="!test? ( test )"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-3.10.2-x32-support.patch"
 	"${FILESDIR}/${PN}-3.10.2-format-security.patch"
 	"${FILESDIR}/${PN}-3.10.3-fix-ancient-c.patch"
+	"${FILESDIR}/${PN}-3.10.3-fix-ancient-c.2.patch"
 )
 
 pkg_setup() {

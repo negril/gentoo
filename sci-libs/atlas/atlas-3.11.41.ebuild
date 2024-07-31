@@ -22,12 +22,12 @@ S="${WORKDIR}/ATLAS"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux"
-IUSE="doc fortran generic lapack static-libs threads"
+IUSE="doc fortran generic lapack static-libs test threads"
+RESTRICT="!test? ( test )"
 
 PATCHES=(
-	# TODO These don't apply, find out why
-	# "${FILESDIR}/${PN}-3.10.2-x32-support.patch"
-	# "${FILESDIR}/${PN}-3.10.2-format-security.patch"
+	"${FILESDIR}/${PN}-3.11.41-fix-ancient-c.patch"
+	"${FILESDIR}/${PN}-3.10.3-fix-ancient-c.2.patch"
 )
 
 pkg_setup() {
@@ -41,6 +41,11 @@ pkg_setup() {
 		fi
 	done
 	use fortran && fortran-2_pkg_setup
+}
+
+src_prepare(){
+	default
+	sed -e '/(KC) -V/d' -i Make.top || die
 }
 
 src_configure() {
@@ -96,7 +101,7 @@ src_configure() {
 			if use lapack; then
 				myconf+=(
 					"-Si latune 1"
-					"--with-netlib-lapack-tarfile=${DISTDIR}/lapack-${LAPACKPV}.tar.gz"
+					# "--with-netlib-lapack-tarfile=${DISTDIR}/lapack-${LAPACKPV}.tar.gz"
 				)
 			else
 				myconf+=( "-Si latune 0" )

@@ -1,0 +1,310 @@
+:qFrom 3d330dc50a608581c81d269b661af0c938155428 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Fri, 26 Jul 2024 00:10:33 +0200
+Subject: [PATCH 1/5] main must return int
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+--- a/CONFIG/src/backend/archinfo_x86.c
++++ b/CONFIG/src/backend/archinfo_x86.c
+@@ -464,7 +464,7 @@ int GetFlags(int nargs, char **args, int *CacheLevel)
+    return(flag);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int ierr, x86_64, flags, CacheLevel;
+    unsigned family, model;
+--- a/bin/extract.c
++++ b/bin/extract.c
+@@ -20,6 +20,7 @@
+ #include <stdlib.h>
+ #include <assert.h>
+ #include <stdarg.h>
++#include <unistd.h>
+ 
+ #define NAMLEN 1024
+ #define LNLEN  8192
+@@ -3918,7 +3918,7 @@ void HandleLine(EXTENV *EE, char *line)
+ }
+ 
+ 
+-main(int nargs, char *args[])
++int main(int nargs, char *args[])
+ {
+    char line[LNLEN], *path;
+    int i;
+--- a/bin/gpmmtst.c
++++ b/bin/gpmmtst.c
+@@ -758,11 +758,11 @@ void GetFlags(int nargs, char *args[], int *TEST,
+       #endif
+    }
+ }
+-___main(){}
+-__main(){}
+-MAIN__(){}
+-_MAIN_(){}
+-main(int nargs, char *args[])
++int ___main(){}
++int __main(){}
++int MAIN__(){}
++int _MAIN_(){}
++int main(int nargs, char *args[])
+ /*
+  *  tst <tst> <# TA> <TA's> <# TB's> <TB's> <M0> <MN> <incM> <N0> <NN> <incN>
+  *      <K0> <KN> <incK> <# alphas> <alphas> <# betas> <betas>
+--- a/lib/qr.c
++++ b/lib/qr.c
+@@ -5,7 +5,7 @@
+ #elif defined(UpCase)
+    #define dgeqrf_ DGEQRF
+ #endif
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    extern void dgeqrf_(F77_INTEGER*,F77_INTEGER*,double*,F77_INTEGER*,
+                        double*,double*,F77_INTEGER*,F77_INTEGER*);
+--- a/lib/test_dynlink.c
++++ b/lib/test_dynlink.c
+@@ -1,6 +1,6 @@
+ #include <cblas.h>
+ #include <clapack.h>
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    double A[1]={1.0}, b[1]={1.0};
+    int ipiv[1];
+-- 
+2.45.2
+
+
+From 6d64709ac6da1ee6e5ebaec84066a2b691e9ad42 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Wed, 31 Jul 2024 18:11:32 +0200
+Subject: [PATCH 1/3] use long long in format string
+
+diff --git a/CONFIG/src/atlconf_misc.c b/CONFIG/src/atlconf_misc.c
+index a1a1090..cf4183f 100644
+--- a/CONFIG/src/atlconf_misc.c
++++ b/CONFIG/src/atlconf_misc.c
+@@ -233,7 +233,7 @@ long long GetFirstLongHex(char *ln)
+    {
+       if (isxdigit(ln[i]))
+       {
+-         sscanf(ln+i, "%lx", &iret);
++         sscanf(ln+i, "%llx", &iret);
+          break;
+       }
+    }
+diff --git a/tune/sysinfo/emit_typ.c b/tune/sysinfo/emit_typ.c
+index 8f6dfe9..c9f8524 100644
+--- a/tune/sysinfo/emit_typ.c
++++ b/tune/sysinfo/emit_typ.c
+@@ -140,7 +140,7 @@ void PrintTypeHead(FILE *fpout)
+       fprintf(fpout, "#define ATL_iDivBySize(N_) ((N_) >> %d)\n", pwr2);
+    }
+    else
+-      fprintf(fpout, "#define ATL_iDivBySize(N_) ((N_) / %d)\n",
++      fprintf(fpout, "#define ATL_iDivBySize(N_) ((N_) / %ld)\n",
+               sizeof(int));
+    pwr2 = GetPower2(sizeof(long));
+    if (pwr2)
+@@ -149,7 +149,7 @@ void PrintTypeHead(FILE *fpout)
+       fprintf(fpout, "#define ATL_lDivBySize(N_) ((N_) >> %d)\n", pwr2);
+    }
+    else
+-      fprintf(fpout, "#define ATL_lDivBySize(N_) ((N_) / %d)\n",
++      fprintf(fpout, "#define ATL_lDivBySize(N_) ((N_) / %ld)\n",
+               sizeof(long));
+    pwr2 = GetPower2(sizeof(void*));
+    if (pwr2)
+@@ -158,7 +158,7 @@ void PrintTypeHead(FILE *fpout)
+       fprintf(fpout, "#define ATL_pDivBySize(N_) ((N_) >> %d)\n", pwr2);
+    }
+    else
+-      fprintf(fpout, "#define ATL_pDivBySize(N_) ((N_) / %d)\n",
++      fprintf(fpout, "#define ATL_pDivBySize(N_) ((N_) / %ld)\n",
+               sizeof(void*));
+    pwr2 = GetPower2(sizeof(float));
+    if (pwr2)
+@@ -170,9 +170,9 @@ void PrintTypeHead(FILE *fpout)
+    }
+    else
+    {
+-      fprintf(fpout, "#define ATL_sDivBySize(N_) ((N_) / %d)\n",
++      fprintf(fpout, "#define ATL_sDivBySize(N_) ((N_) / %ld)\n",
+               sizeof(float));
+-      fprintf(fpout, "#define ATL_cDivBySize(N_) ((N_) / %d)\n",
++      fprintf(fpout, "#define ATL_cDivBySize(N_) ((N_) / %ld)\n",
+               2*sizeof(float));
+    }
+    pwr2 = GetPower2(sizeof(double));
+@@ -185,9 +185,9 @@ void PrintTypeHead(FILE *fpout)
+    }
+    else
+    {
+-      fprintf(fpout, "#define ATL_dDivBySize(N_) ((N_) / %d)\n",
++      fprintf(fpout, "#define ATL_dDivBySize(N_) ((N_) / %ld)\n",
+               sizeof(double));
+-      fprintf(fpout, "#define ATL_zDivBySize(N_) ((N_) / %d)\n",
++      fprintf(fpout, "#define ATL_zDivBySize(N_) ((N_) / %ld)\n",
+               2*sizeof(double));
+    }
+    fprintf(fpout, "\n#endif\n");
+-- 
+2.45.2
+
+
+From e84651ec2cedb32a7512c36bb7dbe08ad89c2f45 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Wed, 31 Jul 2024 18:11:52 +0200
+Subject: [PATCH 2/3] add missing function declarations
+
+diff --git a/CONFIG/include/atlconf_misc.h b/CONFIG/include/atlconf_misc.h
+index 55731e1..6b154ce 100644
+--- a/CONFIG/include/atlconf_misc.h
++++ b/CONFIG/include/atlconf_misc.h
+@@ -20,6 +20,7 @@ long long GetFirstLongHex(char *ln);
+ long long GetFirstLong(char *ln);
+ double GetFirstDouble(char *ln);
+ int GetLastInt(char *ln);
++int GetLastHex(char *ln);
+ long long GetLastLong(char *ln);
+ long long GetLastLongWithRound(char *ln);
+ int fNumLines(char *fnam);
+-- 
+2.45.2
+
+
+From 11ffd9110f1e39923583eebcf562a2cebf6d84db Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Wed, 31 Jul 2024 18:12:17 +0200
+Subject: [PATCH 3/3] remove -V from version request
+
+diff --git a/tune/sysinfo/emit_buildinfo.c b/tune/sysinfo/emit_buildinfo.c
+index 2ed2f17..2295a9b 100644
+--- a/tune/sysinfo/emit_buildinfo.c
++++ b/tune/sysinfo/emit_buildinfo.c
+@@ -81,11 +81,11 @@ int CmndOneLine(char *cmnd, char *ln)
+ 
+ void GetVers(char *comp, char *vers)
+ {
+-   char *vflag[4] = {"--version", "-V", "-v", "-version"};
++   char *vflag[3] = {"--version", "-v", "-version"};
+    char ln[LNLEN];
+    int i, iret;
+ 
+-   for (i=0; i < 4; i++)
++   for (i=0; i < 3; i++)
+    {
+       sprintf(ln, "%s %s", comp, vflag[i]);
+       iret = CmndOneLine(ln, vers);
+-- 
+2.45.2
+
+diff --git a/include/atlas_amm.h b/include/atlas_amm.h
+index 63dab04..50b9bd4 100644
+--- a/include/atlas_amm.h
++++ b/include/atlas_amm.h
+@@ -621,6 +621,8 @@ static TYPE INLINE *IdxBw_ip(ipinfo_t *ip, TYPE *B, size_t k, size_t j)
+    return(B+n);
+ }
+ 
++ATL_UINT ATL_AMM_GetFLAG(uint);
++ATL_UINT ATL_AMM_KMAJOR(uint);
+ #ifdef ATL_GLOBELT
+ /*
+  * Get (i,j) elt out of block-major A storage.  Used for debugging,
+diff --git a/src/testing/ATL_ipsycmpBV.c b/src/testing/ATL_ipsycmpBV.c
+index f19754f..22e1568 100644
+--- a/src/testing/ATL_ipsycmpBV.c
++++ b/src/testing/ATL_ipsycmpBV.c
+@@ -84,7 +84,7 @@ void *Mjoin(PATL,ipsycmpBV)(int verb, double tol, ipinfo_t *ip, int flg,
+                if (!bv)
+                   bv = ATL_NewBV(N*N);
+                if (verb > 1)
+-                  printf("A(%d,%d)=[%e,%e];  expected=[%e,%e]\n", i, k,
++                  printf("A(%ld,%ld)=[%e,%e];  expected=[%e,%e]\n", i, k,
+                          *da, da[1], rc, ic);
+                ATL_SetBitBV(bv, i*N+k);
+             }
+@@ -217,7 +217,7 @@ void *Mjoin(PATL,ipsycmpBV)(int verb, double tol, ipinfo_t *ip, int flg,
+                if (!bv)
+                   bv = ATL_NewBV(N*N);
+                if (verb > 1)
+-                  printf("B(%d,%d)=[%e,%e];  expected=[%e,%e]\n", k, j,
++                  printf("B(%ld,%ld)=[%e,%e];  expected=[%e,%e]\n", k, j,
+                          *da, da[1], rc, ic);
+                ATL_SetBitBV(bv, k*N+j);
+             }
+diff --git a/bin/ccobj.c b/bin/ccobj.c
+index e652d1f..4152fb1 100644
+--- a/bin/ccobj.c
++++ b/bin/ccobj.c
+@@ -76,10 +76,10 @@ void GetFlags(int nargs, char **args, char *outfile, char *objdir, char *name,
+          }
+       }
+    }
+-   if (objdir[0] == '\0' || name[0] == '\0' || *beta == '\0' ||
++   if (objdir[0] == '\0' || name[0] == '\0' || *beta == NULL ||
+        outfile[0] == '\0')
+    {
+-      fprintf(stderr, "objdir='%s', name='%s', beta=%c, outfile='%s'\n",
++      fprintf(stderr, "objdir='%s', name='%s', beta=%s, outfile='%s'\n",
+               objdir, name, *beta, outfile);
+       PrintUsage(args[0]);
+    }
+diff --git a/CONFIG/src/atlconf_misc.c b/CONFIG/src/atlconf_misc.c
+index cf4183f..5c2366a 100644
+--- a/CONFIG/src/atlconf_misc.c
++++ b/CONFIG/src/atlconf_misc.c
+@@ -700,7 +700,7 @@ char *NameWithoutPath(char *file)
+ 
+ int GetIntVers(char *str, int *nskip)
+ {
+-   char ln[64];
++   char ln[65];
+    int i, j;
+ 
+    *nskip = 0;
+diff --git a/tune/sysinfo/cacheInfo_x86.c b/tune/sysinfo/cacheInfo_x86.c
+index 6d3cf1e..4c0d4d5 100644
+--- a/tune/sysinfo/cacheInfo_x86.c
++++ b/tune/sysinfo/cacheInfo_x86.c
+@@ -531,12 +531,12 @@ int main(int nargs, char **args)
+    fprintf(fp, "#define L1C_INCLUSIVE 1\n");
+    fprintf(fp, "#define L1C_NSHARE 1\n");
+    fprintf(fp, "#define L1C_SURE 1\n");
+-   fprintf(fp, "#ifdef SREAL\n   #define L1C_ELTS %lu\n", cs>>2);
++   fprintf(fp, "#ifdef SREAL\n   #define L1C_ELTS %luL\n", cs>>2);
+    fprintf(fp, "   #define L1C_LSELTS %u\n", LS>>2);
+    fprintf(fp, "#elif defined(DREAL) || defined(SCPLX)\n   "
+-               "#define L1C_ELTS %lu\n", cs>>3);
++               "#define L1C_ELTS %luL\n", cs>>3);
+    fprintf(fp, "   #define L1C_LSELTS %u\n", LS>>3);
+-   fprintf(fp, "#elif defined(DCPLX)\n   #define L1C_ELTS %lu\n", cs>>4);
++   fprintf(fp, "#elif defined(DCPLX)\n   #define L1C_ELTS %luL\n", cs>>4);
+    fprintf(fp, "   #define L1C_LSELTS %u\n", LS>>4);
+    fprintf(fp, "#endif\n\n");
+    safeLS = LS;
+@@ -546,7 +546,7 @@ int main(int nargs, char **args)
+  * First find the number of levels, and whether there is a hyperthreading
+  * multiplier on the ncores sharing cache or not
+  */
+-   nlvl=0;
++   nlvl=1;
+    while ( (LS = cacheInf(nlvl, &nset, &nway, &INCL, &nthr, &ncor)) )
+    {
+       unsigned int nshar;
+diff --git a/src/threads/ATL_thread_start.c b/src/threads/ATL_thread_start.c
+index ee522f7..103203d 100644
+--- a/src/threads/ATL_thread_start.c
++++ b/src/threads/ATL_thread_start.c
+@@ -26,7 +26,6 @@ void ATL_xerbla(int p, char *rout, char *form, ...);
+ #elif defined(ATL_PAFF_SETAFFNP)
+    #define _GNU_SOURCE 1 /* what manpage says you need to get CPU_SET */
+    #define __USE_GNU   1 /* what actually works on linuxes I've seen */
+-   #define __USE_XOPEN2K8/* needed to avoid undef locale_t on some systems */
+    #include <sched.h>    /* must be inced wt above defs before pthread.h */
+    #include <pthread.h>
+ #elif defined(ATL_PAFF_SETPROCNP)
