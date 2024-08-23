@@ -104,6 +104,7 @@ PATCHES=(
 	"${FILESDIR}/${P}-re2.patch"
 	"${FILESDIR}/${PN}-5.15.14_p20240510-gcc15-cstdint.patch"
 	"${FILESDIR}/${PN}-5.15.14_p20240510-gcc15-template-id-cdtor.patch"
+	"${FILESDIR}/${PN}-5.15.14_p20240510-python.patch"
 )
 
 python_check_deps() {

@@ -1,0 +1,45 @@
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Tue, 20 Aug 2024 14:05:00 +0200
+Subject: [PATCH] python raw strings
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+--- a/src/3rdparty/chromium/tools/polymer/polymer.py
++++ b/src/3rdparty/chromium/tools/polymer/polymer.py
+@@ -385,7 +385,7 @@ def _process_dom_module(js_file, html_file):
+   EXPORT_LINE_REGEX = '/* #export */'
+ 
+   # Ignore lines with an ignore annotation.
+-  IGNORE_LINE_REGEX = '\s*/\* #ignore \*/(\S|\s)*'
++  IGNORE_LINE_REGEX = r'\s*/\* #ignore \*/(\S|\s)*'
+ 
+   with io.open(js_file, encoding='utf-8') as f:
+     lines = f.readlines()
+--- a/src/3rdparty/chromium/ui/webui/resources/tools/js_modulizer.py
++++ b/src/3rdparty/chromium/ui/webui/resources/tools/js_modulizer.py
+@@ -43,13 +43,13 @@ _CWD = os.getcwd()
+ 
+ IMPORT_LINE_REGEX = '// #import'
+ EXPORT_LINE_REGEX = '/* #export */'
+-IGNORE_LINE_REGEX = '\s*/\* #ignore \*/(\S|\s)*'
++IGNORE_LINE_REGEX = r'\s*/\* #ignore \*/(\S|\s)*'
+ 
+ # Ignore lines that contain <include> tags, (for example see util.js).
+ INCLUDE_LINE_REGEX = '^// <include '
+ 
+ # Ignore this line.
+-CR_DEFINE_START_REGEX = 'cr.define\('
++CR_DEFINE_START_REGEX = r'cr.define\('
+ 
+ # Ignore all lines after this comment.
+ CR_DEFINE_END_REGEX = r'\s+// #cr_define_end'
+--- a/src/3rdparty/gn/build/gen.py
++++ b/src/3rdparty/gn/build/gen.py
+@@ -134,7 +134,7 @@ def GenerateLastCommitPosition(host, header):
+   describe_output = subprocess.check_output(
+       ['git', 'describe', 'HEAD', '--match', ROOT_TAG], shell=host.is_windows(),
+       cwd=REPO_ROOT)
+-  mo = re.match(ROOT_TAG + '-(\d+)-g([0-9a-f]+)', describe_output.decode())
++  mo = re.match(ROOT_TAG + r'-(\d+)-g([0-9a-f]+)', describe_output.decode())
+   if not mo:
+     raise ValueError(
+         'Unexpected output from git describe when generating version header')
