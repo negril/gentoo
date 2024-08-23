@@ -1,0 +1,251 @@
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Tue, 20 Aug 2024 14:04:46 +0200
+Subject: [PATCH] include cstdint
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+--- a/src/3rdparty/chromium/net/tools/huffman_trie/trie_entry.h
++++ b/src/3rdparty/chromium/net/tools/huffman_trie/trie_entry.h
+@@ -8,6 +8,7 @@
+ #include <memory>
+ #include <string>
+ #include <vector>
++#include <cstdint>
+ 
+ namespace net {
+ 
+--- a/src/3rdparty/chromium/third_party/perfetto/include/perfetto/ext/tracing/core/slice.h
++++ b/src/3rdparty/chromium/third_party/perfetto/include/perfetto/ext/tracing/core/slice.h
+@@ -23,6 +23,7 @@
+ #include <memory>
+ #include <string>
+ #include <vector>
++#include <cstdint>
+ 
+ #include "perfetto/base/logging.h"
+ 
+--- a/src/3rdparty/chromium/third_party/perfetto/include/perfetto/tracing/tracing_backend.h
++++ b/src/3rdparty/chromium/third_party/perfetto/include/perfetto/tracing/tracing_backend.h
+@@ -19,6 +19,7 @@
+ 
+ #include <memory>
+ #include <string>
++#include <cstdint>
+ 
+ #include "perfetto/base/export.h"
+ 
+--- a/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/importers/gzip/gzip_utils.h
++++ b/src/3rdparty/chromium/third_party/perfetto/src/trace_processor/importers/gzip/gzip_utils.h
+@@ -18,6 +18,7 @@
+ #define SRC_TRACE_PROCESSOR_IMPORTERS_GZIP_GZIP_UTILS_H_
+ 
+ #include <memory>
++#include <cstdint>
+ 
+ struct z_stream_s;
+ 
+--- a/src/3rdparty/chromium/third_party/webrtc/api/task_queue/task_queue_base.h
++++ b/src/3rdparty/chromium/third_party/webrtc/api/task_queue/task_queue_base.h
+@@ -11,6 +11,7 @@
+ #define API_TASK_QUEUE_TASK_QUEUE_BASE_H_
+ 
+ #include <memory>
++#include <cstdint>
+ 
+ #include "api/task_queue/queued_task.h"
+ #include "rtc_base/system/rtc_export.h"
+--- a/src/3rdparty/chromium/cc/input/main_thread_scrolling_reason.h
++++ b/src/3rdparty/chromium/cc/input/main_thread_scrolling_reason.h
+@@ -7,6 +7,8 @@
+ 
+ #include <memory>
+ #include <string>
++#include <cstdint>
++
+ #include "cc/cc_export.h"
+ 
+ namespace base {
+--- a/src/3rdparty/chromium/gpu/command_buffer/common/skia_utils.h
++++ b/src/3rdparty/chromium/gpu/command_buffer/common/skia_utils.h
+@@ -6,6 +6,7 @@
+ #define GPU_COMMAND_BUFFER_COMMON_SKIA_UTILS_H_
+ 
+ #include <memory>
++#include <cstdint>
+ 
+ #include "base/optional.h"
+ #include "gpu/raster_export.h"
+--- a/src/3rdparty/chromium/gpu/command_buffer/service/gpu_fence_manager.h
++++ b/src/3rdparty/chromium/gpu/command_buffer/service/gpu_fence_manager.h
+@@ -7,6 +7,7 @@
+ 
+ #include <memory>
+ #include <vector>
++#include <cstdint>
+ 
+ #include "base/containers/flat_map.h"
+ #include "base/macros.h"
+--- a/src/3rdparty/chromium/third_party/blink/renderer/platform/wtf/text/string_concatenate.h
++++ b/src/3rdparty/chromium/third_party/blink/renderer/platform/wtf/text/string_concatenate.h
+@@ -45,7 +45,7 @@ class StringTypeAdapter<char> {
+   DISALLOW_NEW();
+ 
+  public:
+-  explicit StringTypeAdapter<char>(char buffer) : buffer_(buffer) {}
++  explicit StringTypeAdapter(char buffer) : buffer_(buffer) {}
+ 
+   unsigned length() const { return 1; }
+   bool Is8Bit() const { return true; }
+@@ -62,7 +62,7 @@ class StringTypeAdapter<LChar> {
+   DISALLOW_NEW();
+ 
+  public:
+-  explicit StringTypeAdapter<LChar>(LChar buffer) : buffer_(buffer) {}
++  explicit StringTypeAdapter(LChar buffer) : buffer_(buffer) {}
+ 
+   unsigned length() const { return 1; }
+   bool Is8Bit() const { return true; }
+@@ -79,7 +79,7 @@ class StringTypeAdapter<UChar> {
+   DISALLOW_NEW();
+ 
+  public:
+-  explicit StringTypeAdapter<UChar>(UChar buffer) : buffer_(buffer) {}
++  explicit StringTypeAdapter(UChar buffer) : buffer_(buffer) {}
+ 
+   unsigned length() const { return 1; }
+   bool Is8Bit() const { return buffer_ <= 0xff; }
+@@ -100,7 +100,7 @@ class WTF_EXPORT StringTypeAdapter<char*> {
+   DISALLOW_NEW();
+ 
+  public:
+-  explicit StringTypeAdapter<char*>(char* buffer)
++  explicit StringTypeAdapter(char* buffer)
+       : StringTypeAdapter(buffer, strlen(buffer)) {}
+ 
+   unsigned length() const { return length_; }
+@@ -110,7 +110,7 @@ class WTF_EXPORT StringTypeAdapter<char*> {
+   void WriteTo(UChar* destination) const;
+ 
+  private:
+-  StringTypeAdapter<char*>(char* buffer, size_t length);
++  StringTypeAdapter(char* buffer, size_t length);
+ 
+   const char* buffer_;
+   unsigned length_;
+@@ -121,7 +121,7 @@ class WTF_EXPORT StringTypeAdapter<LChar*> {
+   DISALLOW_NEW();
+ 
+  public:
+-  explicit StringTypeAdapter<LChar*>(LChar* buffer);
++  explicit StringTypeAdapter(LChar* buffer);
+ 
+   unsigned length() const { return length_; }
+   bool Is8Bit() const { return true; }
+@@ -157,7 +157,7 @@ class WTF_EXPORT StringTypeAdapter<const char*> {
+   DISALLOW_NEW();
+ 
+  public:
+-  explicit StringTypeAdapter<const char*>(const char* buffer);
++  explicit StringTypeAdapter(const char* buffer);
+ 
+   unsigned length() const { return length_; }
+   bool Is8Bit() const { return true; }
+@@ -175,7 +175,7 @@ class WTF_EXPORT StringTypeAdapter<const LChar*> {
+   DISALLOW_NEW();
+ 
+  public:
+-  explicit StringTypeAdapter<const LChar*>(const LChar* buffer);
++  explicit StringTypeAdapter(const LChar* buffer);
+ 
+   unsigned length() const { return length_; }
+   bool Is8Bit() const { return true; }
+--- a/src/3rdparty/chromium/third_party/blink/renderer/platform/wtf/text/string_operators.h
++++ b/src/3rdparty/chromium/third_party/blink/renderer/platform/wtf/text/string_operators.h
+@@ -115,7 +115,7 @@ class StringTypeAdapter<StringAppend<StringType1, StringType2>> {
+   STACK_ALLOCATED();
+ 
+  public:
+-  StringTypeAdapter<StringAppend<StringType1, StringType2>>(
++  StringTypeAdapter(
+       const StringAppend<StringType1, StringType2>& buffer)
+       : buffer_(buffer) {}
+ 
+--- a/src/3rdparty/chromium/third_party/webrtc/api/fec_controller.h
++++ b/src/3rdparty/chromium/third_party/webrtc/api/fec_controller.h
+@@ -13,6 +13,7 @@
+ 
+ #include <memory>
+ #include <vector>
++#include <cstdint>
+ 
+ #include "api/video/video_frame_type.h"
+ #include "modules/include/module_fec_types.h"
+--- a/src/3rdparty/chromium/third_party/webrtc/api/network_state_predictor.h
++++ b/src/3rdparty/chromium/third_party/webrtc/api/network_state_predictor.h
+@@ -13,6 +13,7 @@
+ 
+ #include <memory>
+ #include <vector>
++#include <cstdint>
+ 
+ namespace webrtc {
+ 
+--- a/src/3rdparty/chromium/third_party/webrtc/modules/video_coding/timestamp_map.h
++++ b/src/3rdparty/chromium/third_party/webrtc/modules/video_coding/timestamp_map.h
+@@ -12,6 +12,7 @@
+ #define MODULES_VIDEO_CODING_TIMESTAMP_MAP_H_
+ 
+ #include <memory>
++#include <cstdint>
+ 
+ namespace webrtc {
+ 
+--- a/src/3rdparty/chromium/third_party/webrtc/video/stats_counter.h
++++ b/src/3rdparty/chromium/third_party/webrtc/video/stats_counter.h
+@@ -13,6 +13,7 @@
+ 
+ #include <memory>
+ #include <string>
++#include <cstdint>
+ 
+ #include "rtc_base/constructor_magic.h"
+ 
+--- a/src/3rdparty/chromium/third_party/woff2/include/woff2/output.h
++++ b/src/3rdparty/chromium/third_party/woff2/include/woff2/output.h
+@@ -13,6 +13,7 @@
+ #include <cstring>
+ #include <memory>
+ #include <string>
++#include <cstdint>
+ 
+ namespace woff2 {
+ 
+--- a/src/3rdparty/chromium/third_party/pdfium/core/fxcodec/jbig2/JBig2_DocumentContext.h
++++ b/src/3rdparty/chromium/third_party/pdfium/core/fxcodec/jbig2/JBig2_DocumentContext.h
+@@ -10,6 +10,7 @@
+ #include <list>
+ #include <memory>
+ #include <utility>
++#include <cstdint>
+ 
+ class CJBig2_SymbolDict;
+ 
+--- a/src/3rdparty/chromium/third_party/pdfium/third_party/base/span.h
++++ b/src/3rdparty/chromium/third_party/pdfium/third_party/base/span.h
+@@ -12,6 +12,7 @@
+ #include <iterator>
+ #include <type_traits>
+ #include <utility>
++#include <cstdint>
+ 
+ #include "core/fxcrt/unowned_ptr.h"
+ #include "third_party/base/logging.h"
+--- a/src/3rdparty/chromium/third_party/pdfium/core/fpdfapi/page/cpdf_function.h
++++ b/src/3rdparty/chromium/third_party/pdfium/core/fpdfapi/page/cpdf_function.h
+@@ -10,6 +10,7 @@
+ #include <memory>
+ #include <set>
+ #include <vector>
++#include <cstdint>
+ 
+ class CPDF_ExpIntFunc;
+ class CPDF_Object;
