@@ -1,6 +1,10 @@
 # Copyright 2022-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2024-08-25)
+# needs re-keywording and clean-up of media-libs/opencollada
+media-libs/assimp collada
+
 # Sam James <sam@gentoo.org> (2024-08-31)
 # dnstap USE masked due to missing keywords
 net-dns/bind dnstap
