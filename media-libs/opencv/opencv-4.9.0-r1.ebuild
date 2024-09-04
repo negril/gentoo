@@ -113,7 +113,6 @@ REQUIRED_USE="
 	cpu_flags_x86_f16c? ( cpu_flags_x86_avx )
 	cuda? (
 		contrib
-		tesseract? ( opencl )
 	)
 	cudnn? ( cuda )
 	dnnsamples? ( examples )
@@ -296,9 +295,41 @@ cuda_get_cuda_compiler() {
 			)"
 		)"
 		version="<${version}"
-	do ! echo "int main(){}" | nvcc "-ccbin ${CUDAHOSTCXX_test}" - -x cu &>/dev/null; done
+	do ! nvcc -ccbin "${CUDAHOSTCXX_test}" - -x cu &>/dev/null <<<"int main(){}"; done
 
 	echo "${CUDAHOSTCXX}"
+}
+
+cuda_get_host_compiler() {
+	local compiler=$(tc-get-compiler-type)
+	if ! (tc-is-gcc || tc-is-clang); then
+		die "${compiler} compiler is not supported"
+	fi
+	local default_compiler="${compiler}-$(${compiler}-major-version)"
+	local version="sys-devel/${compiler}"
+
+	# try the default compiler first
+	local NVCC_CCBIN=${default_compiler}
+	while ! echo "int main(){}" | nvcc -ccbin "${NVCC_CCBIN}" - -x cu &>/dev/null; do
+		version=$(best_version "${version}")
+		if [[ -z "${version}" ]]; then
+			die "could not find a supported version of ${compiler}"
+		fi
+		version="<${version}"
+
+		# nvcc accepts just an executable name, too.
+		# search for NVCC_CCBIN here:
+		# https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/
+		NVCC_CCBIN="$(echo "${version}" | sed 's:.*/\([a-z]*-[0-9]*\).*:\1:')"
+	done
+
+	if [ ${NVCC_CCBIN} != ${default_compiler} ]; then
+		ewarn "The default compiler, ${default_compiler} is not supported by nvcc!"
+		ewarn "Compiler version mismatch causes undefined reference errors on linking, so"
+		ewarn "${NVCC_CCBIN}, which is supported by nvcc, will be used to compile OpenCV."
+	fi
+
+	echo "${NVCC_CCBIN}"
 }
 
 cuda_get_host_native_arch() {
@@ -551,7 +582,7 @@ multilib_src_configure() {
 	# ===================================================
 	# OpenCV build options
 	# ===================================================
-		# -DENABLE_CCACHE="no"
+		-DENABLE_CCACHE="no"
 		# bug 733796, but PCH is a risky game in CMake anyway
 		-DBUILD_USE_SYMLINKS="yes"
 		-DENABLE_PRECOMPILED_HEADERS="no"
@@ -684,8 +715,9 @@ multilib_src_configure() {
 
 	if multilib_is_native_abi && use cuda; then
 		cuda_add_sandbox -w
-		sandbox_write "/proc/self/task"
-		CUDAHOSTCXX="$(cuda_get_cuda_compiler)"
+		addwrite "/proc/self/task"
+		# CUDAHOSTCXX="$(cuda_get_cuda_compiler)"
+		CUDAHOSTCXX="$(cuda_get_host_compiler)"
 		CUDAARCHS="$(cuda_get_host_native_arch)"
 		export CUDAHOSTCXX
 		export CUDAARCHS
@@ -791,7 +823,7 @@ multilib_src_test() {
 		'AsyncAPICancelation/cancel*basic'
 	)
 
-	if ! use gtk && ! use qt5 && ! use qt6; then
+	if ! use gtk3 && ! use qt5 && ! use qt6; then
 		CMAKE_SKIP_TESTS+=(
 			# these fail with parallism
 			'^Highgui_*'

@@ -1,0 +1,28 @@
+# Copyright 1999-2024 Gentoo Authors.
+# Distributed under the terms of the GNU General Public License v2
+
+
+# https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+sm_35 - Kepler (GK110)
+sm_37 - Kepler (GK210)
+sm_50 - Maxwell (GM107, GM108)
+sm_52 - Maxwell (GM200, GM204, GM206)
+sm_53 - Maxwell (GM20B)
+sm_60 - Pascal (GP100)
+sm_61 - Pascal (GP102, GP104, GP106, GP107, GP108)
+sm_62 - Pascal (GP10B)
+sm_70 - Volta (GV100)
+sm_72 - Volta (GV10B, GV11B)
+sm_75 - Turing (TU102, TU104, TU106, TU116, TU117)
+sm_80 - Ampere (GA100)
+sm_86 - Ampere (GA102, GA103, GA104, GA106, GA107)
+sm_87 - Ampere (GA10B)
+sm_89 - Ada Lovelace (AD102, AD103, AD104, AD106, AD107)
+sm_90 - Hopper (GH100)
+sm_90a - Hopper (GH100)
+sm_100 - Blackwell (GB100)
+sm_10x - Blackwell (GB202, GB203, GB205, GB206, GB207)
+
+all - build for all supported architectures (sm_*), and add PTX for the highest major architecture to the generated code
+all-major - build for just supported major versions (sm_*0), plus the earliest supported, and add PTX for the highest major architecture to the generated code
+native - build for all architectures (sm_*) on the current system

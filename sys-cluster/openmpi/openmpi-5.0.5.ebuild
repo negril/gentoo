@@ -61,6 +61,7 @@ pkg_setup() {
 }
 
 src_prepare() {
+	sed -e 's/have_ze=yes/have_ze=no/' -i 3rd-party/romio341/mpl/configure.ac || die
 	default
 	elibtoolize
 
@@ -99,7 +100,7 @@ src_configure() {
 		--with-libevent=external
 		--with-prrte=external
 
-		# Oiriginally supposed to be re-enabled for 5.0!
+		# Originally supposed to be re-enabled for 5.0!
 		# See https://github.com/open-mpi/ompi/issues/9697#issuecomment-1003746357
 		# and https://bugs.gentoo.org/828123#c14
 		#

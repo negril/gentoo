@@ -56,6 +56,12 @@ PATCHES=(
 	"${FILESDIR}/${PN}-6.1.2-Correctly-expand-the-packed-parameters.patch"
 )
 
+#     if isinstance(objects, zip):
+#       return list(map(lambda objs: function(*objs), Utils.tqdm(objects, message)))
+#     else:
+#       return list(map(lambda *objs: function(*objs), Utils.tqdm(objects, message)))
+
+
 CMAKE_USE_DIR="${S}/${PN}/Source"
 
 src_prepare() {
@@ -94,9 +100,10 @@ src_configure() {
 		local mycmakeargs=(
 			-DCMAKE_SKIP_RPATH=ON
 			-DTENSILE_USE_MSGPACK=ON
-			-DTENSILE_USE_LLVM=ON
+			# -DTENSILE_USE_LLVM=ON
 			-DTensile_LIBRARY_FORMAT=msgpack
-			-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
+			# -DAMDGPU_TARGETS="$(get_amdgpu_flags)"
+			-DAMDGPU_TARGETS="gfx000"
 		)
 		CC=hipcc CXX=hipcc cmake_src_configure
 	fi

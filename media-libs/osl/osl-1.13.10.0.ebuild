@@ -36,7 +36,9 @@ IUSE="debug doc gui libcxx nofma optix partio qt6 test ${CPU_FEATURES[*]%:*} pyt
 
 RESTRICT="!test? ( test )"
 
-REQUIRED_USE="${PYTHON_REQUIRED_USE}"
+REQUIRED_USE="${PYTHON_REQUIRED_USE}
+
+"
 
 # TODO optix
 RDEPEND="
@@ -253,11 +255,11 @@ src_test() {
 			"${BUILD_DIR}/bin/" || die
 
 		# NOTE this should go to cuda eclass
-		addwrite /dev/nvidiactl
-		addwrite /dev/nvidia0
-		addwrite /dev/nvidia-uvm
-		addwrite /dev/nvidia-caps
-		addwrite "/dev/char/"
+		# addwrite /dev/nvidiactl
+		# addwrite /dev/nvidia0
+		# addwrite /dev/nvidia-uvm
+		# addwrite /dev/nvidia-caps
+		# addwrite "/dev/char/"
 	fi
 
 	CMAKE_SKIP_TESTS=(
@@ -283,6 +285,7 @@ src_test() {
 	myctestargs=(
 		# src/build-scripts/ci-test.bash
 		'--force-new-ctest-process'
+		--output-on-failure
 	)
 
 	local -x DEBUG CXXFLAGS LD_LIBRARY_PATH DIR OSL_DIR OSL_SOURCE_DIR PYTHONPATH

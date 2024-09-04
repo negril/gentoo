@@ -198,7 +198,7 @@ _rocm_set_globals() {
 	local allflags=( "${all_amdgpu_targets[@]/#/amdgpu_targets_}" )
 	ROCM_REQUIRED_USE=" || ( ${allflags[*]} )"
 
-	local optflags=${allflags[@]/%/(-)?}
+	local optflags=${allflags[*]/%/(-)?}
 	ROCM_USEDEP=${optflags// /,}
 }
 _rocm_set_globals

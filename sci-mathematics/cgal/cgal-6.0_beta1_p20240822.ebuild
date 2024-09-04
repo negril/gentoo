@@ -1,0 +1,87 @@
+# Copyright 1999-2024 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+# Modules provided by dev-cpp/eigen
+CMAKE_REMOVE_MODULES_LIST=( FindEigen3 )
+inherit cmake
+
+EGIT_COMMIT="959e3bc8128c508a6f83f2c75f831edbad92a5f5"
+
+MY_PV="${PV/_/-}"
+MY_P="CGAL-${PV/_/-}"
+DESCRIPTION="C++ library for geometric algorithms and data structures"
+HOMEPAGE="https://www.cgal.org/"
+SRC_URI="
+	https://github.com/CGAL/cgal/archive/${EGIT_COMMIT}.tar.gz -> ${MY_P}.tar.gz
+"
+S="${WORKDIR}/cgal-${EGIT_COMMIT}"
+
+LICENSE="LGPL-3 GPL-3 Boost-1.0"
+SLOT="0/14"
+KEYWORDS="~amd64 ~arm64 ~ppc64 ~x86 ~amd64-linux ~x86-linux"
+IUSE="demos doc examples test"
+RESTRICT="!test? ( test )"
+# RESTRICT="test"
+
+RDEPEND="
+	dev-libs/boost:=
+	dev-libs/gmp:=[cxx]
+	dev-libs/mpfr:=
+	sys-libs/zlib
+	x11-libs/libX11:=
+	virtual/glu:=
+	dev-cpp/eigen
+	virtual/opengl:=
+	doc? (
+		dev-python/pyquery
+	)
+	demos? (
+		net-libs/libssh[server]
+	)
+"
+# sci-libs/mpfi
+DEPEND="${RDEPEND}"
+BDEPEND="
+	app-arch/xz-utils
+	virtual/pkgconfig
+"
+
+src_configure() {
+	local mycmakeargs=(
+		-DCGAL_INSTALL_LIB_DIR="$(get_libdir)"
+		-DCGAL_INSTALL_CMAKE_DIR="$(get_libdir)/cmake/CGAL"
+
+		-DBUILD_DOC="$(usex doc)"
+		-DWITH_demos="$(usex demos)"
+		-DWITH_examples="$(usex examples)"
+		-DWITH_tests="$(usex test)"
+	)
+
+	cmake_src_configure
+}
+
+src_compile() {
+	local targets=()
+	use tests && targets+=(tests)
+	use examples && targets+=(examples)
+	use demos && targets+=(demos)
+	use doc && targets+=(doc_with_postprocessing)
+
+	cmake_src_compile "${targets[@]}"
+}
+
+src_test() {
+	BUILD_DIR="${BUILD_DIR}/test" cmake_src_test
+}
+
+src_install() {
+	# use doc && local HTML_DOCS=( "${WORKDIR}"/doc_html/. )
+
+	cmake_src_install
+
+	if use examples; then
+		dodoc -r examples demo
+	fi
+}

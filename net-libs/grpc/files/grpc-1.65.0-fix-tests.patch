@@ -1,0 +1,632 @@
+From 6c0f57668d2df6afbae03403ca3fed8feed6bdcb Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Tue, 9 Jul 2024 20:27:37 +0200
+Subject: [PATCH] avoid duplicate symbols
+
+---
+ CMakeLists.txt | 77 --------------------------------------------------
+ 1 file changed, 77 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ab76cc3..d27eb17 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -7990,7 +7990,6 @@ target_link_libraries(bad_ping_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -8606,7 +8605,6 @@ target_link_libraries(binary_metadata_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -9162,7 +9160,6 @@ target_link_libraries(call_creds_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -9412,7 +9409,6 @@ target_link_libraries(call_host_override_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -9859,7 +9855,6 @@ target_link_libraries(cancel_after_accept_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -9936,7 +9931,6 @@ target_link_libraries(cancel_after_client_done_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -10013,7 +10007,6 @@ target_link_libraries(cancel_after_invoke_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -10090,7 +10083,6 @@ target_link_libraries(cancel_after_round_trip_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -10228,7 +10220,6 @@ target_link_libraries(cancel_before_invoke_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -10403,7 +10394,6 @@ target_link_libraries(cancel_in_a_vacuum_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -10480,7 +10470,6 @@ target_link_libraries(cancel_with_status_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -12611,7 +12600,6 @@ target_link_libraries(client_streaming_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -13048,7 +13036,6 @@ target_link_libraries(compressed_payload_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -13484,7 +13471,6 @@ target_link_libraries(connectivity_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -14039,7 +14025,6 @@ target_link_libraries(default_host_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -14303,7 +14288,6 @@ target_link_libraries(disappearing_server_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -14770,7 +14754,6 @@ target_link_libraries(empty_batch_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -16492,7 +16475,6 @@ target_link_libraries(filter_causes_close_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -16569,7 +16551,6 @@ target_link_libraries(filter_init_fails_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -16632,7 +16613,6 @@ target_link_libraries(filter_test_test
+   absl::any
+   absl::optional
+   absl::variant
+-  grpc_unsecure
+   ${_gRPC_PROTOBUF_LIBRARIES}
+   grpc_test_util
+ )
+@@ -16710,7 +16690,6 @@ target_link_libraries(filtered_metadata_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -17752,7 +17731,6 @@ target_link_libraries(graceful_server_shutdown_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -18216,7 +18194,6 @@ target_link_libraries(grpc_authz_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -19902,7 +19879,6 @@ target_link_libraries(high_initial_seqno_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -20295,7 +20271,6 @@ target_link_libraries(hpack_size_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -20479,7 +20454,6 @@ target_link_libraries(http2_stats_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -21910,7 +21884,6 @@ target_link_libraries(invoke_large_request_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -22413,7 +22386,6 @@ target_link_libraries(keepalive_timeout_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -22547,7 +22519,6 @@ target_link_libraries(large_metadata_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -23429,7 +23400,6 @@ target_link_libraries(max_concurrent_streams_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -23506,7 +23476,6 @@ target_link_libraries(max_connection_age_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -23583,7 +23552,6 @@ target_link_libraries(max_connection_idle_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -23660,7 +23628,6 @@ target_link_libraries(max_message_length_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -24510,7 +24477,6 @@ target_link_libraries(negative_deadline_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -24710,7 +24676,6 @@ target_link_libraries(no_op_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -25919,7 +25884,6 @@ target_link_libraries(payload_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -26392,7 +26356,6 @@ target_link_libraries(ping_pong_streaming_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -26534,7 +26497,6 @@ target_link_libraries(ping_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -27810,7 +27772,6 @@ target_link_libraries(proxy_auth_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -28512,7 +28473,6 @@ target_link_libraries(registered_call_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -28647,7 +28607,6 @@ target_link_libraries(request_with_flags_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -28724,7 +28683,6 @@ target_link_libraries(request_with_payload_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29142,7 +29100,6 @@ target_link_libraries(resource_quota_server_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29275,7 +29232,6 @@ target_link_libraries(retry_cancel_after_first_attempt_starts_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29352,7 +29308,6 @@ target_link_libraries(retry_cancel_during_delay_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29429,7 +29384,6 @@ target_link_libraries(retry_cancel_with_multiple_send_batches_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29506,7 +29460,6 @@ target_link_libraries(retry_cancellation_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29583,7 +29536,6 @@ target_link_libraries(retry_disabled_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29660,7 +29612,6 @@ target_link_libraries(retry_exceeds_buffer_size_in_delay_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29737,7 +29688,6 @@ target_link_libraries(retry_exceeds_buffer_size_in_initial_batch_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29814,7 +29764,6 @@ target_link_libraries(retry_exceeds_buffer_size_in_subsequent_batch_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29891,7 +29840,6 @@ target_link_libraries(retry_lb_drop_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -29968,7 +29916,6 @@ target_link_libraries(retry_lb_fail_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30045,7 +29992,6 @@ target_link_libraries(retry_non_retriable_status_before_trailers_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30122,7 +30068,6 @@ target_link_libraries(retry_non_retriable_status_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30199,7 +30144,6 @@ target_link_libraries(retry_per_attempt_recv_timeout_on_last_attempt_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30276,7 +30220,6 @@ target_link_libraries(retry_per_attempt_recv_timeout_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30353,7 +30296,6 @@ target_link_libraries(retry_recv_initial_metadata_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30430,7 +30372,6 @@ target_link_libraries(retry_recv_message_replay_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30507,7 +30448,6 @@ target_link_libraries(retry_recv_message_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30584,7 +30524,6 @@ target_link_libraries(retry_recv_trailing_metadata_error_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30661,7 +30600,6 @@ target_link_libraries(retry_send_initial_metadata_refs_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30738,7 +30676,6 @@ target_link_libraries(retry_send_op_fails_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30815,7 +30752,6 @@ target_link_libraries(retry_send_recv_batch_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30892,7 +30828,6 @@ target_link_libraries(retry_server_pushback_delay_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -30969,7 +30904,6 @@ target_link_libraries(retry_server_pushback_disabled_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31102,7 +31036,6 @@ target_link_libraries(retry_streaming_after_commit_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31179,7 +31112,6 @@ target_link_libraries(retry_streaming_succeeds_before_replay_finished_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31256,7 +31188,6 @@ target_link_libraries(retry_streaming_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31333,7 +31264,6 @@ target_link_libraries(retry_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31466,7 +31396,6 @@ target_link_libraries(retry_throttled_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31543,7 +31472,6 @@ target_link_libraries(retry_too_many_attempts_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31620,7 +31548,6 @@ target_link_libraries(retry_transparent_goaway_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31697,7 +31624,6 @@ target_link_libraries(retry_transparent_max_concurrent_streams_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -31774,7 +31700,6 @@ target_link_libraries(retry_transparent_not_sent_on_wire_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -34366,7 +34291,6 @@ target_link_libraries(simple_request_test
+   absl::optional
+   absl::variant
+   grpc_authorization_provider
+-  grpc_unsecure
+   grpc_test_util
+ )
+ 
+@@ -37817,7 +37741,6 @@ target_link_libraries(thread_pool_test
+   absl::any
+   absl::optional
+   absl::variant
+-  grpc
+   grpc_test_util_unsecure
+ )
+ 
+-- 
+2.45.2
+

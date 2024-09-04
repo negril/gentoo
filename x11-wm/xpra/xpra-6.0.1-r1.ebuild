@@ -338,6 +338,9 @@ python_test() {
 		--skip-slow unit.server.server_sockets_test \
 		--skip-slow unit.server.source.source_mixins_test \
 	|| die -n
+
+	# remove test file
+	rm "${INSTALL_ROOT}/usr/share/xpra/www" -r || die
 }
 
 python_install() {

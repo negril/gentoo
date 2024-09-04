@@ -1,0 +1,175 @@
+diff --git a/tune/sysinfo/masrch.c b/tune/sysinfo/masrch.c
+index 3ad2b73..d8b7df8 100644
+--- a/tune/sysinfo/masrch.c
++++ b/tune/sysinfo/masrch.c
+@@ -169,7 +169,7 @@ int FindMflop
+    return(mf);
+ }
+ 
+-FindNreg
++int FindNreg
+ (
+    char pre,   /* precision: s,d,q */
+    int fmf,    /* number of mflops to force timer on */
+diff --git a/CONFIG/src/backend/archinfo_freebsd.c b/CONFIG/src/backend/archinfo_freebsd.c
+index 8d1323f..113d4c2 100644
+--- a/CONFIG/src/backend/archinfo_freebsd.c
++++ b/CONFIG/src/backend/archinfo_freebsd.c
+@@ -243,7 +243,7 @@ int ProbeThrottle()
+    return(iret);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int flags, CacheLevel, ncpu, mhz, bits, sure;
+    enum MACHTYPE arch=MACHOther;
+diff --git a/bin/extract.c b/bin/extract.c
+index cbdad8f..a130408 100644
+--- a/bin/extract.c
++++ b/bin/extract.c
+@@ -3904,7 +3904,7 @@ void HandleLine(EXTENV *EE, char *line)
+ }
+ 
+ 
+-main(int nargs, char *args[])
++int main(int nargs, char *args[])
+ {
+    char line[LNLEN], *path;
+    int i;
+diff --git a/bin/gpmmtst.c b/bin/gpmmtst.c
+index f237cf5..02e7c2d 100644
+--- a/bin/gpmmtst.c
++++ b/bin/gpmmtst.c
+@@ -783,11 +783,11 @@ void GetFlags(int nargs, char *args[], int *TEST,
+       #endif
+    }
+ }
+-___main(){}
+-__main(){}
+-MAIN__(){}
+-_MAIN_(){}
+-main(int nargs, char *args[])
++int ___main(){}
++int __main(){}
++int MAIN__(){}
++int _MAIN_(){}
++int main(int nargs, char *args[])
+ /*
+  *  tst <tst> <# TA> <TA's> <# TB's> <TB's> <M0> <MN> <incM> <N0> <NN> <incN>
+  *      <K0> <KN> <incK> <# alphas> <alphas> <# betas> <betas>
+diff --git a/bin/invtst.c b/bin/invtst.c
+index 60a6535..7281b3a 100644
+--- a/bin/invtst.c
++++ b/bin/invtst.c
+@@ -743,7 +743,7 @@ void GetFlags(int nargs, char **args, int *MFLOP, int *CacheSize, TYPE *thresh,
+    }
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int MFLOP, CacheSize, ldagap, nord, nuplo, N0, NN, incN;
+    enum TEST_UPLO *Uplo;
+diff --git a/bin/llttst.c b/bin/llttst.c
+index 7b638db..3dae6fb 100644
+--- a/bin/llttst.c
++++ b/bin/llttst.c
+@@ -538,7 +538,7 @@ void GetFlags(int nargs, char **args, int *MFLOP, int *CacheSize, TYPE *thresh,
+    }
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int MFLOP, CacheSize, ldagap, nuplo, N0, NN, incN;
+    TYPE thresh;
+diff --git a/bin/lutst.c b/bin/lutst.c
+index 90b6ebb..6f832af 100644
+--- a/bin/lutst.c
++++ b/bin/lutst.c
+@@ -476,7 +476,7 @@ void GetFlags(int nargs, char **args, int *MFLOP, int *CacheSize, TYPE *thresh,
+    if (*M0 == -1) *M0 = *MN = *incM = *MisN = 1;
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int MFLOP, CacheSize, LdaIsM, MisN, NisM, M0, MN, incM, N0, NN, incN;
+    int norders;
+diff --git a/bin/qrtst.c b/bin/qrtst.c
+index 2983af0..ae7a589 100644
+--- a/bin/qrtst.c
++++ b/bin/qrtst.c
+@@ -41,6 +41,7 @@
+ #ifndef TimeF77
+    #include "clapack.h"
+ #endif
++#include <string.h>
+ 
+ #ifdef ATL_FULL_LAPACK
+    #include "atlas_C2Flapack.h"
+diff --git a/bin/slvtst.c b/bin/slvtst.c
+index abefd31..a0ff1ee 100644
+--- a/bin/slvtst.c
++++ b/bin/slvtst.c
+@@ -743,7 +743,7 @@ static int DoAllTests(int nrep, int N0, int NN, int incN, int R0, int RN,
+    else fprintf(stdout, "\n%d TESTS RUN, %d FAILED!!\n\n", i, ierr);
+    return(ierr);
+ }
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int ierr, N0, NN, incN, R0, RN, incR, ldagap, ldbgap, nord, nuplo;
+    int CS, MFLOP, QR, nrep;
+diff --git a/bin/uumtst.c b/bin/uumtst.c
+index 2a914df..df51174 100644
+--- a/bin/uumtst.c
++++ b/bin/uumtst.c
+@@ -566,7 +566,7 @@ void GetFlags(int nargs, char **args, int *MFLOP, int *CacheSize, TYPE *thresh,
+    }
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int MFLOP, CacheSize, ldagap, nuplo, N0, NN, incN;
+    TYPE thresh;
+diff --git a/lib/qr.c b/lib/qr.c
+index ffb3ac4..d4e9dc5 100644
+--- a/lib/qr.c
++++ b/lib/qr.c
+@@ -5,7 +5,7 @@
+ #elif defined(UpCase)
+    #define dgeqrf_ DGEQRF
+ #endif
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    extern void dgeqrf_(F77_INTEGER*,F77_INTEGER*,double*,F77_INTEGER*,
+                        double*,double*,F77_INTEGER*,F77_INTEGER*);
+diff --git a/lib/test_dynlink.c b/lib/test_dynlink.c
+index e4e3570..d000da9 100644
+--- a/lib/test_dynlink.c
++++ b/lib/test_dynlink.c
+@@ -1,6 +1,6 @@
+ #include <cblas.h>
+ #include <clapack.h>
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    double A[1]={1.0}, b[1]={1.0};
+    int ipiv[1];
+diff --git a/bin/atlas_install.c b/bin/atlas_install.c
+index ffe10e3..b8f39cc 100644
+--- a/bin/atlas_install.c
++++ b/bin/atlas_install.c
+@@ -278,7 +278,7 @@ long long GetFirstLongHex(char *ln)
+    {
+       if (isxdigit(ln[i]))
+       {
+-         sscanf(ln+i, "%lx", &iret);
++         sscanf(ln+i, "%llx", &iret);
+          break;
+       }
+    }

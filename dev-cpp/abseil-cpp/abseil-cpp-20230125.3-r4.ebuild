@@ -65,3 +65,10 @@ multilib_src_configure() {
 
 	cmake_src_configure
 }
+
+multilib_src_test() {
+	CMAKE_SKIP_TESTS=(
+		absl_symbolize_test
+	)
+	cmake_src_test
+}

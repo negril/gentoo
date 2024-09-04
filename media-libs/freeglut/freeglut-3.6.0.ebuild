@@ -15,7 +15,7 @@ KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ~loong ~mips ppc ppc64 ~riscv ~s390
 
 # enabling GLES support seems to cause build failures
 RDEPEND=">=virtual/glu-9.0-r1[${MULTILIB_USEDEP}]
-	>=virtual/opengl-7.0-r1[${MULTILIB_USEDEP}]
+	media-libs/libglvnd[X,${MULTILIB_USEDEP}]
 	>=x11-libs/libX11-1.6.2[${MULTILIB_USEDEP}]
 	>=x11-libs/libXi-1.7.2[${MULTILIB_USEDEP}]
 	>=x11-libs/libXrandr-1.4.2[${MULTILIB_USEDEP}]

@@ -8,12 +8,20 @@ inherit meson python-any-r1 vala virtualx
 
 DESCRIPTION="Flatpak portal library"
 HOMEPAGE="https://github.com/flatpak/libportal"
-SRC_URI="https://github.com/flatpak/libportal/releases/download/${PV}/${P}.tar.xz"
+
+
+if [[ ${PV} == *9999 ]]; then
+	inherit git-r3
+	EGIT_REPO_URI="https://github.com/flatpak/libportal.git"
+else
+
+	SRC_URI="https://github.com/flatpak/libportal/releases/download/${PV}/${P}.tar.xz"
+	KEYWORDS="~alpha amd64 ~arm arm64 ~ia64 ~loong ~ppc ~ppc64 ~riscv ~sparc x86"
+fi
 
 LICENSE="LGPL-3"
 SLOT="0/1-1-1-1" # soname of libportal{,-gtk3,-gtk4,-qt5}.so
-KEYWORDS="~alpha amd64 ~arm arm64 ~ia64 ~loong ~ppc ~ppc64 ~riscv ~sparc x86"
-IUSE="gtk gtk-doc +introspection qt5 test +vala"
+IUSE="gtk gtk-doc +introspection qt5 qt6 test +vala"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="
 	gtk-doc? ( introspection )
@@ -28,10 +36,13 @@ RDEPEND="
 		gui-libs/gtk:4
 	)
 	qt5? (
-		dev-qt/qtcore:=
-		dev-qt/qtgui:=
-		dev-qt/qtx11extras:=
-		dev-qt/qtwidgets:=
+		dev-qt/qtcore:5=
+		dev-qt/qtgui:5=
+		dev-qt/qtx11extras:5=
+		dev-qt/qtwidgets:5=
+	)
+	qt6? (
+		dev-qt/qtbase:=[gui,widgets]
 	)
 "
 DEPEND="${RDEPEND}
@@ -43,10 +54,9 @@ BDEPEND="
 	dev-util/glib-utils
 	virtual/pkgconfig
 	gtk-doc? ( dev-util/gi-docgen )
-	qt5? (
-		test? ( dev-qt/linguist-tools )
-	)
 	test? (
+		qt5? ( dev-qt/linguist-tools )
+		qt6? ( dev-qt/qttools:6[linguist] )
 		${PYTHON_DEPS}
 		$(python_gen_any_dep '
 			dev-python/pytest[${PYTHON_USEDEP}]
@@ -85,6 +95,7 @@ src_configure() {
 		$(meson_feature gtk backend-gtk3)
 		$(meson_feature gtk backend-gtk4)
 		$(meson_feature qt5 backend-qt5)
+		$(meson_feature qt6 backend-qt6)
 		-Dportal-tests=false
 		$(meson_use introspection)
 		$(meson_use vala vapi)
@@ -96,7 +107,7 @@ src_configure() {
 
 src_test() {
 	# Tests only exist for Qt5
-	if use qt5; then
+	if use qt5 || use qt6; then
 		virtx meson_src_test
 	else
 		# run meson_src_test to notice if tests are added

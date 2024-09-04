@@ -1,0 +1,26 @@
+From 155dd4682bf1b47492da07de00062e181ddec9ff Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Thu, 29 Aug 2024 23:13:56 +0200
+Subject: [PATCH] Explicitly include <cstdint>
+
+GCC 15 will no longer include <cstdint> by default, resulting in build failures
+in projects that do not explicitly include it.
+
+See-also: https://gcc.gnu.org/pipermail/gcc-cvs/2024-August/407124.html
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
+diff --git a/src/api/network_state_predictor.h b/src/api/network_state_predictor.h
+index 9cf5ab6..2d165ba 100644
+--- a/src/api/network_state_predictor.h
++++ b/src/api/network_state_predictor.h
+@@ -11,6 +11,7 @@
+ #ifndef API_NETWORK_STATE_PREDICTOR_H_
+ #define API_NETWORK_STATE_PREDICTOR_H_
+ 
++#include <cstdint>
+ #include <memory>
+ #include <vector>
+ 
+-- 
+2.46.0
+

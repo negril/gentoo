@@ -77,13 +77,14 @@ src_configure() {
 		-DTensile_LIBRARY_FORMAT="msgpack"
 		-DTensile_CODE_OBJECT_VERSION="default"
 		-DTensile_ROOT="${EPREFIX}/usr/share/Tensile"
-		-DTensile_CPU_THREADS="$(makeopts_jobs)"
+		# -DTensile_CPU_THREADS="$(makeopts_jobs)"
+		-DTensile_CPU_THREADS="1"
 		-DTENSILE_GPU_ARCHS="$(get_amdgpu_flags)"
 
-		# -DTensile_CPU_THREADS="1"
-		# -DTensile_SEPARATE_ARCHITECTURES=no
-		# -DTensile_LAZY_LIBRARY_LOADING=no
-		# -DTENSILE_USE_OPENMP="no"
+		-DTensile_SEPARATE_ARCHITECTURES=no
+		-DTensile_LAZY_LIBRARY_LOADING=no
+
+		-DTENSILE_USE_OPENMP="no"
 	)
 
 	CC=hipcc CXX=hipcc cmake_src_configure

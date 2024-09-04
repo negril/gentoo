@@ -57,13 +57,39 @@ PATCHES=(
 )
 
 python_test() {
+	# export PYTHONPATH="${BUILD_DIR}/install$(python_get_sitedir)${PYTHONPATH:+:${PYTHONPATH}}"
+# 	einfo "PYTHONPATH ${PYTHONPATH}"
+
 	local EPYTEST_DESELECT=(
 		# unreliable memory counting test
 		tests/test_vbo_memusage.py::test_sf_2980896
+		# Need OpenGL_accelerate for buffer support
+		# tests/test_arraydatatype.py::TestCoreDatatype::test_arrayPointer
+		# tests/test_arraydatatype.py::TestCoreDatatype::test_buffer_api_basic
+		# tests/test_arraydatatype.py::TestCoreDatatype::test_bytearray_support
+		# tests/test_arraydatatype.py::TestCoreDatatype::test_memoryview_support
 	)
 	local -x PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+	# local -x PYTEST_DEBUG=1
 
+# 	# local -x EPYTEST_XDIST=1
+# 	local -x EPYTEST_JOBS=1
+# 	local -x pytest_opts=(
+# # 		-o xvfb_width=2560
+# # 		-o xvfb_height=1440
+# # 		-o xvfb_colordepth=24
+# # 		-o xvfb_xauth=1
+# # # 		-o console_output_style=classic
+# 		-o "pythonpath=${BUILD_DIR}/install$(python_get_sitedir)"
+# 		-p no:xvfb
+# 	)
+
+	# PYOPENGL_USE_ACCELERATE="False" \
 	nonfatal epytest tests || die "Tests failed with ${EPYTHON}"
+	# nonfatal epytest "${pytest_opts[@]}" tests/test_arraydatatype.py::TestCoreDatatype::test_arrayPointer || die "Tests failed with ${EPYTHON}"
+
+	# || die "Tests failed with ${EPYTHON}"
+
 }
 
 src_test() {

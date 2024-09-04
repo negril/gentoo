@@ -101,7 +101,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-3.27.0_rc1-0003-Prefer-pkgconfig-in-FindBLAS.patch
 	"${FILESDIR}"/${PN}-3.27.0_rc1-0004-Ensure-that-the-correct-version-of-Qt-is-always-used.patch
 	"${FILESDIR}"/${PN}-3.27.0_rc1-0005-Respect-Gentoo-s-Python-eclasses.patch
-	"${FILESDIR}"/${PN}-3.27.0_rc1-0006-Filter-out-distcc-warnings-to-avoid-confusing-CMake.patch
+	# "${FILESDIR}"/${PN}-3.27.0_rc1-0006-Filter-out-distcc-warnings-to-avoid-confusing-CMake.patch
 
 	# Upstream fixes (can usually be removed with a version bump)
 )
@@ -195,6 +195,10 @@ src_prepare() {
 	# ODR warnings, bug #858335
 	# https://gitlab.kitware.com/cmake/cmake/-/issues/20740
 	filter-lto
+
+	# sed -r \
+	# 	-e 's#set\(CMake_VERSION_PATCH [0-9]{8}\)#set\(CMake_VERSION_PATCH 20240719\)#g' \
+	# 	-i Source/CMakeVersion.cmake || die
 
 	if ! has_version -b \>=${CATEGORY}/${PN}-3.13 || ! cmake --version &>/dev/null ; then
 		CMAKE_BINARY="${S}/Bootstrap.cmk/cmake"

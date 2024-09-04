@@ -27,6 +27,7 @@
 # Paul Zander <negril.nx+gentoo@gmail.com> (2023-11-17)
 # ROCm/HIP works here
 -hip
+-kokkos
 
 # Andrew Ammerlaan <andrewammerlaan@gentoo.org> (2023-07-11)
 # Unmask secureboot flag on arches where sbsigntools is keyworded

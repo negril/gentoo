@@ -47,14 +47,19 @@ BDEPEND="
 
 DOCS=( CHANGES.md CONTRIBUTORS.md README.md SECURITY.md )
 
+PATCHES=(
+	"${FILESDIR}/${PN}-3.1.11-fix_cmake_module_export.patch"
+	"${FILESDIR}/${PN}-3.1.11-use-correct-boost_python_version.patch"
+)
+
 pkg_setup() {
 	use python && python-single-r1_pkg_setup
 }
 
 src_configure() {
 	local mycmakeargs=(
-		-DBUILD_WEBSITE=$(usex doc)
-		-DIMATH_ENABLE_LARGE_STACK=$(usex large-stack)
+		-DBUILD_WEBSITE="$(usex doc)"
+		-DIMATH_ENABLE_LARGE_STACK="$(usex large-stack)"
 		# the following options are at their default value
 		-DIMATH_HALF_USE_LOOKUP_TABLE=ON
 		-DIMATH_INSTALL_PKG_CONFIG=ON

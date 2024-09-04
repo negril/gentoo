@@ -11,7 +11,7 @@ if [[ ${PV} == *9999 ]]; then
 	EGIT_REPO_URI="https://github.com/wdas/partio.git"
 else
 	SRC_URI="https://github.com/wdas/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~amd64 ~arm ~arm64 ~ppc64 ~x86"
+	KEYWORDS="amd64 ~arm ~arm64 ~ppc64 x86"
 fi
 
 DESCRIPTION="Library for particle IO and manipulation"
@@ -52,9 +52,6 @@ src_configure() {
 
 		-DPARTIO_USE_GLVND="yes" # "Use GLVND for OpenGL"
 		-DPARTIO_BUILD_SHARED_LIBS="yes" # "Enabled shared libraries"
-
-		-DWDAS_CXX_STANDARD=17
 	)
-
-	cmake_src_configure
+	CXXFLAGS_STD="17" cmake_src_configure
 }

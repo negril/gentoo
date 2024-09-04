@@ -32,7 +32,7 @@ src_install() {
 
 	dodoc doc/latex/biblatex/{README,CHANGES.md}
 	if use doc ; then
-		pushd doc || die
+		pushd doc/latex/biblatex || die
 		latex-package_src_doinstall doc
 		popd || die
 	fi

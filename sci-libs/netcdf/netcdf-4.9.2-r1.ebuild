@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cmake
+inherit cmake virtualx
 
 DESCRIPTION="Scientific library and interface for array oriented data access"
 HOMEPAGE="https://www.unidata.ucar.edu/software/netcdf/"
@@ -70,6 +70,7 @@ src_configure() {
 		-DENABLE_DOXYGEN="$(usex doc)"
 		-DENABLE_EXAMPLES="$(usex examples)"
 		-DENABLE_HDF4="$(usex hdf)"
+		-DENABLE_HDF5="$(usex hdf5)"
 		-DENABLE_NETCDF_4="$(usex hdf5)"
 		-DENABLE_TESTS="$(usex test)"
 
@@ -89,11 +90,55 @@ src_configure() {
 }
 
 src_test() {
-	if [[ -f "${BUILD_DIR}/nc_test4/run_par_test.sh" ]]; then
+	if use mpi; then
 		sed -e 's/mpiexec/mpiexec --use-hwthread-cpus/g' -i "${BUILD_DIR}/nc_test4/run_par_test.sh" || die
 	fi
 
-	cmake_src_test
+# 	CMAKE_SKIP_TESTS=(
+# 		'hdf4_test_run_get_hdf4_files' # tries to pull files from dead ftp server
+# 		'nc_test4_run_par_test' # fails if not run isolated
+# 	)
+#
+	myctestargs=(
+# 		# -R "nc_test4_run_par_test"
+		--extra-verbose
+# 			--output-on-failure
+	)
+#
+# 	# LD_LIBRARY_PATH="${BUILD_DIR}/liblib" \
+# 		cmake_src_test
+# 		unset myctestargs CMAKE_SKIP_TESTS
+
+
+# 		die
+	foo() {
+		cd "${BUILD_DIR}/nc_test4" || die
+		export HWLOC_DEBUG_VERBOSE=0
+		local failed=()
+		# while true; do
+		for i in $(seq 0 999); do
+			# echo "set substitute-path ../../../../openmpi-4.1.6 /var/tmp/paludis/sys-cluster-openmpi-4.1.6/work/openmpi-4.1.6" > .gdbinit
+			# echo "set breakpoint pending on" >> .gdbinit
+			# echo "b ../../openmpi-4.1.6/orte/runtime/orte_init.c:194" >> .gdbinit
+			# echo "info breakpoints" >> .gdbinit
+			# mpiexec --help
+
+			# gdb -q -ex r -args \
+			# /usr/bin/mpiexec --use-hwthread-cpus -n 16 ./tst_parallel3 || die
+			# echo "i $i"
+			# /usr/bin/mpiexec --use-hwthread-cpus -n 16 ./tst_parallel3 || failed+=( "${i}" )
+			# gdbserver :2159 /usr/bin/mpiexec -x DISPLAY --use-hwthread-cpus -n 1 echo
+			# /usr/bin/mpiexec --use-hwthread-cpus -n 1 ./tst_parallel6
+			# /usr/bin/mpiexec --use-hwthread-cpus -n 1 ./tst_mode
+			:
+			cmake_src_test -R "nc_test4_run_par_test"
+			# die
+		done
+		# echo "failed ${#failed[*]} ${failed[*]}"
+	}
+
+# 	virtx \
+	foo
 }
 
 src_install() {

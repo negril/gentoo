@@ -280,6 +280,7 @@ pre_build_checks() {
 	local EXTRA_DISK=1
 	local CHECKREQS_MEMORY="4G"
 	tc-is-cross-compiler && EXTRA_DISK=2
+	einfo "pre_build_checks"
 	if tc-is-lto || use pgo; then
 		CHECKREQS_MEMORY="9G"
 		tc-is-cross-compiler && EXTRA_DISK=4
@@ -298,6 +299,7 @@ pre_build_checks() {
 pkg_pretend() {
 	if [[ ${MERGE_TYPE} != binary ]]; then
 		# The pre_build_checks are all about compilation resources, no need to run it for a binpkg
+		einfo "pkg_pretend"
 		pre_build_checks
 	fi
 
@@ -395,6 +397,7 @@ pkg_setup() {
 			# to a sane value.
 			# This is effectively the 'force-clang' path if GCC support is re-added.
 			# TODO: check if the user has already selected a specific impl via make.conf and respect that.
+			einfo "pkg_setup"
 			if ! tc-is-lto && use official; then
 				einfo "USE=official selected and LTO not detected."
 				einfo "It is _highly_ recommended that LTO be enabled for performance reasons"
@@ -1168,6 +1171,7 @@ chromium_configure() {
 	myconf_gn+=" enable_updater=false"
 
 	local use_lto="false"
+	einfo "chromium_configure"
 	if tc-is-lto; then
 		use_lto="true"
 	fi
@@ -1208,6 +1212,7 @@ chromium_configure() {
 }
 
 src_configure() {
+	einfo "src_configure"
 	chromium_configure $(usex pgo 1 0)
 }
 

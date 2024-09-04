@@ -118,6 +118,8 @@ latex-package_src_doinstall() {
 				;;
 
 			"dvi" | "ps" | "pdf")
+				einfo "${1}"
+				find -maxdepth 1 -type f -name "*.${1}"
 				while IFS= read -r -d '' i; do
 					insinto /usr/share/doc/${PF}
 					doins "${i}"
@@ -130,8 +132,11 @@ latex-package_src_doinstall() {
 				;;
 
 			"tex" | "dtx")
+				einfo "${1}"
+				find -maxdepth 1 -type f -name "*.${1}"
 				if ! in_iuse doc || use doc ; then
 					while IFS= read -r -d '' i; do
+						einfo LATEX_PACKAGE_SKIP $LATEX_PACKAGE_SKIP
 						[[ -n ${LATEX_PACKAGE_SKIP} ]] &&
 						has "${i##*/}" ${LATEX_PACKAGE_SKIP} &&
 						continue
@@ -142,9 +147,17 @@ latex-package_src_doinstall() {
 							--halt-on-error --interaction=nonstopmode "${i}"
 						if "${@}"; then
 							"${@}"
-						else
+						elif "${@}"; then
 							einfo "pdflatex failed, trying texi2dvi"
-							texi2dvi -q -c --language=latex "${i}" || die
+							if ! texi2dvi -q -c --language=latex "${i}" ; then
+								einfo "texi2dvi failed, trying lualatex"
+								if ! lualatex "${i}" ; then
+									einfo "lualatex failed, trying xelatex"
+									xelatex "${i}"
+								else
+									die "can't make documentation"
+								fi
+							fi
 						fi
 					done < <(find -maxdepth 1 -type f -name "*.${1}" -print0)
 				fi
@@ -181,6 +194,7 @@ latex-package_src_doinstall() {
 				;;
 
 			"doc")
+				einfo latex-package_src_doinstall tex dtx dvi ps pdf
 				latex-package_src_doinstall tex dtx dvi ps pdf
 				;;
 

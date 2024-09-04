@@ -36,7 +36,6 @@ DEPEND="${RDEPEND}"
 PATCHES=(
 	"${FILESDIR}/${PN}-1.8.5-set-correct-libdir.patch"
 	"${FILESDIR}/${PN}-1.8.6-py312.patch"
-
 )
 
 DOCS=( ACKNOWLEDGEMENTS.txt FEEDBACK.txt NEWS.txt README.txt )

@@ -60,10 +60,11 @@ src_prepare() {
 }
 
 src_configure() {
-	append-cxxflags -std=c++11
+	# append-cxxflags -std=c++17
 
 	# python bindings are split off into dev-python/pyflann
 	local mycmakeargs=(
+		-DCMAKE_CXX_STANDARD=17
 		-DBUILD_C_BINDINGS=ON
 		-DBUILD_PYTHON_BINDINGS=OFF
 		-DPYTHON_EXECUTABLE=
@@ -75,8 +76,10 @@ src_configure() {
 		-DUSE_MPI=$(usex mpi)
 		-DUSE_OPENMP=$(usex openmp)
 	)
+	# einfo "NVCCFLAGS ${NVCCFLAGS}"
 	use cuda && mycmakeargs+=(
-		-DCUDA_NVCC_FLAGS="${NVCCFLAGS} --linker-options \"-arsch\""
+		# -DCUDA_NVCC_FLAGS="${NVCCFLAGS} --linker-options \"-arsch\""
+		-DCUDA_NVCC_FLAGS="-ccbin /usr/x86_64-pc-linux-gnu/gcc-bin/12/g++"
 	)
 	use doc && mycmakeargs+=( -DDOCDIR=share/doc/${PF} )
 

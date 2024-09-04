@@ -1,0 +1,23 @@
+From c70bfdceab310cd02843e6b72828038955eb4046 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Sat, 31 Aug 2024 14:06:10 +0200
+Subject: [PATCH] ABSL_VLOG_IS_ON
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
+diff --git a/src/core/util/log.cc b/src/core/util/log.cc
+index 36a82da..7c3dc20 100644
+--- a/src/core/util/log.cc
++++ b/src/core/util/log.cc
+@@ -73,7 +73,7 @@ int gpr_should_log(gpr_log_severity severity) {
+       // Same holds for VLOG_IS_ON(2).
+       return absl::MinLogLevel() <= absl::LogSeverityAtLeast::kInfo;
+     case GPR_LOG_SEVERITY_DEBUG:
+-      return VLOG_IS_ON(2);
++      return ABSL_VLOG_IS_ON(2);
+     default:
+       DLOG(ERROR) << "Invalid gpr_log_severity.";
+       return true;
+-- 
+2.46.0
+

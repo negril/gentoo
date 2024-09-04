@@ -36,6 +36,9 @@ PATCHES=(
 
 src_configure() {
 	sed -i 's#"/drone"#"/ostinato-drone"#' client/mainwindow.cpp || die
+	sed -e 's#-std=c++11##g' -i options.pri || die
+	echo "LIBS += $(pkgconf --libs protobuf)" >> client/ostinato.pro || die
+	echo "QMAKE_CXXFLAGS += $(pkgconf --libs protobuf)" >> client/ostinato.pro || die
 	eqmake5 PREFIX="/usr" ost.pro
 }
 

@@ -105,15 +105,48 @@ virtx() {
 
 	[[ $# -lt 1 ]] && die "${FUNCNAME} needs at least one argument"
 
+	if [[ ! -d /sys/module/nvidia ]]; then
+		einfo "loading nvidia module"
+		nvidia-modprobe || die
+	fi
+
+	if [[ ! -d /sys/module/nvidia_uvm ]]; then
+		einfo "loading nvidia_uvm module"
+		nvidia-modprobe -u || die
+	fi
+
+	local i WRITE
+
+	# /dev/dri/card*
+	# /dev/dri/renderD*
+	readarray -t dri <<<"$(find /sys/class/drm -maxdepth 1 -regextype egrep -regex ".*/(card|renderD)[0-9]*" -exec basename {} \; | sed 's:^:/dev/dri/:')"
+
+	# /dev/nvidia{0-9}
+	readarray -t cards <<<"$(find /dev -regextype egrep -regex '/dev/nvidia[0-9]*')"
+
+	WRITE+=(
+		"${dri[@]}"
+		"${cards[@]}"
+		/dev/nvidiactl
+		/dev/nvidia-uvm*
+		/dev/nvidia-modeset
+
+		# for portage
+		/proc/self/task/
+	)
+	for i in "${WRITE[@]}"; do
+		einfo "addwrite $i"
+		addwrite "$i"
+	done
+
 	local i=0
 	local retval=0
 	local xvfbargs=( -screen 0 1280x1024x24 +extension RANDR )
 
 	debug-print "${FUNCNAME}: running Xvfb hack"
-	export XAUTHORITY=
+	export XAUTHORITY="${T}/Xauthority"
 
 	einfo "Starting Xvfb ..."
-	addpredict /dev/dri/ # Needed for Xvfb w/ >=mesa-24.2.0
 
 	debug-print "${FUNCNAME}: Xvfb -displayfd 1 ${xvfbargs[*]}"
 	local logfile=${T}/Xvfb.log
@@ -133,7 +166,7 @@ virtx() {
 
 	# Do not break on error, but setup $retval, as we need to kill Xvfb
 	einfo "Xvfb started on DISPLAY=${DISPLAY}"
-	debug-print "${FUNCNAME}: $@"
+	debug-print "${FUNCNAME}: $*"
 	nonfatal "$@"
 	retval=$?
 
@@ -141,7 +174,7 @@ virtx() {
 	kill "$(<"${pidfile}")"
 
 	# die if our command failed
-	[[ ${retval} -ne 0 ]] && die "Failed to run '$@'"
+	[[ ${retval} -ne 0 ]] && die -n "Failed to run '$*'"
 
 	return 0 # always return 0, it can be altered by failed kill for Xvfb
 }

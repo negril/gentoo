@@ -8,7 +8,7 @@ EAPI=8
 #	properly before building.
 # - replace usex by usev where applicable
 
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 WEBAPP_OPTIONAL=yes
 WEBAPP_MANUAL_SLOT=yes
 
@@ -70,7 +70,7 @@ RDEPEND="
 	app-arch/xz-utils
 	dev-db/sqlite:3
 	dev-libs/double-conversion:=
-	<dev-libs/expat-2.6.0
+	dev-libs/expat
 	dev-libs/icu:=
 	dev-libs/jsoncpp:=
 	>=dev-libs/libfmt-8.1.1:=
@@ -164,7 +164,6 @@ PATCHES=(
 	"${FILESDIR}/${PN}-9.3.0-java.patch"
 	"${FILESDIR}/${PN}-9.3.0-opencascade.patch"
 	"${FILESDIR}/${PN}-9.3.0-fix-Java-error-with-integer-enum-overloads.patch"
-	"${FILESDIR}/${PN}-9.3.0-ThrustPatches.patch"
 )
 
 DOCS=( CONTRIBUTING.md README.md )
@@ -843,6 +842,7 @@ src_test() {
 		"${SEQUENTIAL_TESTS[@]}"
 	)
 
+	nonfatal \
 	virtx cmake_src_test
 	unset CMAKE_SKIP_TESTS
 

@@ -5,7 +5,7 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{10..13} )
 LLVM_COMPAT=( {15..18} )
-ROCM_VERSION=5.7
+ROCM_VERSION=6.1
 
 inherit cmake cuda llvm-r1 python-any-r1 rocm
 
@@ -36,12 +36,7 @@ RDEPEND="
 	hip? ( dev-util/hip )
 	openimageio? ( media-libs/openimageio:= )
 "
-DEPEND="${RDEPEND}
-	$(llvm_gen_dep '
-		sys-devel/clang:${LLVM_SLOT}=
-		sys-devel/llvm:${LLVM_SLOT}=
-	')
-"
+DEPEND="${RDEPEND}"
 BDEPEND="${PYTHON_DEPS}"
 
 PATCHES=(

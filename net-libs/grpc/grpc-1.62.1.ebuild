@@ -17,13 +17,12 @@ S="${WORKDIR}/${PN}-${MY_PV}"
 LICENSE="Apache-2.0"
 # format is 0/${CORE_SOVERSION//./}.${CPP_SOVERSION//./} , check top level CMakeLists.txt
 SLOT="0/39.162"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~loong ~ppc64 ~riscv ~x86"
+KEYWORDS="~amd64 ~arm ~arm64 ~loong ~ppc64 ~riscv ~x86"
 IUSE="doc examples test systemd"
 RESTRICT="!test? ( test )"
 
 # look for submodule versions in third_party dir
 RDEPEND="
-	=dev-cpp/abseil-cpp-20230802.0*:=
 	>=dev-libs/re2-0.2021.11.01:=
 	>=dev-libs/openssl-1.1.1:0=[-bindist(-)]
 	>=dev-libs/protobuf-23.3:=
@@ -63,6 +62,10 @@ python_check_deps() {
 		python_has_version -b "dev-python/cffi[${PYTHON_USEDEP}]" &&
 		python_has_version -b "dev-python/six[${PYTHON_USEDEP}]"
 	fi
+}
+
+pkg_setup() {
+	python-any-r1_pkg_setup
 }
 
 soversion_check() {

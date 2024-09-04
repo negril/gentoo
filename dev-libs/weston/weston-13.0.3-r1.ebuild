@@ -41,7 +41,7 @@ REQUIRED_USE="
 RDEPEND="
 	>=dev-libs/libinput-1.2.0
 	>=dev-libs/wayland-1.22.0
-	=media-libs/libdisplay-info-0.1*:=
+	media-libs/libdisplay-info:=
 	media-libs/libpng:0=
 	sys-auth/seatd:=
 	>=x11-libs/cairo-1.11.3

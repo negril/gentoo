@@ -1,0 +1,25 @@
+From 08fb68f0b142078a99032fdcc280b619f6a9f4ba Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Tue, 23 Jul 2024 17:30:31 +0200
+Subject: [PATCH] fix2
+
+---
+ CONFIG/include/atlconf_misc.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/CONFIG/include/atlconf_misc.h b/CONFIG/include/atlconf_misc.h
+index b13ccc0..63b8fd6 100644
+--- a/CONFIG/include/atlconf_misc.h
++++ b/CONFIG/include/atlconf_misc.h
+@@ -41,6 +41,8 @@ char *NameWithoutPath(char *file);
+ char *GetPathWithoutName(char *file);
+ void GetGccVers(char *gcc, int *comp, int *major, int *minor, int *patch);
+ int CompIsGcc(char *comp);
++int CompIsClang(char *comp);
++int CompIsMinGW(char *comp);
+ int CompIsAppleGcc(char *comp);
+ int CompIsMIPSpro(char *comp);
+ int CompIsPathScale(char *comp);
+-- 
+2.45.2
+

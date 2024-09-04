@@ -19,24 +19,23 @@ DISTUTILS_USE_PEP517=setuptools
 DISTUTILS_SINGLE_IMPL=yes
 DISTUTILS_EXT=1
 
-inherit cuda xdg distutils-r1 prefix tmpfiles udev
+inherit xdg distutils-r1 prefix tmpfiles udev virtualx
 
 DESCRIPTION="X Persistent Remote Apps (xpra) and Partitioning WM (parti) based on wimpiggy"
 HOMEPAGE="https://xpra.org/"
 LICENSE="GPL-2 BSD"
 SLOT="0"
-IUSE="+X avif brotli +client +clipboard crypt csc cuda cups dbus debug doc examples gstreamer +gtk3 html ibus jpeg +lz4 lzo mdns minimal oauth opengl openh264 pinentry pulseaudio qrcode +server sound systemd test +trayicon udev vpx webcam webp x264 xdg xinerama "
-IUSE+=" video_cards_nvidia"
+IUSE="+X brotli +client +clipboard crypt csc cups dbus doc +gtk3 html ibus jpeg +lz4 lzo mdns minimal oauth opengl openh264 pinentry pulseaudio +server sound systemd test +trayicon udev vpx webcam webp x264 xdg xinerama avif cuda debug examples gstreamer"
 RESTRICT="!test? ( test )"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
-	|| ( client gtk3 server )
+	|| ( client server )
 	cups? ( dbus )
 	oauth? ( server )
 	opengl? ( client )
 	clipboard? ( gtk3 )
 	gtk3? ( client )
-	test? ( client clipboard crypt dbus gstreamer html server sound xdg xinerama )
+	test? ( client clipboard crypt dbus html server sound xdg xinerama )
 "
 
 TEST_DEPEND="
@@ -51,7 +50,6 @@ TEST_DEPEND="
 	server? (
 		x11-base/xorg-server[-minimal,xvfb]
 		x11-drivers/xf86-input-void
-		x11-drivers/xf86-video-dummy
 	)
 	webcam? ( media-video/v4l2loopback )
 	xinerama? ( x11-libs/libfakeXinerama )
@@ -76,10 +74,9 @@ DEPEND="
 	mdns? ( dev-libs/mdns )
 	openh264? ( media-libs/openh264:= )
 	pulseaudio? (
+		media-libs/libpulse
 		media-plugins/gst-plugins-pulse:1.0
-		media-plugins/gst-plugins-opus
 	)
-	qrcode? ( media-gfx/qrencode )
 	sound? (
 		media-libs/gstreamer:1.0
 		media-libs/gst-plugins-base:1.0
@@ -87,7 +84,6 @@ DEPEND="
 	vpx? ( media-libs/libvpx )
 	webp? ( media-libs/libwebp )
 	X? (
-		x11-apps/xrandr
 		x11-libs/libXcomposite
 		x11-libs/libXdamage
 		x11-libs/libXfixes
@@ -125,17 +121,11 @@ RDEPEND="
 	udev? ( virtual/udev )
 "
 DEPEND+="
-	test? (
-		${TEST_DEPEND}
-		$(python_gen_cond_dep '
-			dev-python/paramiko[${PYTHON_USEDEP}]
-		')
-	)
+	test? ( ${TEST_DEPEND} )
 "
 BDEPEND="
 	$(python_gen_cond_dep '
 		dev-python/cython[${PYTHON_USEDEP}]
-		dev-python/pip[${PYTHON_USEDEP}]
 	')
 	virtual/pkgconfig
 	doc? ( virtual/pandoc )
@@ -144,16 +134,6 @@ BDEPEND="
 PATCHES=(
 	"${FILESDIR}/${PN}-9999-pep517.patch"
 )
-
-src_prepare() {
-	default
-
-	sed \
-		-e 's#UNITTESTS_DIR=`dirname $(readlink -f $0)`#: "${UNITTESTS_DIR:=`dirname $(readlink -f $0)`}"#' \
-		-e 's#INSTALL_ROOT="$SRC_DIR/dist/python${PYTHON_VERSION}"#: "${INSTALL_ROOT:=$SRC_DIR/dist/python${PYTHON_VERSION}}"#' \
-		-e '/setup.py install/d' \
-		-i "${S}/tests/unittests/run" || die
-}
 
 python_prepare_all() {
 	distutils-r1_python_prepare_all
@@ -182,173 +162,92 @@ python_configure_all() {
 		"$(use_with client)"
 		"$(use_with clipboard)"
 		"$(use_with csc csc_cython)"
-		--without-csc_libyuv
 		# "$(use_with csc csc_libyuv)" # https://chromium.googlesource.com/libyuv/libyuv
 		"$(use_with cuda cuda_rebuild)"
 		"$(use_with cuda cuda_kernels)"
 		"$(use_with dbus)"
 		"$(use_with debug)"
 		"$(use_with doc docs)"
-		--without-evdi
 		# "$(use_with evdi)" x11-drivers/evdi::guru
 		"$(use_with examples example)"
 		"$(use_with gstreamer)"
-		"$(use_with gstreamer gstreamer_audio)"
-		"$(use_with gstreamer gstreamer_video)"
 		"$(use_with gtk3)"
 		"$(use_with html http)"
+		"$(use_with jpeg jpeg_encoder)"
+		"$(use_with jpeg jpeg_decoder)"
 		"$(use_with mdns)"
-		"$(use_with video_cards_nvidia nvidia)"
-		--without-nvdec
-		--without-nvenc
-		--without-nvfbc
 		# "$(use_with nvenc nvdec)" # NVIDIA Video Codec SDK
 		# "$(use_with nvenc nvenc)" # NVIDIA Video Codec SDK
 		# "$(use_with nvenc nvfbc)" # NVIDIA Capture SDK
+		"$(use_with cuda nvjpeg_decoder)"
+		"$(use_with cuda nvjpeg_encoder)"
 		"$(use_with opengl)"
 		"$(use_with openh264)"
+		"$(use_with openh264 openh264_decoder)"
+		"$(use_with openh264 openh264_encoder)"
 		"$(use_with cups printing)"
-		--without-pandoc_lua
-		"$(use_with qrcode qrencode)"
-		--without-quic
 		# "$(use_with quic)" # https://github.com/aiortc/aioquic
 		"$(use_with systemd sd_listen)"
 		"$(use_with server)"
 		"$(use_with systemd service)"
 		"$(use_with server shadow)"
+		# "$(use_with spng spng_decoder)" # https://github.com/randy408/libspng
+		# "$(use_with spng spng_encoder)" # https://github.com/randy408/libspng
 		"$(use_with vpx)"
 		"$(use_with webcam)"
 		"$(use_with webp)"
+
 		"$(use_with X x11)"
 		"$(use_with X Xdummy)"
 
 		"$(use_with test tests)"
-		--with-strict
+		# --with-strict
 		# --with-verbose
 		# --with-warn
 		# --with-cythonize_more
-
-		--pkg-config-path="${S}/fs/lib/pkgconfig"
 	)
 
-	if use server; then
-		DISTUTILS_ARGS+=(
-			"$(use_with jpeg jpeg_encoder)"
-			"$(use_with vpx vpx_encoder)"
-			"$(use_with openh264 openh264_encoder)"
-			"$(use_with cuda nvjpeg_encoder)"
-			"$(use_with avif avif_encoder)"
-			"$(use_with webp webp_encoder)"
-			--without-spng_encoder
-			# "$(use_with spng spng_encoder)" # https://github.com/randy408/libspng
-		)
-	else
-		DISTUTILS_ARGS+=(
-			--without-jpeg_encoder
-			--without-vpx_encoder
-			--without-openh264_encoder
-			--without-nvjpeg_encoder
-			--without-avif_encoder
-			--without-webp_encoder
-			--without-spng_encoder
-		)
-	fi
-
-	if use client || use gtk3; then
-		DISTUTILS_ARGS+=(
-			"$(use_with vpx vpx_decoder)"
-			"$(use_with openh264 openh264_decoder)"
-			"$(use_with cuda nvjpeg_decoder)"
-			"$(use_with jpeg jpeg_decoder)"
-			"$(use_with avif avif_decoder)"
-			"$(use_with webp webp_decoder)"
-			--without-spng_decoder
-			# "$(use_with spng spng_decoder)" # https://github.com/randy408/libspng
-		)
-	else
-		DISTUTILS_ARGS+=(
-			--without-jpeg_decoder
-			--without-vpx_decoder
-			--without-openh264_decoder
-			--without-nvjpeg_decoder
-			--without-avif_decoder
-			--without-webp_decoder
-			--without-spng_decoder
-		)
-	fi
-
 	DISTUTILS_ARGS+=(
-		# Arguments from user
-		"${MYDISTUTILS_ARGS[@]}"
+		--pkg-config-path="${S}/fs/lib/pkgconfig"
 	)
 
 	export XPRA_SOCKET_DIRS="${EPREFIX}/var/run/xpra"
 }
 
 python_compile() {
-	if use cuda; then
-		export NVCC_PREPEND_FLAGS="-ccbin $(cuda_gccdir)/g++"
-	fi
-
 	PYTHONPATH="${S}" distutils-r1_python_compile
 }
 
 python_test() {
-	einfo "${BUILD_DIR}/install/$(python_get_sitedir)"
-
-	use cuda && cuda_add_sandbox -w
-	addwrite /dev/dri/renderD128
-
-	addpredict /dev/dri/card0
-	addpredict /dev/fuse
-	addpredict /dev/tty0
-	addpredict /dev/vga_arbiter
-	addpredict /proc/mtrr
-	addpredict /var/run/utmp
-
-	addpredict "$(python_get_sitedir)"
-
-	if [[ -d "/sys/devices/virtual/video4linux" ]]; then
-		local devices
-		readarray -t devices <<<"$(find /sys/devices/virtual/video4linux -mindepth 1 -maxdepth 1 -type d -name 'video*' )"
-		for device in "${devices[@]}"; do
-			addwrite "/dev/$(basename "${device}" || die )"
-		done
-	fi
 
 	xdg_environment_reset
 
-	export XAUTHORITY=${T}/.Xauthority
-	touch "${XAUTHORITY}" || die
+	run_test() {
+		export XAUTHORITY=${HOME}/.Xauthority
+		touch "${XAUTHORITY}" || die
 
-	local -x XPRA_TEST_COVERAGE=0 INSTALL_ROOT="${BUILD_DIR}/install" UNITTESTS_DIR="${S}/tests/unittests"
-
-	tests/unittests/run \
-		--skip-fail unit.client.mixins.audioclient_test \
-		--skip-fail unit.client.x11_client_test \
-		--skip-fail unit.net.net_util_test \
-		--skip-fail unit.notifications.common_test \
-		--skip-fail unit.server.mixins.shadow_option_test \
-		--skip-fail unit.server.mixins.start_option_test \
-		--skip-fail unit.server.mixins.startdesktop_option_test \
-		--skip-fail unit.server.server_auth_test \
-		--skip-fail unit.server.shadow_server_test \
-		--skip-fail unit.x11.x11_server_test \
-		--skip-slow unit.client.mixins.webcam_test \
-		--skip-slow unit.server.server_sockets_test \
-		--skip-slow unit.server.source.source_mixins_test \
-	|| die -n
-}
-
-python_install() {
-	# remove test file
-	rm -vrf "${BUILD_DIR}/install/usr/share/xpra/www"
-
-	distutils-r1_python_install
+		env -u WAYLAND_DISPLAY -u XDG_SESSION_TYPE \
+		PYTHONPATH="${S}/tests/unittests:${BUILD_DIR}/install/$(python_get_sitedir)" \
+		XPRA_SYSTEMD_RUN="$(usex systemd)" XPRA_TEST_COVERAGE=0 \
+			"${PYTHON}" "${S}"/tests/unittests/unit/run.py \
+			--skip-slow unit.client.mixins.audioclient_test \
+			--skip-slow unit.client.mixins.webcam_test \
+			--skip-slow unit.client.x11_client_test \
+			--skip-slow unit.net.net_util_test \
+			--skip-slow unit.server.mixins.shadow_option_test \
+			--skip-slow unit.server.mixins.start_option_test \
+			--skip-slow unit.server.mixins.startdesktop_option_test \
+			--skip-slow unit.server.server_auth_test \
+			--skip-slow unit.server.server_sockets_test \
+			--skip-slow unit.x11.x11_server_test \
+			--skip-slow unit.notifications.common_test \
+			|| die
+	}
+	virtx run_test
 }
 
 python_install_all() {
-	distutils-r1_python_install_all
+	distutils-r1_python_prepare_all
 
 	mv -v "${ED}"/usr/etc "${ED}"/ || die
 

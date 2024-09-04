@@ -61,6 +61,7 @@ pkg_setup() {
 }
 
 src_prepare() {
+	sed -e 's/have_ze=yes/have_ze=no/' -i 3rd-party/romio341/mpl/configure.ac || die
 	default
 	elibtoolize
 
@@ -98,7 +99,7 @@ src_configure() {
 		--with-hwloc=external
 		--with-libevent=external
 
-		# Oiriginally supposed to be re-enabled for 5.0!
+		# Originally supposed to be re-enabled for 5.0!
 		# See https://github.com/open-mpi/ompi/issues/9697#issuecomment-1003746357
 		# and https://bugs.gentoo.org/828123#c14
 		#
@@ -115,7 +116,7 @@ src_configure() {
 
 		$(use_with cma)
 
-		$(use_with cuda cuda "${EPREFIX}"/opt/cuda)
+		$(use_with cuda cuda "${EPREFIX}"/opt/cuda-12.5.1)
 		$(use_with valgrind)
 		$(use_with openmpi_fabrics_knem knem "${EPREFIX}"/usr)
 		$(use_with openmpi_rm_pbs tm)

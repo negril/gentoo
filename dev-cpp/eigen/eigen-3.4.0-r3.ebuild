@@ -4,7 +4,8 @@
 EAPI=8
 
 FORTRAN_NEEDED="test"
-inherit cmake cuda fortran-2 llvm toolchain-funcs
+LLVM_COMPAT=( {16..18} )
+inherit cmake cuda fortran-2 llvm-r1 toolchain-funcs
 
 DESCRIPTION="C++ template library for linear algebra"
 HOMEPAGE="https://eigen.tuxfamily.org/index.php?title=Main_Page"
@@ -132,8 +133,10 @@ DEPEND="
 				dev-util/nvidia-cuda-toolkit
 			)
 			clang? (
-				sys-devel/clang[llvm_targets_NVPTX]
-				openmp? ( sys-libs/libomp[llvm_targets_NVPTX,offload] )
+				$(llvm_gen_dep '
+				sys-devel/clang:${LLVM_SLOT}=[llvm_targets_NVPTX]
+				openmp? ( sys-libs/libomp:${LLVM_SLOT}=[llvm_targets_NVPTX,offload] )
+				')
 			)
 		)
 		hip? ( dev-util/hip )

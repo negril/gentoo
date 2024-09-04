@@ -19,6 +19,10 @@ sys-devel/binutils -gold
 # Pulls in kde-apps/kgpg which is keyworded here
 >=kde-apps/kdeutils-meta-24.05.1 -gpg
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2024-05-23)
+# vis-profiler isn't packaged on arm64
+dev-util/nvidia-cuda-toolkit vis-profiler examples
+
 # Ionen Wolkens <ionen@gentoo.org> (2024-05-19)
 # jit is supported here
 >=dev-qt/qtdeclarative-6 -jit

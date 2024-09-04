@@ -13,7 +13,7 @@ SRC_URI="https://github.com/abseil/abseil-cpp/archive/${PV}.tar.gz -> ${P}.tar.g
 
 LICENSE="Apache-2.0"
 SLOT="0/${PV%%.*}"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~loong ~ppc64 ~riscv ~sparc ~x86"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos"
 IUSE="test"
 
 RDEPEND=">=dev-cpp/gtest-1.13.0[${MULTILIB_USEDEP}]"
@@ -60,7 +60,8 @@ multilib_src_configure() {
 		# TEST_HELPERS needed for protobuf (bug #915902)
 		-DABSL_BUILD_TEST_HELPERS=ON
 		-DABSL_BUILD_TESTING=$(usex test ON OFF)
-		$(usex test -DBUILD_TESTING=ON '') # intentional usex, it used both variables for tests.
+		-DBUILD_TESTING=$(usex test ON OFF)
+		# $(usex test -DBUILD_TESTING=ON '') # intentional usex, it used both variables for tests.
 	)
 
 	cmake_src_configure

@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{10..11} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit cmake python-single-r1
 
@@ -33,14 +33,16 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}"
 
-PATCHES=( "${FILESDIR}"/${PN}-1.8.5-set-correct-libdir.patch )
+PATCHES=(
+	"${FILESDIR}/${PN}-1.8.5-set-correct-libdir.patch"
+)
 
 DOCS=( ACKNOWLEDGEMENTS.txt FEEDBACK.txt NEWS.txt README.txt )
 
 src_prepare() {
 	cmake_src_prepare
 	# Tests are broken with python 3.11.  See also: https://github.com/alembic/alembic/issues/411
-	cmake_run_in "${S}/python/PyAlembic" cmake_comment_add_subdirectory Tests
+	# cmake_run_in "${S}/python/PyAlembic" cmake_comment_add_subdirectory Tests
 }
 
 src_configure() {
@@ -68,5 +70,6 @@ src_configure() {
 # some tests may fail if run in parallel mode
 # see https://github.com/alembic/alembic/issues/401
 src_test() {
-	cmake_src_test -j1
+	cmake_src_test
+	# -j1
 }

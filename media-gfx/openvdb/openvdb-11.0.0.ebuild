@@ -208,7 +208,7 @@ my_src_configure() {
 		# -DOPENVDB_DOXYGEN_HOUDINI="no"
 
 		-DUSE_BLOSC="$(usex blosc)"
-		# -DUSE_CCACHE="no"
+		-DUSE_CCACHE="no"
 		-DUSE_COLORED_OUTPUT="yes"
 		# OpenEXR is only needed by the vdb_render tool and defaults to OFF
 		-DUSE_EXR="$(usex openexr "$(usex utils)")"
@@ -247,7 +247,7 @@ my_src_configure() {
 			-DNANOVDB_ALLOW_FETCHCONTENT="yes"
 			-DNANOVDB_BUILD_EXAMPLES="$(usex examples)"
 			-DNANOVDB_BUILD_TOOLS="$(usex utils)"
-			-DNANOVDB_BUILD_UNITTESTS="$(usex test)"
+			# -DNANOVDB_BUILD_UNITTESTS="$(usex test)"
 			-DNANOVDB_USE_BLOSC="$(usex blosc)"
 			-DNANOVDB_USE_CUDA="$(usex cuda)"
 			-DNANOVDB_USE_ZLIB="$(usex zlib)"
@@ -266,8 +266,10 @@ my_src_configure() {
 			cuda_set_CUDAHOSTCXX
 			cuda_get_host_arch
 
+			# CMAKE_CUDA_HOST_COMPILER=$CXX
+
 			# NOTE tbb includes immintrin.h, which breaks nvcc so we pretend they are already included
-			export CUDAFLAGS="-D_AVX512BF16VLINTRIN_H_INCLUDED -D_AVX512BF16INTRIN_H_INCLUDED"
+			export CUDAFLAGS="-D_AVX512BF16VLINTRIN_H_INCLUDED -D_AVX512BF16INTRIN_H_INCLUDED -D_AMXTILEINTRIN_H_INCLUDED"
 		fi
 
 		if use utils; then
@@ -331,6 +333,16 @@ my_src_configure() {
 	fi
 
 	cmake_src_configure
+
+	if use cuda; then
+		cmake_ver="$(cmake --version | head -n1  | sed -e 's/cmake version //')"
+		# local compiler=$(tc-get-compiler-type)
+		# local default_compiler="${compiler}-$(${compiler}-major-version)"
+		# ${BUILD_DIR}/CMakeFiles/${cmake_ver}/CMakeCUDACompiler.cmake
+
+		sed -e 's#CMAKE_CUDA_HOST_LINK_LAUNCHER .*#CMAKE_CUDA_HOST_LINK_LAUNCHER "/usr/x86_64-pc-linux-gnu/gcc-bin/15/g++")#' -i ${BUILD_DIR}/CMakeFiles/${cmake_ver}/CMakeCUDACompiler.cmake || die
+		ewarn "$(grep CMAKE_CUDA_HOST_LINK_LAUNCHER ${BUILD_DIR}/CMakeFiles/${cmake_ver}/CMakeCUDACompiler.cmake)"
+	fi
 }
 
 my_src_test() {

@@ -1,0 +1,124 @@
+From 4145ea336cd5a8d9f12cade3075677fa37ec57e9 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Tue, 23 Jul 2024 17:07:20 +0200
+Subject: [PATCH] fix
+
+---
+ CONFIG/src/backend/archinfo_aix.c   | 2 +-
+ CONFIG/src/backend/archinfo_irix.c  | 2 +-
+ CONFIG/src/backend/archinfo_linux.c | 2 +-
+ CONFIG/src/backend/archinfo_sfu.c   | 2 +-
+ CONFIG/src/backend/archinfo_sunos.c | 2 +-
+ CONFIG/src/backend/archinfo_win.c   | 2 +-
+ CONFIG/src/backend/archinfo_x86.c   | 2 +-
+ CONFIG/src/config.c                 | 2 ++
+ CONFIG/src/probe_arch.c             | 2 +-
+ 9 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/CONFIG/src/backend/archinfo_aix.c b/CONFIG/src/backend/archinfo_aix.c
+index 8365c88..c5976a0 100644
+--- a/CONFIG/src/backend/archinfo_aix.c
++++ b/CONFIG/src/backend/archinfo_aix.c
+@@ -180,7 +180,7 @@ int ProbeThrottle()
+    return(iret);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int flags, CacheLevel, ncpu, mhz, bits, sure;
+    enum MACHTYPE arch=MACHOther;
+diff --git a/CONFIG/src/backend/archinfo_irix.c b/CONFIG/src/backend/archinfo_irix.c
+index 69572ec..f3f492e 100644
+--- a/CONFIG/src/backend/archinfo_irix.c
++++ b/CONFIG/src/backend/archinfo_irix.c
+@@ -198,7 +198,7 @@ int ProbeThrottle()
+    return(iret);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int flags, CacheLevel, ncpu, mhz, bits, sure;
+    enum MACHTYPE arch=MACHOther;
+diff --git a/CONFIG/src/backend/archinfo_linux.c b/CONFIG/src/backend/archinfo_linux.c
+index cdcee92..f07b135 100644
+--- a/CONFIG/src/backend/archinfo_linux.c
++++ b/CONFIG/src/backend/archinfo_linux.c
+@@ -571,7 +571,7 @@ int ProbeThrottle()
+    return(iret);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int flags, CacheLevel, ncpu, mhz, bits, sure;
+    enum MACHTYPE arch=MACHOther;
+diff --git a/CONFIG/src/backend/archinfo_sfu.c b/CONFIG/src/backend/archinfo_sfu.c
+index b3aaae9..79da486 100644
+--- a/CONFIG/src/backend/archinfo_sfu.c
++++ b/CONFIG/src/backend/archinfo_sfu.c
+@@ -151,7 +151,7 @@ int ProbeThrottle()
+    return(iret);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int flags, CacheLevel, ncpu, mhz, bits, sure;
+    enum MACHTYPE arch=MACHOther;
+diff --git a/CONFIG/src/backend/archinfo_sunos.c b/CONFIG/src/backend/archinfo_sunos.c
+index 8fbcd58..30d5df4 100644
+--- a/CONFIG/src/backend/archinfo_sunos.c
++++ b/CONFIG/src/backend/archinfo_sunos.c
+@@ -212,7 +212,7 @@ int ProbeThrottle()
+    return(iret);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int flags, CacheLevel, ncpu, mhz, bits, sure;
+    enum MACHTYPE arch=MACHOther;
+diff --git a/CONFIG/src/backend/archinfo_win.c b/CONFIG/src/backend/archinfo_win.c
+index 7a142e8..68e5b9d 100644
+--- a/CONFIG/src/backend/archinfo_win.c
++++ b/CONFIG/src/backend/archinfo_win.c
+@@ -221,7 +221,7 @@ int ProbeThrottle()
+    return(iret);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int flags, CacheLevel, ncpu, mhz, bits, sure;
+    enum MACHTYPE arch=MACHOther;
+diff --git a/CONFIG/src/backend/archinfo_x86.c b/CONFIG/src/backend/archinfo_x86.c
+index f894632..a5d32cb 100644
+--- a/CONFIG/src/backend/archinfo_x86.c
++++ b/CONFIG/src/backend/archinfo_x86.c
+@@ -460,7 +460,7 @@ int GetFlags(int nargs, char **args, int *CacheLevel)
+    return(flag);
+ }
+ 
+-main(int nargs, char **args)
++int main(int nargs, char **args)
+ {
+    int ierr, x86_64, flags, CacheLevel;
+    unsigned family, model;
+diff --git a/CONFIG/src/probe_arch.c b/CONFIG/src/probe_arch.c
+index 0ab92c8..cc8b136 100644
+--- a/CONFIG/src/probe_arch.c
++++ b/CONFIG/src/probe_arch.c
+@@ -198,7 +198,7 @@ int ConfirmPtrbits(enum OSTYPE OS0, enum ASMDIA asmd0, char *targ0,
+ /*
+  * Try OS-specific probe, compiling with -m64 (assumes gcc workalike)
+  */
+-   i = 1 + strlen(frm) + strlen(osnam) + strlen(osnam[OS]) +
++   i = 1 + strlen(frm) + strlen(osname) + strlen(osnam[OS]) +
+        strlen(ASMNAM[asmd]) + strlen(flag) + strlen(targ) + strlen(find);
+    cmnd = malloc(i*sizeof(char));
+    assert(cmnd);
+-- 
+2.45.2
+

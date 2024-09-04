@@ -13,16 +13,18 @@ DESCRIPTION="C++ library for geometric algorithms and data structures"
 HOMEPAGE="https://www.cgal.org/"
 SRC_URI="
 	https://github.com/CGAL/cgal/releases/download/v${MY_PV}/${MY_P}.tar.xz
-	doc? ( https://github.com/CGAL/cgal/releases/download/v${MY_PV}/${MY_P}-doc_html.tar.xz )"
+	doc? ( https://github.com/CGAL/cgal/releases/download/v${MY_PV}/${MY_P}-doc_html.tar.xz )
+	examples? ( https://github.com/CGAL/cgal/releases/download/v${MY_PV}/${MY_P}-examples.tar.xz )
+	library? ( https://github.com/CGAL/cgal/releases/download/v${MY_PV}/${MY_P}-library.tar.xz )
+"
 S="${WORKDIR}/${MY_P}"
 
 LICENSE="LGPL-3 GPL-3 Boost-1.0"
 SLOT="0/14"
 KEYWORDS="~amd64 ~arm64 ~ppc64 ~x86 ~amd64-linux ~x86-linux"
-IUSE="doc examples"
+IUSE="doc examples library"
 
 RDEPEND="
-	dev-cpp/eigen
 	dev-libs/boost:=
 	dev-libs/gmp:=[cxx]
 	dev-libs/mpfr:=
@@ -31,20 +33,21 @@ RDEPEND="
 	virtual/glu:=
 	virtual/opengl:=
 "
-DEPEND="${RDEPEND}"
+DEPEND="${RDEPEND}
+	dev-cpp/eigen
+"
 BDEPEND="
 	app-arch/xz-utils
 	virtual/pkgconfig
 "
 
-PATCHES=(
-	"${FILESDIR}"/${PN}-4.11.1-fix-buildsystem.patch
-)
-
 src_configure() {
 	local mycmakeargs=(
 		-DCGAL_INSTALL_LIB_DIR="$(get_libdir)"
 		-DCGAL_INSTALL_CMAKE_DIR="$(get_libdir)/cmake/CGAL"
+
+		-DWITH_demos="$(usex examples)"
+		-DWITH_examples="$(usex examples)"
 	)
 
 	cmake_src_configure

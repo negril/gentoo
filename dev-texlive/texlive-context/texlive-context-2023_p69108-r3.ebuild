@@ -83,6 +83,10 @@ src_prepare() {
 	default
 	# No need to install these .exe
 	rm -rf texmf-dist/scripts/context/stubs/{mswin,win64} || die
+
+	if ! use luajittex; then
+		rm "${WORKDIR}/tlpkg/tlpobj/luajittex.tlpobj" || die
+	fi
 }
 
 src_install() {

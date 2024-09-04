@@ -3961,6 +3961,7 @@ RDEPEND="
 	!<dev-texlive/texlive-xetex-2023
 "
 PDEPEND="
+	>=dev-tex/minted-2.9
 	>=dev-tex/glossaries-4.53
 	>=dev-tex/minted-2.9
 "

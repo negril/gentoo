@@ -22,7 +22,6 @@ RESTRICT="bindist mirror"
 # actual required minimum driver version are different.
 RDEPEND="
 	<sys-devel/gcc-14_pre[cxx]
-	>=x11-drivers/nvidia-drivers-525.60.13
 	examples? (
 		media-libs/freeglut
 		media-libs/glu

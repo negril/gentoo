@@ -113,7 +113,6 @@ REQUIRED_USE="
 	cpu_flags_x86_f16c? ( cpu_flags_x86_avx )
 	cuda? (
 		contrib
-		tesseract? ( opencl )
 	)
 	cudnn? ( cuda )
 	dnnsamples? ( examples )
@@ -141,7 +140,7 @@ REQUIRED_USE+="
 
 RESTRICT="!test? ( test )"
 
-COMMON_DEPEND="
+RDEPEND="
 	app-arch/bzip2[${MULTILIB_USEDEP}]
 	dev-libs/protobuf:=[${MULTILIB_USEDEP}]
 	sys-libs/zlib[${MULTILIB_USEDEP}]
@@ -171,7 +170,6 @@ COMMON_DEPEND="
 		media-libs/libdc1394:=[${MULTILIB_USEDEP}]
 		sys-libs/libraw1394[${MULTILIB_USEDEP}]
 	)
-	java? ( >=virtual/jre-1.8:* )
 	jpeg? ( media-libs/libjpeg-turbo:=[${MULTILIB_USEDEP}] )
 	jpeg2k? (
 		jasper? ( media-libs/jasper:= )
@@ -228,7 +226,7 @@ COMMON_DEPEND="
 	xine? ( media-libs/xine-lib )
 "
 DEPEND="
-	${COMMON_DEPEND}
+	${RDEPEND}
 	eigen? ( >=dev-cpp/eigen-3.3.8-r1:3 )
 	java? ( >=virtual/jdk-1.8:* )
 "
@@ -241,8 +239,7 @@ DEPEND+="
 		)
 	)
 "
-RDEPEND="
-	${COMMON_DEPEND}
+RDEPEND+="
 	java? ( >=virtual/jre-1.8:* )
 "
 BDEPEND="
@@ -275,18 +272,32 @@ PATCHES=(
 	# "${FILESDIR}/${PN}_contrib-4.8.1-NVIDIAOpticalFlowSDK-2.0.tar.gz.patch"
 )
 
+debugp() {
+	einfo "$1 ${!1}"
+}
+
 cuda_get_cuda_compiler() {
+	einfo cuda_get_cuda_compiler
 	local compiler
+	debugp compiler
 	tc-is-gcc && compiler="gcc"
 	tc-is-clang && compiler="clang"
+	debugp compiler
 	[[ -z "$compiler" ]] && die "no compiler specified"
 
 	local package="sys-devel/${compiler}"
 	local version="${package}"
 	local CUDAHOSTCXX_test
+
+	debugp package
+	debugp version
+	debugp CUDAHOSTCXX_test
+
 	while
 		local CUDAHOSTCXX="${CUDAHOSTCXX_test}"
+		debugp CUDAHOSTCXX
 		version=$(best_version "${version}")
+		debugp version
 		if [[ -z "${version}" ]]; then
 			if [[ -z "${CUDAHOSTCXX}" ]]; then
 				die "could not find supported version of ${package}"
@@ -296,14 +307,72 @@ cuda_get_cuda_compiler() {
 		CUDAHOSTCXX_test="$(
 			dirname "$(
 				realpath "$(
-					which "${compiler}-$(echo "${version}" | grep -oP "(?<=${package}-)[0-9]*")"
+					command -v "${compiler}-$(echo "${version}" | grep -oP "(?<=${package}-)[0-9]*")"
 				)"
 			)"
 		)"
+		debugp CUDAHOSTCXX_test
 		version="<${version}"
-	do ! echo "int main(){}" | nvcc "-ccbin ${CUDAHOSTCXX_test}" - -x cu &>/dev/null; done
+		debugp version
+	do ! nvcc -ccbin "${CUDAHOSTCXX_test}" - -x cu &>/dev/null <<<"int main(){}"; done
 
 	echo "${CUDAHOSTCXX}"
+	debugp CUDAHOSTCXX
+}
+
+cuda_get_host_compiler() {
+	# einfo cuda_get_host_compiler
+	local compiler="$(tc-get-compiler-type)"
+	# debugp compiler
+	if ! tc-is-gcc && ! tc-is-clang; then
+		die "${compiler} compiler is not supported"
+	fi
+	# local default_compiler="$(tc-getCXX)"
+	local default_compiler="$(tc-getCXX)"
+	local package="sys-devel/${compiler}"
+	local version="${package}"
+
+	# debugp default_compiler
+	# debugp version
+
+	# try the default compiler first
+	local NVCC_CCBIN="${default_compiler}-$("${compiler}-major-version")"
+	# debugp NVCC_CCBIN
+	# einfo ""
+	while ! nvcc -ccbin "${NVCC_CCBIN}" - -x cu <<<"int main(){}" &>/dev/null; do
+		# einfo "${compiler}-$(echo "${version}" | grep -oP "(?<=${package}-)[0-9]*")"
+		version=$(best_version "${version}")
+		# debugp version
+		if [[ -z "${version}" ]]; then
+			die "could not find a supported version of ${compiler}"
+		fi
+		version="<${version}"
+		# debugp version
+		# nvcc accepts just an executable name, too.
+		# search for NVCC_CCBIN here:
+		# https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/
+		# debugp package
+		# NVCC_CCBIN="$(
+		# 	dirname "$(
+		# 		realpath "$(
+		# 			command -v "${default_compiler}-$(ver_cut 1 "${version//<${package}-/}")"
+		# 		)"
+		# 	)"
+		# )"
+		NVCC_CCBIN="${default_compiler}-$(ver_cut 1 "${version//<${package}-/}")"
+		# NVCC_CCBIN="$(echo "${version}" | sed 's:.*/\([a-z]*-[0-9]*\).*:\1:')"
+		# debugp NVCC_CCBIN
+		# einfo
+	done
+
+	# if [[ ${NVCC_CCBIN} != ${default_compiler} ]]; then
+	# 	ewarn "The default compiler, ${default_compiler} is not supported by nvcc!"
+	# 	ewarn "Compiler version mismatch causes undefined reference errors on linking, so"
+	# 	ewarn "${NVCC_CCBIN}, which is supported by nvcc, will be used to compile OpenCV."
+	# fi
+
+	echo "${NVCC_CCBIN}"
+	# debugp NVCC_CCBIN
 }
 
 cuda_get_host_native_arch() {
@@ -331,7 +400,7 @@ pkg_pretend() {
 
 pkg_setup() {
 	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
-	use java && java-pkg-opt-2_pkg_setup
+	java-pkg-opt-2_pkg_setup
 }
 
 src_prepare() {
@@ -346,10 +415,10 @@ src_prepare() {
 		cd "${WORKDIR}/${PN}_contrib-${PV}" || die
 		eapply "${FILESDIR}/${PN}_contrib-4.8.1-rgbd.patch"
 		eapply "${FILESDIR}/${PN}_contrib-4.8.1-NVIDIAOpticalFlowSDK-2.0.tar.gz.patch"
-		if has_version ">=dev-util/nvidia-cuda-toolkit-12.4" && use cuda; then
+		# if has_version ">=dev-util/nvidia-cuda-toolkit-12.4" && use cuda; then
 			# TODO https://github.com/NVIDIA/cccl/pull/1522
-			eapply "${FILESDIR}/${PN}_contrib-4.9.0-cuda-12.4.patch"
-		fi
+		eapply "${FILESDIR}/${PN}_contrib-4.9.0-cuda-12.4_1.patch"
+		# fi
 		cd "${S}" || die
 
 		! use contribcvv && { rm -R "${WORKDIR}/${PN}_contrib-${PV}/modules/cvv" || die; }
@@ -432,12 +501,19 @@ src_prepare() {
 	fi
 
 	if use java; then
+		echo "JAVA_HOME $JAVA_HOME"
+		einfo java-pkg-opt-2_src_prepare
 		java-pkg-opt-2_src_prepare
+		echo "JAVA_HOME $JAVA_HOME"
+		echo "PATH $PATH"
+
 
 		# set encoding so even this cmake build will pick it up.
-		export ANT_OPTS+=" -Dfile.encoding=iso-8859-1"
-		export ANT_OPTS+=" -Dant.build.javac.source=$(java-pkg_get-source)"
-		export ANT_OPTS+=" -Dant.build.javac.target=$(java-pkg_get-target)"
+		ANT_OPTS+=" -Dfile.encoding=iso-8859-1"
+		ANT_OPTS+=" -Dant.build.javac.source=$(java-pkg_get-source)"
+		ANT_OPTS+=" -Dant.build.javac.target=$(java-pkg_get-target)"
+		export ANT_OPTS
+		echo "ANT_OPTS $ANT_OPTS"
 	fi
 }
 
@@ -557,7 +633,7 @@ multilib_src_configure() {
 	# ===================================================
 	# OpenCV build options
 	# ===================================================
-		# -DENABLE_CCACHE="no"
+		-DENABLE_CCACHE="no"
 		# bug 733796, but PCH is a risky game in CMake anyway
 		-DBUILD_USE_SYMLINKS="yes"
 		-DENABLE_PRECOMPILED_HEADERS="no"
@@ -691,10 +767,17 @@ multilib_src_configure() {
 	if multilib_is_native_abi && use cuda; then
 		cuda_add_sandbox -w
 		addwrite "/proc/self/task"
-		CUDAHOSTCXX="$(cuda_get_cuda_compiler)"
+		# CUDAHOSTCXX="$(cuda_get_cuda_compiler)"
+		CUDAHOSTCXX="$(cuda_get_host_compiler)"
 		CUDAARCHS="$(cuda_get_host_native_arch)"
 		export CUDAHOSTCXX
 		export CUDAARCHS
+		if tc-is-gcc; then
+			CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES_EXCLUDE=$("${CUDAHOSTCXX}" -E -v - <<<"int main(){}" |& grep LIBRARY_PATH | cut -d '=' -f 2 | cut -d ':' -f 1)
+		fi
+
+		export CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES_EXCLUDE="${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES_EXCLUDE%/}"
+		einfo "CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES_EXCLUDE=${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES_EXCLUDE}"
 		mycmakeargs+=(
 			-DENABLE_CUDA_FIRST_CLASS_LANGUAGE="yes"
 		)
@@ -785,6 +868,20 @@ multilib_src_configure() {
 
 multilib_src_compile() {
 	opencv_compile() {
+
+		if use cuda; then
+			cmake_ver="$(cmake --version | head -n1  | sed -e 's/cmake version //')"
+			local compiler=$(tc-get-compiler-type)
+	    local compiler_version="$("${compiler}-major-version")"
+
+			sed \
+				-e "s#CMAKE_CUDA_HOST_LINK_LAUNCHER .*#CMAKE_CUDA_HOST_LINK_LAUNCHER \"/usr/x86_64-pc-linux-gnu/gcc-bin/${compiler_version}/g++\")#" \
+				-e "s#CMAKE_CUDA_COMPILER_LINKER .*#CMAKE_CUDA_COMPILER_LINKER \"/usr/x86_64-pc-linux-gnu/bin/ld\")#" \
+				-i "${BUILD_DIR}/CMakeFiles/${cmake_ver}/CMakeCUDACompiler.cmake" || die
+
+			ewarn "$(grep CMAKE_CUDA_HOST_LINK_LAUNCHER ${BUILD_DIR}/CMakeFiles/${cmake_ver}/CMakeCUDACompiler.cmake)"
+		fi
+
 		cmake_src_compile
 	}
 	if multilib_is_native_abi && use python; then
@@ -804,10 +901,10 @@ multilib_src_test() {
 		'AsyncAPICancelation/cancel*basic'
 	)
 
-	if ! use gtk && ! use qt5 && ! use qt6; then
+	if ! use gtk3 && ! use qt5 && ! use qt6; then
 		CMAKE_SKIP_TESTS+=(
 			# these fail with parallism
-			'^Highgui_*'
+			'Highgui_*'
 		)
 	fi
 
@@ -868,7 +965,7 @@ multilib_src_test() {
 
 		echo -e "${results[*]}"
 	}
-
+	echo "CMAKE_SKIP_TESTS ${CMAKE_SKIP_TESTS[*]}"
 	if multilib_is_native_abi && use python; then
 		python_foreach_impl virtx opencv_test
 	else

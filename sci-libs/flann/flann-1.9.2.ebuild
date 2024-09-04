@@ -40,6 +40,7 @@ PATCHES=(
 	# "${FILESDIR}"/${PN}-1.9.1-system-lz4.patch # bug 681898
 	# "${FILESDIR}"/${PN}-1.9.1-system-lz4-pkgconfig.patch # bug 827263
 	"${FILESDIR}"/${PN}-1.9.1-build-oct-rather-than-mex-files-for-octave.patch # bug 830424
+	"${FILESDIR}/${PN}-1.9.2-make_static_lib_optional.patch"
 )
 
 pkg_pretend() {

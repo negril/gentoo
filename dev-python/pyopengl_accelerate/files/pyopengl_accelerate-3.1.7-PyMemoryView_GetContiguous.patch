@@ -1,0 +1,13 @@
+diff --git a/src/buffers_formathandler.pyx b/src/buffers_formathandler.pyx
+index 2951e9c..3ee1999 100644
+--- a/src/buffers_formathandler.pyx
++++ b/src/buffers_formathandler.pyx
+@@ -71,7 +71,7 @@ cdef class MemoryviewHandler(FormatHandler):
+             # TODO: respect no-copy flag!
+             instance = PyMemoryView_GetContiguous( 
+                 instance, 
+-                PyBUF_STRIDES|PyBUF_FORMAT|PyBUF_C_CONTIGUOUS,
++                PyBUF_READ,
+                 'C'
+             )
+         return instance

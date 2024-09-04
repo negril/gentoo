@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..11} )
 
 inherit check-reqs cmake flag-o-matic optfeature python-single-r1 qmake-utils xdg
 
@@ -64,7 +64,7 @@ RDEPEND="
 	media-libs/qhull:=
 	sci-libs/hdf5:=[fortran,zlib]
 	>=sci-libs/med-4.0.0-r1
-	<sci-libs/opencascade-7.8.0:=[json,vtk]
+	sci-libs/opencascade:=[json,vtk]
 	sci-libs/orocos_kdl:=
 	sys-libs/zlib
 	virtual/libusb:1
@@ -93,8 +93,8 @@ RDEPEND="
 			$(python_gen_cond_dep '
 				dev-python/matplotlib[${PYTHON_USEDEP}]
 				>=dev-python/pivy-0.6.5[${PYTHON_USEDEP}]
-				dev-python/pyside2:=[gui,svg,webchannel,webengine,${PYTHON_USEDEP}]
-				dev-python/shiboken2:=[${PYTHON_USEDEP}]
+				dev-python/pyside2[gui,svg,webchannel,webengine,${PYTHON_USEDEP}]
+				dev-python/shiboken2[${PYTHON_USEDEP}]
 			' python3_{10..11} )
 		)
 		qt6? (
@@ -109,8 +109,8 @@ RDEPEND="
 			$(python_gen_cond_dep '
 				dev-python/matplotlib[${PYTHON_USEDEP}]
 				>=dev-python/pivy-0.6.5[${PYTHON_USEDEP}]
-				dev-python/pyside6:=[gui,svg,webchannel,webengine,${PYTHON_USEDEP}]
-				dev-python/shiboken6:=[${PYTHON_USEDEP}]
+				dev-python/pyside6[gui,svg,webchannel,webengine,${PYTHON_USEDEP}]
+				dev-python/shiboken6[${PYTHON_USEDEP}]
 			' )
 		)
 	)
@@ -159,17 +159,12 @@ REQUIRED_USE="
 	designer? ( gui )
 	inspection? ( points )
 	path? ( robot )
-	python_single_target_python3_12? ( gui? ( qt6 ) )
 "
-# There is no py3.12 support planned for pyside2
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-0.21.0-0001-Gentoo-specific-disable-ccache-usage.patch
 	"${FILESDIR}"/${PN}-0.21.1-Gentoo-specific-don-t-check-vcs.patch
 	"${FILESDIR}"/${PN}-0.21.2-vtk9.3-fix.patch
-	"${FILESDIR}"/${PN}-0.21.2-boost-175-1.patch
-	"${FILESDIR}"/${PN}-0.21.2-boost-175-2.patch
-	"${FILESDIR}"/${PN}-0.21.2-boost-175-3.patch
 )
 
 DOCS=( CODE_OF_CONDUCT.md README.md )
@@ -193,11 +188,15 @@ src_prepare() {
 		eapply "${FILESDIR}/${PN}-0.21.2-shiboken-6.7.0.patch"
 	fi
 
-	if use qt6; then
-		eapply "${FILESDIR}/${PN}-0.21.2-navcube-qt6.patch"
-		eapply "${FILESDIR}/${PN}-0.21.2-qtsvg-qt6.patch"
-		eapply "${FILESDIR}/${PN}-0.21.2-py312-qt6.patch"
+	if has_version ">=sci-libs/opencascade-7.8.0"; then
+		# https://bugs.gentoo.org/927660
+		eapply "${FILESDIR}/${PN}-0.21.2-opencascade-7.8.0.patch"
 	fi
+
+	# if has_version ">=sci-libs/opencascade-7.8.0"; then
+	# 	# https://bugs.gentoo.org/927660
+	# 	eapply "${FILESDIR}/${PN}-0.21.2-opencascade-7.8.0.patch"
+	# fi
 
 	cmake_src_prepare
 }
@@ -347,7 +346,7 @@ src_install() {
 		# https://github.com/coin3d/coin/issues/451
 		: \${QT_QPA_PLATFORM:=xcb}
 		export QT_QPA_PLATFORM
-		exec /usr/$(get_libdir)/${PN}/bin/FreeCAD \${@}
+		exec /usr/$(get_libdir)/${PN}/bin/FreeCAD
 		_EOF_
 		mv "${ED}"/usr/$(get_libdir)/${PN}/share/* "${ED}"/usr/share || die "failed to move shared resources"
 	fi

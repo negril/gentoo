@@ -17,7 +17,7 @@
 -  #set(CMAKE_CXX_EXTENSIONS OFF)
 -  ei_add_cxx_compiler_flag("-std=c++03")
 -endif()
-+set(CMAKE_CXX_STANDARD 14)
++set(CMAKE_CXX_STANDARD 17)
 +set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 +set(CMAKE_CXX_EXTENSIONS OFF)
  

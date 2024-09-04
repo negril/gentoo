@@ -1,0 +1,296 @@
+diff --git a/demo/FloatCanvas.py b/demo/FloatCanvas.py
+index 48d971c..e5c458c 100644
+--- a/demo/FloatCanvas.py
++++ b/demo/FloatCanvas.py
+@@ -720,7 +720,7 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+ 
+             x += dx
+             color = "SEA GREEN"
+-            Points = N.array(( (x, y), (x, y+2.*h/3), (x+w, y+h), (x+w, y+h/2.), (x + 2.*w/3, y+h/2.), (x + 2.*w/3,y) ), N.float_)
++            Points = N.array(( (x, y), (x, y+2.*h/3), (x+w, y+h), (x+w, y+h/2.), (x + 2.*w/3, y+h/2.), (x + 2.*w/3,y) ), N.double)
+             R = Canvas.AddPolygon(Points,  LineWidth = 2, FillColor = color)
+             R.Name = color + " Polygon"
+             R.Bind(FloatCanvas.EVT_FC_RIGHT_DOWN, self.RectGotHitRight)
+@@ -729,7 +729,7 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+ 
+             x += dx
+             color = "Red"
+-            Points = N.array(( (x, y), (x, y+2.*h/3), (x+w, y+h), (x+w, y+h/2.), (x + 2.*w/3, y+h/2.), (x + 2.*w/3,y) ), N.float_)
++            Points = N.array(( (x, y), (x, y+2.*h/3), (x+w, y+h), (x+w, y+h/2.), (x + 2.*w/3, y+h/2.), (x + 2.*w/3,y) ), N.double)
+             R = Canvas.AddPointSet(Points,  Diameter = 4, Color = color)
+             R.Name = "PointSet"
+             R.Bind(FloatCanvas.EVT_FC_LEFT_DOWN, self.PointSetGotHit)
+@@ -753,7 +753,7 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+             x += dx
+             color = "Cyan"
+             Point = (x + w/2, y)
+-            #Points = N.array(( (x, y), (x, y+2.*h/3), (x+w, y+h), (x+w, y+h/2.), (x + 2.*w/3, y+h/2.), (x + 2.*w/3,y) ), N.float_)
++            #Points = N.array(( (x, y), (x, y+2.*h/3), (x+w, y+h), (x+w, y+h/2.), (x + 2.*w/3, y+h/2.), (x + 2.*w/3,y) ), N.double)
+             R = Canvas.AddSquarePoint(Point,  Size = 8, Color = color)
+             R.Name = "SquarePoint"
+             R.Bind(FloatCanvas.EVT_FC_LEFT_DOWN, self.RectGotHit)
+@@ -1139,7 +1139,7 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+                                           Family = wx.FONTFAMILY_ROMAN,
+                                           Alignment = "right"
+                                           )
+-            Point = N.array((100, -20), N.float_)
++            Point = N.array((100, -20), N.double)
+             Box = Canvas.AddScaledTextBox("Here is even more auto wrapped text. This time the line spacing is set to 0.8. \n\nThe Padding is set to 0.",
+                                           Point,
+                                           Size = 3,
+@@ -1153,8 +1153,8 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+                                           )
+             Canvas.AddPoint(Point, "Red", 2)
+ 
+-            Point = N.array((0, -40), N.float_)
+-    #        Point = N.array((0, 0), N.float_)
++            Point = N.array((0, -40), N.double)
++    #        Point = N.array((0, 0), N.double)
+             for Position in ["tl", "bl", "tr", "br"]:
+     #        for Position in ["br"]:
+                 Box = Canvas.AddScaledTextBox("Here is a\nfour liner\nanother line\nPosition=%s"%Position,
+@@ -1172,7 +1172,7 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+                                           )
+             Canvas.AddPoint(Point, "Red", 4)
+ 
+-            Point = N.array((-20, 60), N.float_)
++            Point = N.array((-20, 60), N.double)
+             Box = Canvas.AddScaledTextBox("Here is some\ncentered\ntext",
+                                           Point,
+                                           Size = 4,
+@@ -1188,7 +1188,7 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+                                           LineSpacing = 0.8
+                                           )
+ 
+-            Point = N.array((-20, 20), N.float_)
++            Point = N.array((-20, 20), N.double)
+             Box = Canvas.AddScaledTextBox("Here is some\nright aligned\ntext",
+                                           Point,
+                                           Size = 4,
+@@ -1203,7 +1203,7 @@ def BuildDrawFrame(): # this gets called when needed, rather than on import
+                                           LineSpacing = 0.8
+                                           )
+ 
+-            Point = N.array((100, -60), N.float_)
++            Point = N.array((100, -60), N.double)
+             Box = Canvas.AddScaledTextBox("Here is some auto wrapped text. This time it is centered, rather than right aligned.\n\nThe Padding is set to 2.",
+                                           Point,
+                                           Size = 3,
+diff --git a/samples/floatcanvas/MovingElements.py b/samples/floatcanvas/MovingElements.py
+index 40db285..890e876 100644
+--- a/samples/floatcanvas/MovingElements.py
++++ b/samples/floatcanvas/MovingElements.py
+@@ -160,7 +160,7 @@ class TriangleShape1(FC.Polygon, MovingObjectMixin):
+         Points = N.array(((0, c),
+                           ( L/2.0, -c/2.0),
+                           (-L/2.0, -c/2.0)),
+-                          N.float_)
++                          N.double)
+ 
+         Points += XY
+         return Points
+diff --git a/samples/floatcanvas/MovingTriangle.py b/samples/floatcanvas/MovingTriangle.py
+index f3277f2..98ae17e 100644
+--- a/samples/floatcanvas/MovingTriangle.py
++++ b/samples/floatcanvas/MovingTriangle.py
+@@ -64,7 +64,7 @@ class TriangleShape1(FC.Polygon, ShapeMixin):
+         Points = N.array(((0, c),
+                           ( L/2.0, -c/2.0),
+                           (-L/2.0, -c/2.0)),
+-                          N.float_)
++                          N.double)
+ 
+         Points += XY
+         return Points
+@@ -104,7 +104,7 @@ class DrawFrame(wx.Frame):
+         Points = N.array(((0,0),
+                           (1,0),
+                           (0.5, 1)),
+-                         N.float_)
++                         N.double)
+ 
+         data  = (( (0,0),  1),
+                  ( (3,3),  2),
+diff --git a/samples/floatcanvas/PolyEditor.py b/samples/floatcanvas/PolyEditor.py
+index 55b1af4..f6320c6 100644
+--- a/samples/floatcanvas/PolyEditor.py
++++ b/samples/floatcanvas/PolyEditor.py
+@@ -112,7 +112,7 @@ class DrawFrame(wx.Frame):
+             dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
+             dc.SetLogicalFunction(wx.XOR)
+             if self.SelectedPointNeighbors is None:
+-                self.SelectedPointNeighbors = N.zeros((3,2), N.float_)
++                self.SelectedPointNeighbors = N.zeros((3,2), N.double)
+                 #fixme: This feels very inelegant!
+                 if Index == 0:
+                     self.SelectedPointNeighbors[0] = self.SelectedPoly.Points[-1]
+diff --git a/samples/floatcanvas/ProcessDiagram.py b/samples/floatcanvas/ProcessDiagram.py
+index cf86090..97367b8 100644
+--- a/samples/floatcanvas/ProcessDiagram.py
++++ b/samples/floatcanvas/ProcessDiagram.py
+@@ -212,7 +212,7 @@ class TriangleShape1(FC.Polygon, MovingObjectMixin):
+         Points = N.array(((0, c),
+                           ( L/2.0, -c/2.0),
+                           (-L/2.0, -c/2.0)),
+-                          N.float_)
++                          N.double)
+ 
+         Points += XY
+         return Points
+diff --git a/samples/floatcanvas/TextBox.py b/samples/floatcanvas/TextBox.py
+index 5badeb1..e7c3b7f 100644
+--- a/samples/floatcanvas/TextBox.py
++++ b/samples/floatcanvas/TextBox.py
+@@ -188,7 +188,7 @@ class DrawFrame(wx.Frame):
+                                       Family = wx.ROMAN,
+                                       Alignment = "right"
+                                       )
+-        Point = N.array((100, -20), N.float_)
++        Point = N.array((100, -20), N.double)
+         Box = Canvas.AddScaledTextBox("Here is even more auto wrapped text. This time the line spacing is set to 0.8. \n\nThe Padding is set to 0.",
+                                       Point,
+                                       Size = 3,
+@@ -202,8 +202,8 @@ class DrawFrame(wx.Frame):
+                                       )
+         Canvas.AddPoint(Point, "Red", 2)
+ 
+-        Point = N.array((0, -40), N.float_)
+-#        Point = N.array((0, 0), N.float_)
++        Point = N.array((0, -40), N.double)
++#        Point = N.array((0, 0), N.double)
+         for Position in ["tl", "bl", "tr", "br"]:
+ #        for Position in ["br"]:
+             Box = Canvas.AddScaledTextBox("Here is a\nfour liner\nanother line\nPosition=%s"%Position,
+@@ -221,7 +221,7 @@ class DrawFrame(wx.Frame):
+                                       )
+         Canvas.AddPoint(Point, "Red", 4)
+ 
+-        Point = N.array((-20, 60), N.float_)
++        Point = N.array((-20, 60), N.double)
+         Box = Canvas.AddScaledTextBox("Here is some\ncentered\ntext",
+                                       Point,
+                                       Size = 4,
+@@ -237,7 +237,7 @@ class DrawFrame(wx.Frame):
+                                       LineSpacing = 0.8
+                                       )
+ 
+-        Point = N.array((-20, 20), N.float_)
++        Point = N.array((-20, 20), N.double)
+         Box = Canvas.AddScaledTextBox("Here is some\nright aligned\ntext",
+                                       Point,
+                                       Size = 4,
+@@ -252,7 +252,7 @@ class DrawFrame(wx.Frame):
+                                       LineSpacing = 0.8
+                                       )
+ 
+-        Point = N.array((100, -60), N.float_)
++        Point = N.array((100, -60), N.double)
+         Box = Canvas.AddScaledTextBox("Here is some auto wrapped text. This time it is centered, rather than right aligned.\n\nThe Padding is set to 2.",
+                                       Point,
+                                       Size = 3,
+diff --git a/samples/floatcanvas/Tree.py b/samples/floatcanvas/Tree.py
+index 7757651..953e9c1 100644
+--- a/samples/floatcanvas/Tree.py
++++ b/samples/floatcanvas/Tree.py
+@@ -204,7 +204,7 @@ class TriangleShape1(FC.Polygon, MovingObjectMixin):
+         Points = N.array(((0, c),
+                           ( L/2.0, -c/2.0),
+                           (-L/2.0, -c/2.0)),
+-                          N.float_)
++                          N.double)
+ 
+         Points += XY
+         return Points
+diff --git a/unittests/test_lib_floatcanvas_bbox.py b/unittests/test_lib_floatcanvas_bbox.py
+index 42ced9c..6d68510 100644
+--- a/unittests/test_lib_floatcanvas_bbox.py
++++ b/unittests/test_lib_floatcanvas_bbox.py
+@@ -30,7 +30,7 @@ class testCreator(wtc.WidgetTestCase):
+         self.assertRaises(ValueError, BBox, (0,0,5,6,7) )
+ 
+     def testArrayConstruction(self):
+-        A = N.array(((4,5),(10,12)), N.float_)
++        A = N.array(((4,5),(10,12)), N.double)
+         B = BBox(A)
+         self.assertTrue(isinstance(B, BBox))
+ 
+@@ -79,7 +79,7 @@ class testAsBBox(wtc.WidgetTestCase):
+ 
+     def testPassArray2(self):
+         # same data type -- should be a view
+-        A = N.array( (((0,0),(5,5))), N.float_ )
++        A = N.array( (((0,0),(5,5))), N.double )
+         C = asBBox(A)
+         A[0,0] = -10
+         self.assertTrue(C[0,0] == A[0,0])
+@@ -341,7 +341,7 @@ class testFromPoints(wtc.WidgetTestCase):
+         Pts = N.array( ((5,2),
+                 (3,4),
+                 (1,6),
+-                ), N.float_ )
++                ), N.double )
+         B = fromPoints(Pts)
+         #B = BBox( ( (1.0, 2.0), (5.0, 10.0) ) )
+         self.assertTrue(B[0,0] == 1.0 and
+@@ -362,7 +362,7 @@ class testFromPoints(wtc.WidgetTestCase):
+                         )
+ 
+     def testSinglePoint(self):
+-        Pts = N.array( (5,2), N.float_ )
++        Pts = N.array( (5,2), N.double )
+         B = fromPoints(Pts)
+         self.assertTrue(B[0,0] == 5.0 and
+                         B[0,1] == 2.0 and
+@@ -460,7 +460,7 @@ class testNullBBox(wtc.WidgetTestCase):
+     B3 = BBox( ( (1.0, 2.0), (5.0, 10.0) ) )
+ 
+     def testValues(self):
+-        self.assertTrue( N.alltrue(N.isnan(self.B1)) )
++        self.assertTrue( N.all(N.isnan(self.B1)) )
+ 
+     def testIsNull(self):
+         self.assertTrue( self.B1.IsNull )
+@@ -496,7 +496,7 @@ class testInfBBox(wtc.WidgetTestCase):
+     NB = NullBBox()
+ 
+     def testValues(self):
+-        self.assertTrue( N.alltrue(N.isinf(self.B1)) )
++        self.assertTrue( N.all(N.isinf(self.B1)) )
+ 
+ #    def testIsNull(self):
+ #        self.assertTrue( self.B1.IsNull )
+diff --git a/wx/lib/floatcanvas/FloatCanvas.py b/wx/lib/floatcanvas/FloatCanvas.py
+index a0c316c..1c43d43 100644
+--- a/wx/lib/floatcanvas/FloatCanvas.py
++++ b/wx/lib/floatcanvas/FloatCanvas.py
+@@ -601,7 +601,7 @@ class FloatCanvas(wx.Panel):
+ 
+         """
+ 
+-        if N.sometrue(self.PanelSize <= 2 ):
++        if N.any(self.PanelSize <= 2 ):
+             # it's possible for this to get called before being properly initialized.
+             return
+         if self.Debug: start = clock()
+@@ -779,7 +779,7 @@ class FloatCanvas(wx.Panel):
+             BoundingBox = self.BoundingBox
+         if (BoundingBox is not None) and (not BoundingBox.IsNull()):
+             self.ViewPortCenter = N.array(((BoundingBox[0,0]+BoundingBox[1,0])/2,
+-                                         (BoundingBox[0,1]+BoundingBox[1,1])/2 ),N.float_)
++                                         (BoundingBox[0,1]+BoundingBox[1,1])/2 ),N.double)
+             self.MapProjectionVector = self.ProjectionFun(self.ViewPortCenter)
+             # Compute the new Scale
+             BoundingBox = BoundingBox*self.MapProjectionVector # this does need to make a copy!
+diff --git a/wx/lib/plot/plotcanvas.py b/wx/lib/plot/plotcanvas.py
+index 0e1e8a0..b9f65d8 100644
+--- a/wx/lib/plot/plotcanvas.py
++++ b/wx/lib/plot/plotcanvas.py
+@@ -2044,7 +2044,7 @@ class PlotCanvas(wx.Panel):
+         """
+         if self.last_PointLabel is not None:
+             # compare pointXY
+-            if np.sometrue(
++            if np.any(
+                     mDataDict["pointXY"] != self.last_PointLabel["pointXY"]):
+                 # closest changed
+                 self._drawPointLabel(self.last_PointLabel)  # erase old

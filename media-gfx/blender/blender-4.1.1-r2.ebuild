@@ -393,6 +393,13 @@ src_configure() {
 		-DWITH_VULKAN_BACKEND="$(usex vulkan)"
 		-DWITH_XR_OPENXR=no
 	)
+	if has_version ">=dev-python/numpy-2"; then
+		mycmakeargs+=(
+			-DPYTHON_NUMPY_INCLUDE_DIRS="$(python_get_sitedir)/numpy/_core/include"
+			-DPYTHON_NUMPY_PATH="$(python_get_sitedir)/numpy/_core/include"
+		)
+		echo "asdf $(python_get_sitedir)/numpy/_core/include"
+	fi
 
 	if has_version ">=dev-python/numpy-2"; then
 		mycmakeargs+=(
@@ -447,7 +454,8 @@ src_configure() {
 		mycmakeargs+=(
 			-DWITH_LINKER_GOLD=no
 			-DWITH_LINKER_LLD=no
-		)
+		)6
+
 		# Ease compiling with required gcc similar to cuda_sanitize but for cmake
 		use cuda && use cycles-bin-kernels && mycmakeargs+=( -DCUDA_HOST_COMPILER="$(cuda_gccdir)" )
 	fi
@@ -490,13 +498,13 @@ src_test() {
 
 	# Sanity check that the script and datafile path is valid.
 	# If they are not vaild, blender will fallback to the default path which is not what we want.
-	[ -d "$BLENDER_SYSTEM_SCRIPTS" ] || die "The custom script path is invalid, fix the ebuild!"
-	[ -d "$BLENDER_SYSTEM_DATAFILES" ] || die "The custom datafiles path is invalid, fix the ebuild!"
+	[[ -d "$BLENDER_SYSTEM_SCRIPTS" ]] || die "The custom script path is invalid, fix the ebuild!"
+	[[ -d "$BLENDER_SYSTEM_DATAFILES" ]] || die "The custom datafiles path is invalid, fix the ebuild!"
 
 	if use cuda; then
 		cuda_add_sandbox -w
-		addwrite "/dev/dri/renderD128"
-		addwrite "/dev/char/"
+		# addwrite "/dev/dri/renderD128"
+		# addwrite "/dev/char/"
 	fi
 
 	if use X; then
@@ -528,7 +536,7 @@ src_install() {
 		export BLENDER_SYSTEM_SCRIPTS=${ED}/usr/share/blender/${BV}/scripts
 		export BLENDER_SYSTEM_DATAFILES=${ED}/usr/share/blender/${BV}/datafiles
 
-		# Workaround for binary drivers.
+		# Workaround for binary drivers. # TODO
 		addpredict /dev/ati
 		addpredict /dev/dri
 		addpredict /dev/nvidiactl

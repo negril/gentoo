@@ -9,6 +9,10 @@
 	<email>alexxy@gentoo.org</email>
 	<name>Alexey Shvetsov</name>
 </maintainer>
+<maintainer type="person">
+	<email>chewi@gentoo.org</email>
+	<name>James Le Cuirot</name>
+</maintainer>
 <upstream>
 	<remote-id type="pypi">xpra</remote-id>
 	<remote-id type="github">Xpra-org/xpra</remote-id>
@@ -25,7 +29,7 @@
 	<flag name="oauth">Enable OAuth2 authentication in the server</flag>
 	<flag name="openh264">Enable H.264 support using <pkg>media-libs/openh264</pkg></flag>
 	<flag name="pinentry">Use <pkg>app-crypt/pinentry</pkg> for password entry</flag>
-	<flag name="qrcode">Enable generating QRCodes for server URL via <pkg>media-gfx/qrencode</pkg></flag>
+  <flag name="qrcode">Enable generating QRCodes for server URL via <pkg>media-gfx/qrencode</pkg></flag>
 	<flag name="trayicon">Enable system tray icon</flag>
 	<flag name="server">Build server-side code</flag>
 	<flag name="vpx">Enable vpx image format support</flag>

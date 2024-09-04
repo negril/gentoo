@@ -1,4 +1,4 @@
-# Copyright 1999-2023 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 # @ECLASS: cuda.eclass
@@ -24,6 +24,110 @@ _CUDA_ECLASS=1
 
 inherit flag-o-matic toolchain-funcs
 
+# @ECLASS_VARIABLE: CUDA_REQUIRED_USE
+# @OUTPUT_VARIABLE
+# @DESCRIPTION:
+# Requires at least one AMDGPU target to be compiled.
+# Example use for CUDA libraries:
+# @CODE
+# REQUIRED_USE="${CUDA_REQUIRED_USE}"
+# @CODE
+# Example use for packages that depend on CUDA libraries:
+# @CODE
+# IUSE="cuda"
+# REQUIRED_USE="cuda? ( ${CUDA_REQUIRED_USE} )"
+# @CODE
+
+# @ECLASS_VARIABLE: CUDA_USEDEP
+# @OUTPUT_VARIABLE
+# @DESCRIPTION:
+# This is an eclass-generated USE-dependency string which can be used to
+# depend on another CUDA package being built for the same AMDGPU architecture.
+#
+# The generated USE-flag list is compatible with packages using cuda.eclass.
+#
+# Example use:
+# @CODE
+# DEPEND="sci-libs/rocBLAS[${CUDA_USEDEP}]"
+# @CODE
+
+# @ECLASS_VARIABLE: CUDA_SKIP_GLOBALS
+# @DESCRIPTION:
+# Controls whether _cuda_set_globals() is executed. This variable is for
+# ebuilds that call check_amdgpu() without the need to define amdgpu_targets_*
+# USE-flags, such as dev-util/hip and dev-libs/rocm-opencl-runtime.
+#
+# Example use:
+# @CODE
+# CUDA_SKIP_GLOBALS=1
+# inherit cuda
+# @CODE
+
+# @FUNCTION: _cuda_set_globals
+# @DESCRIPTION:
+# Set global variables useful to ebuilds: IUSE, CUDA_REQUIRED_USE, and
+# CUDA_USEDEP, unless CUDA_SKIP_GLOBALS is set.
+
+_cuda_set_globals() {
+	# [[ -n ${CUDA_SKIP_GLOBALS} ]] && return
+
+	local nvptx_device_targets_11_8=(
+		# Kepler
+		35 37
+	)
+
+	local nvptx_device_targets=(
+		"${nvptx_device_targets_11_8[@]}"
+		# Maxwell
+		50 52 53
+		# Pascal
+		60 61 62
+		# Volta
+		70 72
+		# Turing
+		75
+		# Ampere
+		80 86 87
+		# Ada Lovelace
+		89
+		# Hopper
+		90 90a
+		# # Blackwell
+		# 100 10x
+	)
+
+	local nvptx_named_targets=(
+		all
+		all-major
+		native
+	)
+
+	IUSE="${nvptx_device_targets[*]/#/nvptx_targets_sm_} +${nvptx_named_targets[*]/#/nvptx_targets_}"
+
+	CUDA_REQUIRED_USE="
+		?? (
+			|| ( ${nvptx_device_targets[*]/#/nvptx_targets_sm_} )
+			${nvptx_named_targets[*]/#/nvptx_targets_}
+		)
+	"
+
+	local all_nvptx_targets=(
+		"${nvptx_device_targets[@]/#/nvptx_targets_sm_}"
+		"${nvptx_named_targets[@]/#/nvptx_targets_}"
+	)
+
+	local optflags="${all_nvptx_targets[*]/%/(-)?}"
+	CUDA_USEDEP=${optflags// /,}
+
+		for target in "${nvptx_device_targets_11_8[@]/#/nvptx_targets_sm_}"; do
+			DEPEND+=" $(printf "%s? ( <dev-util/nvidia-cuda-toolkit-12.0 )" "${target}")"
+		done
+}
+_cuda_set_globals
+unset -f _cuda_set_globals
+
+# == old stuff ==
+
 # @ECLASS_VARIABLE: NVCCFLAGS
 # @DESCRIPTION:
 # nvcc compiler flags (see nvcc --help), which should be used like
@@ -33,7 +137,8 @@ inherit flag-o-matic toolchain-funcs
 # @ECLASS_VARIABLE: CUDA_VERBOSE
 # @DESCRIPTION:
 # Being verbose during compilation to see underlying commands
-: "${CUDA_VERBOSE:=true}"
+: "${CUDA_VERBOSE:=false}"
+
 
 # @FUNCTION: cuda_gccdir
 # @USAGE: [-f]
@@ -145,6 +250,16 @@ cuda_sanitize() {
 # with -w, add to the sandbox write list.
 cuda_add_sandbox() {
 	debug-print-function ${FUNCNAME} "$@"
+
+	# /dev/char/195:0 -> ../nvidia0
+	# /dev/char/195:254 -> ../nvidia-modeset
+	# /dev/char/195:255 -> ../nvidiactl
+	# /dev/char/226:0 -> ../dri/card0
+	# /dev/char/226:128 -> ../dri/renderD128
+	# /dev/char/240:0 -> ../nvidia-uvm
+	# /dev/char/240:1 -> ../nvidia-uvm-tools
+	# /dev/char/245:1 -> ../nvidia-caps/nvidia-cap1
+	# /dev/char/245:2 -> ../nvidia-caps/nvidia-cap2
 
 	local i
 	for i in /dev/nvidia*; do
