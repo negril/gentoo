@@ -110,10 +110,9 @@ virtx() {
 	local xvfbargs=( -screen 0 1280x1024x24 +extension RANDR )
 
 	debug-print "${FUNCNAME}: running Xvfb hack"
-	export XAUTHORITY=
+	export XAUTHORITY="${T}/Xauthority"
 
 	einfo "Starting Xvfb ..."
-	addpredict /dev/dri/ # Needed for Xvfb w/ >=mesa-24.2.0
 
 	debug-print "${FUNCNAME}: Xvfb -displayfd 1 ${xvfbargs[*]}"
 	local logfile=${T}/Xvfb.log
@@ -133,7 +132,7 @@ virtx() {
 
 	# Do not break on error, but setup $retval, as we need to kill Xvfb
 	einfo "Xvfb started on DISPLAY=${DISPLAY}"
-	debug-print "${FUNCNAME}: $@"
+	debug-print "${FUNCNAME}: $*"
 	nonfatal "$@"
 	retval=$?
 
@@ -141,7 +140,7 @@ virtx() {
 	kill "$(<"${pidfile}")"
 
 	# die if our command failed
-	[[ ${retval} -ne 0 ]] && die "Failed to run '$@'"
+	[[ ${retval} -ne 0 ]] && die -n "Failed to run '$*'"
 
 	return 0 # always return 0, it can be altered by failed kill for Xvfb
 }

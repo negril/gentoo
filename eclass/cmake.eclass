@@ -692,7 +692,8 @@ cmake_src_test() {
 	[[ -e CTestTestfile.cmake ]] || { echo "No tests found. Skipping."; return 0 ; }
 
 	[[ -n ${TEST_VERBOSE} ]] && myctestargs+=( --extra-verbose --output-on-failure )
-	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E '('$( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}")')'  )
+	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E "($( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}"))"  )
+	[[ -n ${CMAKE_RI_TESTS} ]] && myctestargs+=( -R "($( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}"))"  )
 
 	set -- ctest -j "$(makeopts_jobs "${MAKEOPTS}" 999)" \
 		--test-load "$(makeopts_loadavg)" "${myctestargs[@]}" "$@"
@@ -708,9 +709,11 @@ cmake_src_test() {
 			eerror "--START TEST LOG--------------------------------------------------------------"
 			cat "${BUILD_DIR}/Testing/Temporary/LastTest.log"
 			eerror "--END TEST LOG----------------------------------------------------------------"
-			die "Tests failed."
+			die -n "Tests failed."
 		else
-			die "Tests failed. When you file a bug, please attach the following file: \n\t${BUILD_DIR}/Testing/Temporary/LastTest.log"
+			eerror "Tests failed. When you file a bug, please attach the following file:"
+			eerror "\t${BUILD_DIR}/Testing/Temporary/LastTest.log"
+			die -n "Tests failed."
 		fi
 
 		# die might not die due to nonfatal
