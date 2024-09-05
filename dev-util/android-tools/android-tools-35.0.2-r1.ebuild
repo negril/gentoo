@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit cmake flag-o-matic python-r1
 
@@ -45,6 +45,10 @@ BDEPEND="
 "
 
 DOCS=()
+
+PATCHES=(
+	"${FILESDIR}/${PN}-35.0.2-explicitly-include-abseil-cpp.patch"
+)
 
 src_prepare() {
 	eapply "${DISTDIR}/${PN}-31.0.3-no-gtest.patch"
