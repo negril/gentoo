@@ -1,0 +1,43 @@
+From 784cd4cae59112123b1827b0e65b6dfa9538e835 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Thu, 5 Sep 2024 15:00:10 +0200
+Subject: [PATCH] vendor: explicitly include abseil-cpp
+
+Linking against abseil-cpp depended on protobuf exporting all abseil-cpp
+libraries via protobuf::libprotobuf public libraries.
+
+Explcitly finding abseil ourselves removes the need for that.
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
+--- a/vendor/CMakeLists.txt
++++ b/vendor/CMakeLists.txt
+@@ -89,6 +89,7 @@ pkg_check_modules(libpcre2-8 REQUIRED IMPORTED_TARGET libpcre2-8)
+ pkg_check_modules(libusb-1.0 REQUIRED IMPORTED_TARGET libusb-1.0)
+ pkg_check_modules(libzstd REQUIRED IMPORTED_TARGET libzstd)
+
++find_package(absl CONFIG REQUIRED)
+ find_package(Protobuf CONFIG)
+ find_package(Protobuf REQUIRED)
+ set(THREADS_PREFER_PTHREAD_FLAG ON)
+--- a/vendor/CMakeLists.adb.txt
++++ b/vendor/CMakeLists.adb.txt
+@@ -199,6 +199,7 @@ target_link_libraries(adb
+ 	crypto
+ 	ssl
+ 	protobuf::libprotobuf
++	absl::check
+ 	PkgConfig::libbrotlicommon
+ 	PkgConfig::libbrotlidec
+ 	PkgConfig::libbrotlienc
+--- a/vendor/CMakeLists.partition.txt
++++ b/vendor/CMakeLists.partition.txt
+@@ -33,7 +33,7 @@ target_link_libraries(liblpdump PRIVATE
+ add_executable(lpdump
+ 	extras/partition_tools/lpdump_host.cc)
+ target_link_libraries(lpdump
+-	libbase liblpdump libsparse)
++	libbase liblpdump libsparse absl::check absl::status)
+
+ add_executable(lpmake
+ 	extras/partition_tools/lpmake.cc)
