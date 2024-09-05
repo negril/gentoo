@@ -47,6 +47,10 @@ BDEPEND="
 
 DOCS=()
 
+PATCHES=(
+	"${FILESDIR}/${PN}-35.0.2-explicitly-include-abseil-cpp.patch"
+)
+
 src_prepare() {
 	eapply "${DISTDIR}/${PN}-31.0.3-no-gtest.patch"
 
