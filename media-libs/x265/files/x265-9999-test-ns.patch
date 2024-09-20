@@ -1,4 +1,11 @@
-Namespace functions for multi-bitdepth builds so that libraries are self-contained.
+From 443c16b5835d87f00fb9c144697fbf52ec1c634c Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Sat, 21 Sep 2024 19:05:32 +0200
+Subject: [PATCH] Namespace functions for multi-bitdepth builds so that
+ libraries are self-contained.
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
 --- a/common/param.cpp
 +++ b/common/param.cpp
 @@ -102,7 +102,7 @@ x265_param *x265_param_alloc()
@@ -12,7 +19,7 @@ Namespace functions for multi-bitdepth builds so that libraries are self-contain
  #endif
 --- a/common/param.h
 +++ b/common/param.h
-@@ -55,6 +55,18 @@ int x265_param_apply_profile(x265_param *, const char *profile);
+@@ -55,6 +55,22 @@ int x265_param_apply_profile(x265_param *, const char *profile);
  int x265_param_parse(x265_param *p, const char *name, const char *value);
  int x265_scenecut_aware_qp_param_parse(x265_param* p, const char* name, const char* value);
  int x265_zone_param_parse(x265_param* p, const char* name, const char* value);
@@ -28,6 +35,10 @@ Namespace functions for multi-bitdepth builds so that libraries are self-contain
 +int x265_encoder_reconfig(x265_encoder *, x265_param *);
 +x265_picture *x265_picture_alloc(void);
 +void x265_picture_init(x265_param *param, x265_picture *pic);
++#if ENABLE_LIBVMAF
++double x265_calculate_vmafscore(x265_param*, x265_vmaf_data*);
++double x265_calculate_vmaf_framelevelscore(x265_param*, x265_vmaf_framedata*);
++#endif
  #define PARAM_NS X265_NS
  #endif
  }
@@ -93,6 +104,15 @@ Namespace functions for multi-bitdepth builds so that libraries are self-contain
  
      if (numEncoded < 0)
 @@ -646,7 +646,7 @@ void x265_vmaf_encoder_log(x265_encoder* enc, int argc, char **argv, x265_param
+     {
+         Encoder *encoder = static_cast<Encoder*>(enc);
+         x265_stats stats;       
+-        stats.aggregateVmafScore = x265_calculate_vmafscore(param, vmafdata);
++        stats.aggregateVmafScore = PARAM_NS::x265_calculate_vmafscore(param, vmafdata);
+         if(vmafdata->reference_file)
+             fclose(vmafdata->reference_file);
+         if(vmafdata->distorted_file)
+@@ -645,7 +645,7 @@ void x265_vmaf_encoder_log(x265_encoder* enc, int argc, char **argv, x265_param
          encoder->fetchStats(&stats, sizeof(stats));
          int padx = encoder->m_sps.conformanceWindow.rightOffset;
          int pady = encoder->m_sps.conformanceWindow.bottomOffset;
@@ -119,6 +139,17 @@ Namespace functions for multi-bitdepth builds so that libraries are self-contain
  }
  
  void x265_free_analysis_data(x265_param *param, x265_analysis_data* analysis)
+@@ -1082,8 +1082,8 @@ static const x265_api libapi =
+     &x265_dither_image,
+     &x265_set_analysis_data,
+ #if ENABLE_LIBVMAF
+-    &x265_calculate_vmafscore,
+-    &x265_calculate_vmaf_framelevelscore,
++    &PARAM_NS::x265_calculate_vmafscore,
++    &PARAM_NS::x265_calculate_vmaf_framelevelscore,
+     &x265_vmaf_encoder_log,
+ #endif
+     &PARAM_NS::x265_zone_param_parse
 --- a/encoder/encoder.cpp
 +++ b/encoder/encoder.cpp
 @@ -217,8 +217,8 @@ void Encoder::create()
@@ -303,3 +334,17 @@ Namespace functions for multi-bitdepth builds so that libraries are self-contain
      m_aborted = true; \
      return; \
  }\
+--- a/encoder/frameencoder.cpp
++++ b/encoder/frameencoder.cpp
+@@ -2353,7 +2353,7 @@ void FrameEncoder::vmafFrameLevelScore()
+     vmafframedata->internalBitDepth = m_param->internalBitDepth;
+     vmafframedata->reference_frame = fenc;
+     vmafframedata->distorted_frame = recon;
+-    fenc->m_vmafScore = x265_calculate_vmaf_framelevelscore(m_param,vmafframedata);
++    fenc->m_vmafScore = PARAM_NS::x265_calculate_vmaf_framelevelscore(m_param,vmafframedata);
+ 
+     if (vmafframedata)
+     x265_free(vmafframedata);
+-- 
+2.46.0
+
