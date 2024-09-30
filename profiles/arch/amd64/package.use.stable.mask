@@ -17,6 +17,10 @@
 
 #--- END OF EXAMPLES ---
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2025-09-11)
+# no stable llvm-runtimes/offload
+dev-cpp/eigen -clang-cuda
+
 # Sam James <sam@gentoo.org> (2025-04-20)
 # Needs dev-python/scipy for tests which often ends up destabled on arches
 # even if it was previously stable there, as its own test results vary a lot.
