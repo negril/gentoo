@@ -1,4 +1,4 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -20,7 +20,7 @@ else
 		https://gitlab.com/lib${PN}/${PN}/-/archive/${PV}/${P}.tar.bz2
 		test? ( lapack? ( https://downloads.tuxfamily.org/${PN}/lapack_addons_3.4.1.tgz -> ${PN}-lapack_addons-3.4.1.tgz ) )
 	"
-	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~arm64-macos ~x64-macos"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~arm64-macos ~x64-macos"
 fi
 
 LICENSE="MPL-2.0"
@@ -80,9 +80,10 @@ IUSE_TEST_BACKENDS=(
 	"umfpack"
 )
 
-IUSE="benchmark ${CPU_FEATURES_MAP[*]%:*} clang cuda hip debug doc lapack mathjax test ${IUSE_TEST_BACKENDS[*]}" #zvector
+IUSE="${CPU_FEATURES_MAP[*]%:*} clang cuda hip debug doc lapack mathjax test ${IUSE_TEST_BACKENDS[*]}" #zvector
 
 REQUIRED_USE="
+	test? ( !lapack )
 	|| ( ${IUSE_TEST_BACKENDS[*]} )
 "
 
@@ -147,10 +148,12 @@ DEPEND="
 "
 
 PATCHES=(
+	"${FILESDIR}/${PN}-3.3.9-max-macro.patch"
 	"${FILESDIR}/${PN}-3.4.0-doc-nocompress.patch" # bug 830064
 	"${FILESDIR}/${PN}-3.4.0-buildstring.patch"
-	"${FILESDIR}/${PN}-9999-please_protect_your_min_with_parentheses.patch"
-	"${FILESDIR}/${PN}-5.0.1-c++-20.patch"
+	"${FILESDIR}/${PN}-3.4.0-noansi.patch"
+	"${FILESDIR}/${PN}-3.4.0-cxxstandard.patch"
+	"${FILESDIR}/${PN}-3.4.0-ppc-no-vsx.patch" # bug 936107
 )
 
 # TODO should be in cuda.eclass
@@ -222,18 +225,10 @@ src_prepare() {
 }
 
 src_configure() {
-	# test/product_threaded.cpp unconditionally sets EIGEN_GEMM_THREADPOOL which
-	# causes the following build failure when openmp is also set
-	#
-	#     EIGEN_HAS_OPENMP and EIGEN_GEMM_THREADPOOL may not both be defined.
-	#
-	use openmp && use test && die "Cannot run test suite with openmp set"
-
 	local mycmakeargs=(
 		-DBUILD_SHARED_LIBS="yes"
 		-DBUILD_TESTING="$(usex test)"
 
-		-DEIGEN_BUILD_BTL="$(usex benchmark)" # Build benchmark suite
 		-DEIGEN_BUILD_DOC="$(usex doc)" # Enable creation of Eigen documentation
 		-DEIGEN_BUILD_PKGCONFIG="yes" # Build pkg-config .pc file for Eigen
 	)
@@ -259,6 +254,8 @@ src_configure() {
 			-DEIGEN_TEST_OPENMP="$(usex openmp)" # Enable/Disable OpenMP in tests/examples
 
 			-DCMAKE_DISABLE_FIND_PACKAGE_MPREAL=ON
+
+			-DEIGEN_TEST_CXX11=yes
 
 			# -DEIGEN_TEST_CUSTOM_CXX_FLAGS= # Additional compiler flags when compiling unit tests.
 			# -DEIGEN_TEST_CUSTOM_LINKER_FLAGS= # Additional linker flags when linking unit tests.
@@ -410,9 +407,9 @@ src_compile() {
 	fi
 	if use test; then
 		targets+=( buildtests )
-		# if ! use lapack; then
-		# 	targets+=( blas )
-		# fi
+		if ! use lapack; then
+			targets+=( blas )
+		fi
 		# tests generate random data, which
 		# obviously fails for some seeds
 		export EIGEN_SEED=712808
@@ -424,8 +421,33 @@ src_compile() {
 }
 
 src_test() {
+	CMAKE_SKIP_TESTS=(
+		product_small_32           #  143 (Subprocess aborted)
+		product_small_33           #  144 (Subprocess aborted)
+
+		eigensolver_selfadjoint_13 #  452 (Subprocess aborted)
+
+		cholmod_support_21         #  726 (Subprocess aborted)
+		cholmod_support_22         #  727 (Subprocess aborted)
+
+		NonLinearOptimization      #  930 (Subprocess aborted)
+		openglsupport              #  990 (Failed)
+		levenberg_marquardt        # 1020 (Subprocess aborted)
+	)
+
 	if use cuda ; then
 		cuda_add_sandbox -w
+
+		CMAKE_SKIP_TESTS+=(
+			cxx11_tensor_cast_float16_gpu
+			cxx11_tensor_gpu_5
+		)
+	fi
+
+	if use lapack ; then
+		CMAKE_SKIP_TESTS+=(
+			"^LAPACK-.*$"
+		)
 	fi
 
 	local myctestargs=(
