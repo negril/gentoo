@@ -29,6 +29,7 @@ DEPEND="
 	app-arch/lz4:=
 	app-arch/zstd:=
 	dev-cpp/abseil-cpp:=
+	dev-libs/libfmt:=
 	dev-libs/libpcre2:=
 	dev-libs/protobuf:=[protobuf(+),protoc(+)]
 	sys-libs/zlib:=
