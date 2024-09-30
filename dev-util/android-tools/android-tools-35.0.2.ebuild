@@ -32,8 +32,11 @@ DEPEND="
 	dev-libs/libpcre2:=
 	dev-libs/protobuf:=[protobuf(+),protoc(+)]
 	sys-libs/zlib:=
-	virtual/libusb:1=
 "
+# DEPEND+="
+# 	dev-libs/libfmt:=
+# 	virtual/libusb:1=
+# "
 RDEPEND="${DEPEND}
 	udev? ( dev-util/android-udev-rules )
 	python? ( ${PYTHON_DEPS} )
@@ -80,12 +83,15 @@ src_configure() {
 
 	local mycmakeargs=(
 		# Statically link the bundled boringssl
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-		-DCMAKE_C_FLAGS="$CFLAGS" \
-		-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
+		-DCMAKE_BUILD_TYPE=Release
+		-DCMAKE_CXX_FLAGS="$CXXFLAGS"
+		-DCMAKE_C_FLAGS="$CFLAGS"
+		-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON
 		-Dprotobuf_MODULE_COMPATIBLE=ON
 		-DBUILD_SHARED_LIBS=OFF
+		-DANDROID_TOOLS_LIBUSB_ENABLE_UDEV="$(usex udev)"
+		-DANDROID_TOOLS_USE_BUNDLED_FMT="yes"
+		-DANDROID_TOOLS_USE_BUNDLED_LIBUSB="yes"
 	)
 	cmake_src_configure
 }
@@ -112,7 +118,9 @@ src_install() {
 		python_foreach_impl python_newexe vendor/avb/avbtool.py avbtool
 	fi
 	docinto adb
-	dodoc vendor/adb/*.{txt,TXT}
+	dodoc vendor/adb/README.md
+	docinto adb/dev
+	dodoc vendor/adb/docs/dev/README.md
 	docinto fastboot
 	dodoc vendor/core/fastboot/README.md
 }
