@@ -3,8 +3,9 @@
 
 EAPI=8
 
+LLVM_COMPAT=( {19..21} )
 FORTRAN_NEEDED="test"
-inherit cmake cuda fortran-2 llvm toolchain-funcs
+inherit cmake cuda flag-o-matic fortran-2 llvm-r2 toolchain-funcs
 
 DESCRIPTION="C++ template library for linear algebra"
 HOMEPAGE="https://eigen.tuxfamily.org/index.php?title=Main_Page"
@@ -80,15 +81,14 @@ IUSE_TEST_BACKENDS=(
 	"umfpack"
 )
 
-IUSE="${CPU_FEATURES_MAP[*]%:*} clang cuda hip debug doc lapack mathjax test ${IUSE_TEST_BACKENDS[*]}" #zvector
+IUSE="${CPU_FEATURES_MAP[*]%:*} clang-cuda cuda hip debug doc lapack mathjax test ${IUSE_TEST_BACKENDS[*]}" #zvector
 
 REQUIRED_USE="
-	test? ( !lapack )
 	|| ( ${IUSE_TEST_BACKENDS[*]} )
 "
 
 # Tests failing again because of compiler issues; bugs #932646, #943401
-RESTRICT="test !test? ( test )"
+RESTRICT="!test? ( test )"
 
 BDEPEND="
 	doc? (
@@ -133,12 +133,13 @@ TEST_BACKENDS="
 DEPEND="
 	test? (
 		cuda? (
-			!clang? (
+			!clang-cuda? (
 				dev-util/nvidia-cuda-toolkit
 			)
-			clang? (
-				llvm-core/clang[llvm_targets_NVPTX]
-				openmp? ( llvm-runtimes/openmp[llvm_targets_NVPTX,offload] )
+			clang-cuda? (
+				$(llvm_gen_dep '
+					llvm-core/clang:${LLVM_SLOT}[llvm_targets_NVPTX]
+				')
 			)
 		)
 		hip? ( dev-util/hip )
@@ -154,6 +155,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-3.4.0-noansi.patch"
 	"${FILESDIR}/${PN}-3.4.0-cxxstandard.patch"
 	"${FILESDIR}/${PN}-3.4.0-ppc-no-vsx.patch" # bug 936107
+	"${FILESDIR}/${PN}-3.4.0-c++-20.patch"
 )
 
 # TODO should be in cuda.eclass
@@ -189,7 +191,7 @@ cuda_set_CUDAHOSTCXX() {
 }
 
 pkg_setup() {
-	use test && use cuda && use clang && llvm_pkg_setup
+	use test && use cuda && use clang-cuda && llvm-r2_pkg_setup
 }
 
 src_unpack() {
@@ -247,6 +249,9 @@ src_configure() {
 	fi
 
 	if use test; then
+		# bug 878987
+		filter-lto
+
 		mycmakeargs+=(
 			# the OpenGL testsuite is extremely brittle, bug #712808
 			-DOpenGL_GL_PREFERENCE="GLVND"
@@ -355,7 +360,7 @@ src_configure() {
 
 		mycmakeargs+=(
 			-DEIGEN_TEST_CUDA="$(usex cuda)" # Enable CUDA support in unit tests
-			-DEIGEN_TEST_CUDA_CLANG="$(usex cuda "$(usex clang)")" # Use clang instead of nvcc to compile the CUDA tests
+			-DEIGEN_TEST_CUDA_CLANG="$(usex cuda "$(usex clang-cuda)")" # Use clang instead of nvcc to compile the CUDA tests
 
 			-DEIGEN_TEST_HIP="$(usex hip)" # Add HIP support.
 
@@ -365,12 +370,15 @@ src_configure() {
 
 		if use cuda; then
 			cuda_add_sandbox -w
-			if use clang; then
+			if use clang-cuda; then
 				local llvm_prefix
 				llvm_prefix="$(get_llvm_prefix -b)"
 				export CC="${llvm_prefix}/bin/clang"
 				export CXX="${llvm_prefix}/bin/clang++"
 				export LIBRARY_PATH="${ESYSROOT}/usr/$(get_libdir)"
+				mycmakeargs+=(
+					-DCUDA_HOST_COMPILER="${llvm_prefix}/bin/clang++"
+				)
 			else
 				cuda_set_CUDAHOSTCXX
 				mycmakeargs+=(
