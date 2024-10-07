@@ -1,7 +1,8 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
+
 USE_RUBY="ruby31 ruby32 ruby33"
 
 RUBY_FAKEGEM_EXTENSIONS=(src/ruby/ext/grpc/extconf.rb)
@@ -20,7 +21,7 @@ IUSE=""
 
 ruby_add_rdepend "
 	dev-ruby/googleapis-common-protos-types:1
-	>=dev-ruby/google-protobuf-3.24.4:0
+	=dev-ruby/google-protobuf-4*
 "
 
 PATCHES=(
