@@ -1,0 +1,63 @@
+From ee58adc24633d776b3347b2fad6aa37337ae28ce Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Thu, 19 Sep 2024 22:39:08 +0200
+Subject: [PATCH] do not propagate abseil-cpp deps
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
+diff --git a/cmake/libprotobuf-lite.cmake b/cmake/libprotobuf-lite.cmake
+index 9aa81fb..01834ed 100644
+--- a/cmake/libprotobuf-lite.cmake
++++ b/cmake/libprotobuf-lite.cmake
+@@ -27,7 +27,7 @@ target_include_directories(libprotobuf-lite PUBLIC
+   $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
+   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+ )
+-target_link_libraries(libprotobuf-lite PUBLIC ${protobuf_ABSL_USED_TARGETS})
++target_link_libraries(libprotobuf-lite PRIVATE ${protobuf_ABSL_USED_TARGETS})
+ protobuf_configure_target(libprotobuf-lite)
+ protobuf_configure_unity_target(libprotobuf-lite)
+ if(protobuf_BUILD_SHARED_LIBS)
+diff --git a/cmake/libprotobuf.cmake b/cmake/libprotobuf.cmake
+index 11c09b1..09cf954 100644
+--- a/cmake/libprotobuf.cmake
++++ b/cmake/libprotobuf.cmake
+@@ -30,7 +30,7 @@ target_include_directories(libprotobuf PUBLIC
+   $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
+   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+ )
+-target_link_libraries(libprotobuf PUBLIC ${protobuf_ABSL_USED_TARGETS})
++target_link_libraries(libprotobuf PRIVATE ${protobuf_ABSL_USED_TARGETS})
+ protobuf_configure_target(libprotobuf)
+ if(protobuf_BUILD_SHARED_LIBS)
+   target_compile_definitions(libprotobuf
+diff --git a/cmake/libprotoc.cmake b/cmake/libprotoc.cmake
+index 38a67aa..6f79387 100644
+--- a/cmake/libprotoc.cmake
++++ b/cmake/libprotoc.cmake
+@@ -17,7 +17,7 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
+     LINK_DEPENDS ${protobuf_SOURCE_DIR}/src/libprotoc.map)
+ endif()
+ target_link_libraries(libprotoc PRIVATE libprotobuf)
+-target_link_libraries(libprotoc PUBLIC ${protobuf_ABSL_USED_TARGETS})
++target_link_libraries(libprotoc PRIVATE ${protobuf_ABSL_USED_TARGETS})
+ protobuf_configure_target(libprotoc)
+ if(protobuf_BUILD_SHARED_LIBS)
+   target_compile_definitions(libprotoc
+diff --git a/cmake/protoc.cmake b/cmake/protoc.cmake
+index 385a7a3..a880450 100644
+--- a/cmake/protoc.cmake
++++ b/cmake/protoc.cmake
+@@ -4,8 +4,9 @@ set(protoc_files
+ 
+ add_executable(protoc ${protoc_files} ${protobuf_version_rc_file})
+ target_link_libraries(protoc
++  PRIVATE
+   libprotoc
+   libprotobuf
+   ${protobuf_ABSL_USED_TARGETS}
+ )
+ add_executable(protobuf::protoc ALIAS protoc)
+-- 
+2.46.0
+
