@@ -67,6 +67,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-23.3-static_assert-failure.patch"
 	# "${FILESDIR}/${PN}-28.0-disable-test_upb-lto.patch" # applied manually
 	"${FILESDIR}/${PN}-30.0-findJsonCpp.patch"
+	"${FILESDIR}/${PN}-do-not-propagate-abseil-cpp-deps.patch"
 )
 
 DOCS=( CONTRIBUTORS.txt README.md )
