@@ -131,6 +131,11 @@ fi
 # read-only. This is a user flag and should under _no circumstances_ be set in
 # the ebuild. Helps in improving QA of build systems that write to source tree.
 
+# @ECLASS_VARIABLE: CMAKE_RUN_TESTS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of tests that should be run when running CTest.
+
 # @ECLASS_VARIABLE: CMAKE_SKIP_TESTS
 # @DEFAULT_UNSET
 # @DESCRIPTION:
@@ -171,7 +176,7 @@ cmake_run_in() {
 
 	[[ -e ${1} ]] || die "${FUNCNAME[0]}: Nonexistent path: ${1}"
 
-	pushd ${1} > /dev/null || die
+	pushd "${1}" > /dev/null || die
 		"${@:2}"
 	popd > /dev/null || die
 }
@@ -188,7 +193,7 @@ cmake_comment_add_subdirectory() {
 	[[ -e "CMakeLists.txt" ]] || return
 
 	local d
-	for d in $@; do
+	for d in "$@"; do
 		d=${d//\//\\/}
 		sed -e "/add_subdirectory[[:space:]]*([[:space:]]*${d}[[:space:]]*)/I s/^/#DONOTCOMPILE /" \
 			-i CMakeLists.txt || die "failed to comment add_subdirectory(${d})"
@@ -212,13 +217,13 @@ comment_add_subdirectory() {
 # if foo is enabled and -DCMAKE_DISABLE_FIND_PACKAGE_LibFoo=ON if it is disabled.
 # This can be used to make find_package optional.
 cmake_use_find_package() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	if [[ "$#" != 2 || -z $1 ]] ; then
 		die "Usage: cmake_use_find_package <USE flag> <package name>"
 	fi
 
-	echo "-DCMAKE_DISABLE_FIND_PACKAGE_$2=$(use $1 && echo OFF || echo ON)"
+	echo "-DCMAKE_DISABLE_FIND_PACKAGE_$2=$(use "$1" && echo OFF || echo ON)"
 }
 
 # @FUNCTION: _cmake_banned_func
@@ -327,7 +332,7 @@ _cmake_check_build_dir() {
 # Internal function for modifying hardcoded definitions.
 # Removes dangerous definitions that override Gentoo settings.
 _cmake_modify-cmakelists() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}"
 
 	# Only edit the files once
 	grep -qs "<<< Gentoo configuration >>>" "${CMAKE_USE_DIR}"/CMakeLists.txt && return 0
@@ -339,10 +344,12 @@ _cmake_modify-cmakelists() {
 		-e '/^[[:space:]]*set[[:space:]]*([[:space:]]*CMAKE_INSTALL_PREFIX[[:space:]].*)/I{s/^/#_cmake_modify_IGNORE /g}' \
 		-e '/^[[:space:]]*set[[:space:]]*([[:space:]]*CMAKE_VERBOSE_MAKEFILE[[:space:]].*)/I{s/^/#_cmake_modify_IGNORE /g}' \
 		-i {} + || die "${LINENO}: failed to disable hardcoded settings"
-	local x
-	for x in $(find "${CMAKE_USE_DIR}" -name CMakeLists.txt -exec grep -l "^#_cmake_modify_IGNORE" {} +;); do
-		einfo "Hardcoded definition(s) removed in $(echo "${x}" | cut -c $((${#CMAKE_USE_DIR}+2))-):"
-		einfo "$(grep -se '^#_cmake_modify_IGNORE' ${x} | cut -c 22-99)"
+
+	find "${CMAKE_USE_DIR}" -name CMakeLists.txt -print0 | while IFS= read -r -d '' line; do
+		grep -q "^#_cmake_modify_IGNORE" || continue
+
+		einfo "Hardcoded definition(s) removed in $(echo "${line}" | cut -c $((${#CMAKE_USE_DIR}+2))-):"
+		einfo "$(grep -se '^#_cmake_modify_IGNORE' "${line}" | cut -c 22-99)"
 	done
 
 	# NOTE Append some useful summary here
@@ -365,7 +372,7 @@ _cmake_modify-cmakelists() {
 # @DESCRIPTION:
 # Apply ebuild and user patches. *MUST* be run or cmake_src_configure will fail.
 cmake_src_prepare() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	if [[ ${EAPI} == 7 ]]; then
 		pushd "${S}" > /dev/null || die # workaround from cmake-utils
@@ -386,7 +393,7 @@ cmake_src_prepare() {
 
 	local modules_list
 	if [[ ${EAPI} == 7 && $(declare -p CMAKE_REMOVE_MODULES_LIST) != "declare -a"* ]]; then
-		modules_list=( ${CMAKE_REMOVE_MODULES_LIST} )
+		modules_list=( "${CMAKE_REMOVE_MODULES_LIST[0]}" )
 	else
 		modules_list=( "${CMAKE_REMOVE_MODULES_LIST[@]}" )
 	fi
@@ -396,7 +403,7 @@ cmake_src_prepare() {
 		if [[ ${EAPI} == 7 ]]; then
 			find "${S}" -name "${name}.cmake" -exec rm -v {} + || die
 		else
-			find -name "${name}.cmake" -exec rm -v {} + || die
+			find . -name "${name}.cmake" -exec rm -v {} + || die
 		fi
 	done
 
@@ -441,7 +448,7 @@ cmake_src_prepare() {
 # }
 # @CODE
 cmake_src_configure() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	[[ ${_CMAKE_SRC_PREPARE_HAS_RUN} ]] || \
 		die "FATAL: cmake_src_prepare has not been run"
@@ -484,14 +491,14 @@ cmake_src_configure() {
 	# compiler path, and the second one with all command-line options,
 	# space separated.
 	local toolchain_file=${BUILD_DIR}/gentoo_toolchain.cmake
-	cat > ${toolchain_file} <<- _EOF_ || die
+	cat > "${toolchain_file}" <<- _EOF_ || die
 		set(CMAKE_ASM_COMPILER "${myCC/ /;}")
 		set(CMAKE_ASM-ATT_COMPILER "${myCC/ /;}")
 		set(CMAKE_C_COMPILER "${myCC/ /;}")
 		set(CMAKE_CXX_COMPILER "${myCXX/ /;}")
 		set(CMAKE_Fortran_COMPILER "${myFC/ /;}")
-		set(CMAKE_AR $(type -P $(tc-getAR)) CACHE FILEPATH "Archive manager" FORCE)
-		set(CMAKE_RANLIB $(type -P $(tc-getRANLIB)) CACHE FILEPATH "Archive index generator" FORCE)
+		set(CMAKE_AR $(type -P "$(tc-getAR)") CACHE FILEPATH "Archive manager" FORCE)
+		set(CMAKE_RANLIB $(type -P "$(tc-getRANLIB)") CACHE FILEPATH "Archive index generator" FORCE)
 		set(CMAKE_SYSTEM_PROCESSOR "${CHOST%%-*}")
 	_EOF_
 
@@ -566,7 +573,7 @@ cmake_src_configure() {
 	_EOF_
 
 	if [[ -n ${_ECM_ECLASS} ]]; then
-		cat >> ${common_config} <<- _EOF_ || die
+		cat >> "${common_config}" <<- _EOF_ || die
 			set(ECM_DISABLE_QMLPLUGINDUMP ON CACHE BOOL "")
 			set(ECM_DISABLE_APPSTREAMTEST ON CACHE BOOL "")
 			set(ECM_DISABLE_GIT ON CACHE BOOL "")
@@ -589,7 +596,7 @@ cmake_src_configure() {
 
 	# Wipe the default optimization flags out of CMake
 	if [[ ${CMAKE_BUILD_TYPE} != Gentoo ]]; then
-		cat >> ${common_config} <<- _EOF_ || die
+		cat >> "${common_config}" <<- _EOF_ || die
 			set(CMAKE_ASM_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_ASM-ATT_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
@@ -610,11 +617,11 @@ cmake_src_configure() {
 		die "mycmakeargs must be declared as array"
 	fi
 
+	local cmakeargs=()
 	local mycmakeargs_local=( "${mycmakeargs[@]}" )
 
-	local warn_unused_cli=""
 	if [[ ${CMAKE_WARN_UNUSED_CLI} == no ]] ; then
-		warn_unused_cli="--no-warn-unused-cli"
+		cmakeargs+=( "--no-warn-unused-cli" )
 	fi
 
 	local generator_name
@@ -626,8 +633,7 @@ cmake_src_configure() {
 	# Common configure parameters (overridable)
 	# NOTE CMAKE_BUILD_TYPE can be only overridden via CMAKE_BUILD_TYPE eclass variable
 	# No -DCMAKE_BUILD_TYPE=xxx definitions will be in effect.
-	local cmakeargs=(
-		${warn_unused_cli}
+	cmakeargs+=(
 		-C "${common_config}"
 		-G "${generator_name}"
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
@@ -636,7 +642,7 @@ cmake_src_configure() {
 		-DCMAKE_TOOLCHAIN_FILE="${toolchain_file}"
 	)
 
-	# Handle quoted whitespace
+	# Handle quoted whitespace TODO
 	eval "local -a MYCMAKEARGS=( ${MYCMAKEARGS} )"
 	cmakeargs+=( "${MYCMAKEARGS[@]}" )
 
@@ -660,7 +666,7 @@ cmake_src_configure() {
 	fi
 
 	pushd "${BUILD_DIR}" > /dev/null || die
-	debug-print "${LINENO} ${ECLASS} ${FUNCNAME}: mycmakeargs is ${mycmakeargs_local[*]}"
+	debug-print "${LINENO} ${ECLASS} ${FUNCNAME[0]}: mycmakeargs is ${mycmakeargs_local[*]}"
 	echo "${CMAKE_BINARY}" "${cmakeargs[@]}" "${CMAKE_USE_DIR}"
 	"${CMAKE_BINARY}" "${cmakeargs[@]}" "${CMAKE_USE_DIR}" || die "cmake failed"
 	popd > /dev/null || die
@@ -671,7 +677,7 @@ cmake_src_configure() {
 # General function for compiling with cmake. All arguments are passed
 # to cmake_build.
 cmake_src_compile() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	cmake_build "$@"
 }
@@ -682,7 +688,7 @@ cmake_src_compile() {
 # All arguments are passed to eninja (default) or emake depending on the value
 # of CMAKE_MAKEFILE_GENERATOR.
 cmake_build() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	_cmake_check_build_dir
 	pushd "${BUILD_DIR}" > /dev/null || die
@@ -732,14 +738,15 @@ cmake-utils_src_make() {
 # @DESCRIPTION:
 # Function for testing the package. Automatically detects the build type.
 cmake_src_test() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	_cmake_check_build_dir
 	pushd "${BUILD_DIR}" > /dev/null || die
 	[[ -e CTestTestfile.cmake ]] || { echo "No tests found. Skipping."; return 0 ; }
 
 	[[ -n ${TEST_VERBOSE} ]] && myctestargs+=( --extra-verbose --output-on-failure )
-	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E '('$( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}")')'  )
+	[[ -n ${CMAKE_RUN_TESTS} ]] && myctestargs+=( -R "($( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}"))" )
+	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E "($( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}"))" )
 
 	set -- ctest -j "${CTEST_JOBS:-$(get_makeopts_jobs 999)}" \
 		--test-load "${CTEST_LOADAVG:-$(get_makeopts_loadavg)}" \
@@ -756,9 +763,11 @@ cmake_src_test() {
 			eerror "--START TEST LOG--------------------------------------------------------------"
 			cat "${BUILD_DIR}/Testing/Temporary/LastTest.log"
 			eerror "--END TEST LOG----------------------------------------------------------------"
-			die "Tests failed."
+			die -n "Tests failed."
 		else
-			die "Tests failed. When you file a bug, please attach the following file: \n\t${BUILD_DIR}/Testing/Temporary/LastTest.log"
+			eerror "Tests failed. When you file a bug, please attach the following file:"
+			eerror "\t${BUILD_DIR}/Testing/Temporary/LastTest.log"
+			die -n "Tests failed."
 		fi
 
 		# die might not die due to nonfatal
@@ -771,7 +780,7 @@ cmake_src_test() {
 # @DESCRIPTION:
 # Function for installing the package. Automatically detects the build type.
 cmake_src_install() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	DESTDIR="${D}" cmake_build install "$@"
 
