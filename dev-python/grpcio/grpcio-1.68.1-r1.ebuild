@@ -43,7 +43,7 @@ BDEPEND="
 	dev-python/cython[${PYTHON_USEDEP}]
 	test? (
 		dev-python/coverage[${PYTHON_USEDEP}]
-		>=dev-python/protobuf-5.26.1[${PYTHON_USEDEP}]
+		=dev-python/protobuf-5*[${PYTHON_USEDEP}]
 	)
 "
 
@@ -54,19 +54,22 @@ src_configure() {
 	export GRPC_PYTHON_BUILD_EXT_COMPILER_JOBS="$(makeopts_jobs)"
 	# system abseil-cpp crashes with USE=-debug, sigh
 	# https://bugs.gentoo.org/942021
-	#export GRPC_PYTHON_BUILD_SYSTEM_ABSL=1
+	export GRPC_PYTHON_BUILD_SYSTEM_ABSL=1
 	export GRPC_PYTHON_BUILD_SYSTEM_CARES=1
 	export GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
 	# re2 needs to be built against the same abseil-cpp version
-	#export GRPC_PYTHON_BUILD_SYSTEM_RE2=1
+	export GRPC_PYTHON_BUILD_SYSTEM_RE2=1
 	export GRPC_PYTHON_BUILD_SYSTEM_ZLIB=1
 	export GRPC_PYTHON_BUILD_WITH_CYTHON=1
 
 	# copied from setup.py, except for removed -std= that does not apply
 	# to C code and causes warnings
 	export GRPC_PYTHON_CFLAGS="-fvisibility=hidden -fno-wrapv -fno-exceptions"
-	# required by abseil-cpp
-	append-cxxflags -std=c++14
+
+	if has_version "<dev-cpp/abseil-cpp-20240722.0" ; then
+		# required by abseil-cpp
+		append-cxxflags -std=c++14
+	fi
 	# silence a lot of harmless noise from bad quality code
 	append-cxxflags -Wno-attributes
 }
