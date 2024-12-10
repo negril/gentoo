@@ -63,17 +63,20 @@ src_install() {
 
 	pushd python &> /dev/null || die
 	docinto python
-	dodoc *.md
+	dodoc ./*.md
 	distutils-r1_src_install
 	popd &> /dev/null || die
 
 	pushd latex &> /dev/null || die
 	docinto latex
-	dodoc *.md
+	dodoc ./*.md
 	popd &> /dev/null || die
 
 	pushd latex/minted &> /dev/null || die
 	local -x LATEX_DOC_ARGUMENTS="-shell-escape"
+	local EPYTHON="python$(ver_cut 1-2 "$(python -V | cut -d ' ' -f 2-)")"
+	local -x PYTHONPATH="${ED}/usr/lib/${EPYTHON}/site-packages"
+	local -x PATH="${ED}/usr/lib/python-exec/${EPYTHON}:${PATH}"
 	latex-package_src_install
 	if use doc; then
 		latex-package_src_doinstall pdf
