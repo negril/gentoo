@@ -44,6 +44,7 @@
 		<flag name="xml">Build QtXml module</flag>
 	</use>
 	<upstream>
+		<remote-id type="github">qtproject/pyside-pyside-setup</remote-id>
 		<remote-id type="pypi">PySide6</remote-id>
 	</upstream>
 </pkgmetadata>
