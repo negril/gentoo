@@ -15,6 +15,7 @@
 		<flag name="vulkan">Generate "QSurface::VulkanSurface" bindings</flag>
 	</use>
 	<upstream>
+		<remote-id type="github">qtproject/pyside-pyside-setup</remote-id>
 		<remote-id type="pypi">shiboken6</remote-id>
 	</upstream>
 </pkgmetadata>
