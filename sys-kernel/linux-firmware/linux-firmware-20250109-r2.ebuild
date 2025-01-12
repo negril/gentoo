@@ -75,9 +75,7 @@ IDEPEND="
 
 QA_PREBUILT="*"
 PATCHES=(
-	"${FILESDIR}"/${PN}-fix-j.patch
-	"${FILESDIR}"/${PN}-xargs-P.patch
-	"${FILESDIR}"/${PN}-copy-firmware-r8.patch
+	"${FILESDIR}"/${PN}-copy-firmware-r9.patch
 )
 
 pkg_pretend() {

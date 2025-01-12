@@ -1,0 +1,104 @@
+From 664b8e5c75d945cd38b509f50b2bf1995e89481d Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx@gmail.com>
+Date: Sun, 12 Jan 2025 19:58:15 +0100
+Subject: [PATCH] linux-firmware-copy-firmware-r9
+
+Signed-off-by: Paul Zander <negril.nx@gmail.com>
+
+diff --git a/copy-firmware.sh b/copy-firmware.sh
+index e64b567..18604d4 100755
+--- a/copy-firmware.sh
++++ b/copy-firmware.sh
+@@ -39,8 +39,27 @@ while test $# -gt 0; do
+ 
+         -j*)
+             num_jobs=$(echo "$1" | sed 's/-j//')
+-            if [ "$num_jobs" -gt 1 ] && ! has_gnu_parallel; then
++
++            if [ "$num_jobs" -gt 1 ]; then
++                if command -v xargs >& /dev/null; then
++                    parallel() {
++                        local FILE JOBS
++                        while getopts a:j: opt; do
++                            case $opt in
++                                a) FILE="${OPTARG}" ;;
++                                j) JOBS="${OPTARG}" ;;
++                                :) err "Error: -${OPTARG} requires an argument." ;;
++                                *) err "invalid args $opt" ;;
++                            esac
++                        done
++                        shift "$((OPTIND - 1))"
++                        unset OPTIND
++                        [[ ! -f "${FILE}" ]] && err "missing file $FILE"
++                        xargs -I % -P${JOBS} bash -c "%" < "${FILE}"
++                    }
++                elif ! has_gnu_parallel; then
+                     err "the GNU parallel command is required to use -j"
++                fi
+             fi
+             parallel_args_file=$(mktemp)
+             trap 'rm -f $parallel_args_file' EXIT INT QUIT TERM
+@@ -66,6 +85,16 @@ while test $# -gt 0; do
+             shift
+             ;;
+ 
++        --firmware-list)
++            if [ -n "$2" ]; then
++                FIRMWARE_LIST=$2
++                shift 2
++            else
++                echo "ERROR: '--firmware-list' requires a non-empty option argument of firmware files to install"
++                exit 1
++            fi
++            ;;
++
+         *)
+             if test -n "$destdir"; then
+                 err "unknown command-line options: $*"
+@@ -90,8 +119,18 @@ if test -e .git/config; then
+     ./check_whence.py || err "check_whence.py has detected errors."
+ fi
+ 
++if test -n "${FIRMWARE_LIST}"; then
++    grep -E '^Link:' WHENCE | sed -e 's/^Link: *//g;s/-> //g' | while read l t; do
++        if ! cat "${FIRMWARE_LIST}" | grep -q "${l}"; then continue; fi
++        target="$(realpath --relative-to="$(pwd)" -m -s "$(dirname "$l")/$t")"
++        echo "${target}" >> "${FIRMWARE_LIST}"
++    done
++    FIRMWARE_LIST=$(cat "${FIRMWARE_LIST}")
++fi
++
+ # shellcheck disable=SC2162 # file/folder name can include escaped symbols
+ grep -E '^(RawFile|File):' WHENCE | sed -E -e 's/^(RawFile|File): */\1 /;s/"//g' | while read k f; do
++    [ -n "${FIRMWARE_LIST}" ]  && if ! echo "${FIRMWARE_LIST}" | grep -q "${f}"; then continue; fi
+     install -d "$destdir/$(dirname "$f")"
+     $verbose "copying/compressing file $f$compext"
+     if test "$compress" != "cat" && test "$k" = "RawFile"; then
+@@ -111,11 +150,12 @@ grep -E '^(RawFile|File):' WHENCE | sed -E -e 's/^(RawFile|File): */\1 /;s/"//g'
+ done
+ if [ "$num_jobs" -gt 1 ]; then
+     parallel -j"$num_jobs" -a "$parallel_args_file"
++    echo > "$parallel_args_file"
+ fi
+ 
+-echo > "$parallel_args_file"
+ # shellcheck disable=SC2162 # file/folder name can include escaped symbols
+ grep -E '^Link:' WHENCE | sed -e 's/^Link: *//g;s/-> //g' | while read l t; do
++    [ -n "${FIRMWARE_LIST}" ]  && if ! echo "${FIRMWARE_LIST}" | grep -q "${l}"; then continue; fi
+     directory="$destdir/$(dirname "$l")"
+     install -d "$directory"
+     target="$(cd "$directory" && realpath -m -s "$t")"
+@@ -141,7 +181,9 @@ fi
+ 
+ # Verify no broken symlinks
+ if test "$(find "$destdir" -xtype l | wc -l)" -ne 0 ; then
+-    err "Broken symlinks found:\n$(find "$destdir" -xtype l)"
++    if  [ -z "${FIRMWARE_LIST}" ]; then
++        err "Broken symlinks found:\n$(find "$destdir" -xtype l)"
++    fi
+ fi
+ 
+ exit 0
+-- 
+2.48.0
+
