@@ -1,0 +1,44 @@
+From dd5c9ec178ab52f5aff128890e0cc1ab7cabd642 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx@gmail.com>
+Date: Sun, 12 Jan 2025 16:55:19 +0100
+Subject: [PATCH] support xargs -P
+
+Bug: https://bugs.gentoo.org/947920
+Signed-off-by: Paul Zander <negril.nx@gmail.com>
+
+diff --git a/copy-firmware.sh b/copy-firmware.sh
+index 4f96e8e..fda528e 100755
+--- a/copy-firmware.sh
++++ b/copy-firmware.sh
+@@ -39,8 +39,27 @@ while test $# -gt 0; do
+ 
+         -j*)
+             num_jobs=$(echo "$1" | sed 's/-j//')
+-            if [ "$num_jobs" -gt 1 ] && ! has_gnu_parallel; then
++
++            if [ "$num_jobs" -gt 1 ]; then
++                if command -v xargs >& /dev/null; then
++                    parallel() {
++                        local FILE JOBS
++                        while getopts a:j: opt; do
++                            case $opt in
++                                a) FILE="${OPTARG}" ;;
++                                j) JOBS="${OPTARG}" ;;
++                                :) err "Error: -${OPTARG} requires an argument." ;;
++                                *) err "invalid args $opt" ;;
++                            esac
++                        done
++                        shift "$((OPTIND - 1))"
++                        unset OPTIND
++                        [[ ! -f "${FILE}" ]] && err "missing file $FILE"
++                        xargs -I % -P${JOBS} bash -c "%" < "${FILE}"
++                    }
++                elif ! has_gnu_parallel; then
+                     err "the GNU parallel command is required to use -j"
++                fi
+             fi
+             parallel_args_file=$(mktemp)
+             trap 'rm -f $parallel_args_file' EXIT INT QUIT TERM
+-- 
+2.48.0
+
