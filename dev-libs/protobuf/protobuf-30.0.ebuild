@@ -126,7 +126,7 @@ src_test() {
 
 	# Do headstands for LTO # 942985
 	local -x GTEST_FILTER
-	GTEST_FILTER="-FileDescriptorSetSource/EncodeDecodeTest*"
+	GTEST_FILTER="-FileDescriptorSetSource/EncodeDecodeTest*:LazilyBuildDependenciesTest.GeneratedFile"
 
 	cmake-multilib_src_test
 
