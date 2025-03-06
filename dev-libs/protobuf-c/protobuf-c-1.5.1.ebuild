@@ -35,6 +35,10 @@ RDEPEND="${DEPEND}
 "
 
 src_prepare() {
+	if has_version ">=dev-libs/protobuf-30"; then
+		eapply "${FILESDIR}/${PN}-1.5.1-protobuf-30.patch"
+	fi
+
 	default
 	eautoreconf
 }
