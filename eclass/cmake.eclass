@@ -135,6 +135,16 @@ fi
 # @DESCRIPTION:
 # Array of tests that should be skipped when running CTest.
 
+# @ECLASS_VARIABLE: CMAKE_RUN_LABELS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of labels that should be run when running CTest.
+
+# @ECLASS_VARIABLE: CMAKE_SKIP_LABELS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of labels that should be skipped when running CTest.
+
 [[ ${CMAKE_MIN_VERSION} ]] && die "CMAKE_MIN_VERSION is banned; if necessary, set BDEPEND=\">=dev-build/cmake-${CMAKE_MIN_VERSION}\" directly"
 [[ ${CMAKE_BUILD_DIR} ]] && die "The ebuild must be migrated to BUILD_DIR"
 [[ ${CMAKE_REMOVE_MODULES} ]] && die "CMAKE_REMOVE_MODULES is banned, set CMAKE_REMOVE_MODULES_LIST array instead"
@@ -580,9 +590,19 @@ cmake_src_configure() {
 		cat >> "${common_config}" <<- _EOF_ || die
 			set(CMAKE_ASM_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_ASM-ATT_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_ASM_MARMASM_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_ASM_MASM_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_ASM_NASM_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_CUDA_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_HIP_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_ISPC_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_CSharp_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_OBJCXX_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_OBJC_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
+			set(CMAKE_Swift_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_EXE_LINKER_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_MODULE_LINKER_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_SHARED_LINKER_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
@@ -713,6 +733,8 @@ cmake_src_test() {
 	[[ -n ${TEST_VERBOSE} ]] && myctestargs+=( --extra-verbose --output-on-failure )
 	[[ -n ${CMAKE_RUN_TESTS} ]] && myctestargs+=( -R "($( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}"))" )
 	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E "($( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}"))" )
+	[[ -n ${CMAKE_RUN_LABELS} ]] && myctestargs+=( -L "($( IFS='|'; echo "${CMAKE_RUN_LABELS[*]}"))" )
+	[[ -n ${CMAKE_SKIP_LABELS} ]] && myctestargs+=( -LE "($( IFS='|'; echo "${CMAKE_SKIP_LABELS[*]}"))" )
 
 	set -- ctest -j "${CTEST_JOBS:-$(get_makeopts_jobs 999)}" \
 		--test-load "${CTEST_LOADAVG:-$(get_makeopts_loadavg)}" \
