@@ -31,9 +31,9 @@ DEPEND="
 	dev-cpp/abseil-cpp:=
 	dev-libs/libfmt:=
 	dev-libs/libpcre2:=
+	>=dev-libs/libusb-1.0.28:1=
 	dev-libs/protobuf:=[protobuf(+),protoc(+)]
 	sys-libs/zlib:=
-	>=dev-libs/libusb-1.0.28
 "
 RDEPEND="${DEPEND}
 	udev? ( dev-util/android-udev-rules )
