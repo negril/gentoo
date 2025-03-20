@@ -81,12 +81,11 @@ src_configure() {
 	# https://bugs.gentoo.org/863896
 	filter-lto
 
+	local CMAKE_BUILD_TYPE=Release
+
 	local mycmakeargs=(
 		# Statically link the bundled boringssl
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-		-DCMAKE_C_FLAGS="$CFLAGS" \
-		-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
+		-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON
 		-Dprotobuf_MODULE_COMPATIBLE=ON
 		-DBUILD_SHARED_LIBS=OFF
 	)
