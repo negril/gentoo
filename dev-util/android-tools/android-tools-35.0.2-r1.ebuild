@@ -20,7 +20,7 @@ S="${WORKDIR}/${PN}-${MY_PV}"
 LICENSE="Apache-2.0 BSD-2"
 SLOT="0"
 KEYWORDS="~amd64 ~arm ~arm64 ~x86"
-IUSE="python udev"
+IUSE="doc python udev"
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
 # dev-libs/libpcre only required for e2fsdroid
@@ -99,21 +99,44 @@ src_compile() {
 
 src_install() {
 	cmake_src_install
+
 	rm "${ED}/usr/bin/mkbootimg" || die
 	rm "${ED}/usr/bin/unpack_bootimg" || die
 	rm "${ED}/usr/bin/repack_bootimg" || die
 	rm "${ED}/usr/bin/mkdtboimg" || die
 	rm "${ED}/usr/bin/avbtool" || die
 
+	pushd vendor >/dev/null || die
+
 	if use python; then
-		python_foreach_impl python_newexe vendor/mkbootimg/mkbootimg.py mkbootimg
-		python_foreach_impl python_newexe vendor/mkbootimg/unpack_bootimg.py unpack_bootimg
-		python_foreach_impl python_newexe vendor/mkbootimg/repack_bootimg.py repack_bootimg
-		python_foreach_impl python_newexe vendor/libufdt/utils/src/mkdtboimg.py mkdtboimg
-		python_foreach_impl python_newexe vendor/avb/avbtool.py avbtool
+		python_foreach_impl python_newexe mkbootimg/mkbootimg.py mkbootimg
+		python_foreach_impl python_newexe mkbootimg/unpack_bootimg.py unpack_bootimg
+		python_foreach_impl python_newexe mkbootimg/repack_bootimg.py repack_bootimg
+		python_foreach_impl python_newexe libufdt/utils/src/mkdtboimg.py mkdtboimg
+		python_foreach_impl python_newexe avb/avbtool.py avbtool
 	fi
-	docinto adb
-	doman vendor/adb/docs/user/adb.1
-	docinto fastboot
-	dodoc vendor/core/fastboot/README.md
+
+	doman adb/docs/user/adb.1
+
+	if use doc; then
+		docinto adb
+		dodoc adb/README.md
+
+		docinto adb/docs/user
+		dodoc adb/docs/user/trace.md
+		dodoc adb/docs/user/adb.1.md
+
+		docinto adb/docs/dev
+		dodoc adb/docs/dev/adb_wifi.md
+		dodoc adb/docs/dev/overview.md
+		dodoc adb/docs/dev/protocol.md
+		dodoc adb/docs/dev/README.md
+		dodoc adb/docs/dev/socket-activation.md
+		dodoc adb/docs/dev/services.md
+		dodoc adb/docs/dev/sync.md
+
+		docinto fastboot
+		dodoc core/fastboot/README.md
+	fi
+	popd >/dev/null || die
 }
