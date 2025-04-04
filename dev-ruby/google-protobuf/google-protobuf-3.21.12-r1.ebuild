@@ -13,17 +13,23 @@ RUBY_FAKEGEM_EXTENSION_LIBDIR=lib/google
 
 inherit ruby-fakegem
 
+PROTOBUF_PV="$(ver_cut 2-)"
+
 DESCRIPTION="Protocol Buffers are Google's data interchange format"
 HOMEPAGE="https://protobuf.dev/"
-SRC_URI="https://github.com/protocolbuffers/protobuf/archive/v${PV}.tar.gz -> ${P}-ruby.tar.gz"
-RUBY_S="protobuf-${PV}/ruby"
+SRC_URI="
+	https://github.com/protocolbuffers/protobuf/archive/v${PROTOBUF_PV}.tar.gz -> ${PN##google-}-${PROTOBUF_PV}.tar.gz
+"
+RUBY_S="protobuf-${PROTOBUF_PV}/ruby"
 
 LICENSE="BSD"
-SLOT="3"
+SLOT="0/$(ver_cut 1-3)"
 KEYWORDS="~amd64 ~arm64"
-IUSE=""
+IUSE="test"
 
-DEPEND+=" >=dev-libs/protobuf-3.21.0[protoc(+)]"
+DEPEND=">=dev-libs/protobuf-${PROTOBUF_PV}"
+
+ruby_add_bdepend "test? ( dev-ruby/json dev-ruby/test-unit )"
 
 all_ruby_prepare() {
 	sed -e '/extensiontask/ s:^:#:' \
@@ -36,4 +42,5 @@ all_ruby_prepare() {
 
 each_ruby_prepare() {
 	${RUBY} -S rake genproto || die
+	${RUBY} -S rake copy_third_party || die
 }
