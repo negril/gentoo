@@ -22,6 +22,7 @@ IUSE="+l0 +vaapi"
 RDEPEND="
 	>=dev-util/intel-graphics-compiler-1.0.17791.18:legacy
 	!dev-util/intel-graphics-compiler:0
+	!${CATEGORY}/${PN}:0
 	>=media-libs/gmmlib-22.5.2:=
 "
 
