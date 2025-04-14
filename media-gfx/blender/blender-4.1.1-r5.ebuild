@@ -97,10 +97,8 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	oidn? ( >=media-libs/oidn-2.1.0 )
-	oneapi? ( || (
-			dev-libs/intel-compute-runtime:0[l0]
-			dev-libs/intel-compute-runtime:legacy[l0]
-		)
+	oneapi? (
+		dev-libs/intel-compute-runtime:=[l0]
 	)
 	openexr? (
 		>=dev-libs/imath-3.1.7:=
