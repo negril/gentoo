@@ -22,6 +22,8 @@ else
 	SRC_URI="
 		https://github.com/isc-projects/kea/archive/refs/tags/Kea-${MY_PV}.tar.gz
 			-> ${P}.tar.gz
+		https://github.com/isc-projects/kea/commit/c0ff7cbbf6a6096b7cc08df2a589869e1333d594.patch
+			-> ${PN}-2.6.1-asiolink-boost187.patch
 	"
 	# odd minor version = development release
 	if [[ $(( $(ver_cut 2) % 2 )) -ne 1 ]] ; then
@@ -64,6 +66,7 @@ REQUIRED_USE="shell? ( ${PYTHON_REQUIRED_USE} )"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-2.2.0-openssl-version.patch
+	"${DISTDIR}/${PN}-2.6.1-asiolink-boost187.patch"
 )
 
 pkg_setup() {
