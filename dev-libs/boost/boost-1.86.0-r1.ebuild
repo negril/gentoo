@@ -37,7 +37,7 @@ RDEPEND="
 	icu? ( dev-libs/icu:=[${MULTILIB_USEDEP}] )
 	!icu? ( virtual/libiconv[${MULTILIB_USEDEP}] )
 	lzma? ( app-arch/xz-utils:=[${MULTILIB_USEDEP}] )
-	mpi? ( virtual/mpi[${MULTILIB_USEDEP},cxx,threads] )
+	mpi? ( virtual/mpi[${MULTILIB_USEDEP},threads] )
 	python? (
 		${PYTHON_DEPS}
 		numpy? ( dev-python/numpy:=[${PYTHON_USEDEP}] )
