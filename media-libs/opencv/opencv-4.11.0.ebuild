@@ -392,12 +392,12 @@ PATCHES=(
 )
 
 cuda_get_host_compiler() {
-	if [[ -n "${NVCC_CCBIN}" ]]; then
+	if [[ -v NVCC_CCBIN ]]; then
 		echo "${NVCC_CCBIN}"
 		return
 	fi
 
-	if [[ -n "${CUDAHOSTCXX}" ]]; then
+	if [[ -v CUDAHOSTCXX ]]; then
 		echo "${CUDAHOSTCXX}"
 		return
 	fi
@@ -408,8 +408,31 @@ cuda_get_host_compiler() {
 		die "$(tc-get-compiler-type) compiler is not supported"
 	fi
 
-	local compiler compiler_type compiler_version
-	local package package_version
+	# TODO logic flaw
+	# we don't define NVCC_CCBIN as local here as it would override the env var, but we return if it set
+	# we then set NVCC_CCBIN to tc-getCXX, and later export it on success
+
+	# compiler with CHOST prefix
+	# x86_64-pc-linux-gnu-g++
+	local compiler
+
+	# gcc or clang
+	local compiler_type
+
+	# major version of the current compiler. 15
+	local compiler_version
+
+	# cat/pkg of the compiler
+	# sys-devel/gcc, llvm-core/clang
+	local package
+
+	# QPN of the package we are checking
+	# sys-devel/gcc, <sys-devel/gcc-15
+	local package_version
+
+	# system compiler e.g. tc-getCXX plus version
+	# used to skip rechecking, as we check NVCC_CCBIN first
+	# x86_64-pc-linux-gnu-g++-15
 	local NVCC_CCBIN_default
 
 	compiler_type="$(tc-get-compiler-type)"
@@ -420,6 +443,15 @@ cuda_get_host_compiler() {
 	NVCC_CCBIN_default="${NVCC_CCBIN}-${compiler_version}"
 
 	compiler="${NVCC_CCBIN/%-${compiler_version}}"
+
+# 	eqawarn "asdf compiler: $compiler"
+# 	eqawarn "asdf compiler_type: $compiler_type"
+# 	eqawarn "asdf compiler_version: $compiler_version"
+#
+# 	eqawarn "asdf package: $package"
+#
+# 	eqawarn "asdf NVCC_CCBIN: $NVCC_CCBIN"
+# 	eqawarn "asdf NVCC_CCBIN_default: $NVCC_CCBIN_default"
 
 	# store the package so we can re-use it later
 	if tc-is-gcc; then
@@ -432,19 +464,37 @@ cuda_get_host_compiler() {
 
 	package_version="${package}"
 
+# 	eqawarn "asdf package_version: $package_version"
+
 	ebegin "testing ${NVCC_CCBIN_default} (default)"
 
-	while ! nvcc -v -ccbin "${NVCC_CCBIN}" - -x cu <<<"int main(){}" &>> "${T}/cuda_get_host_compiler.log" ; do
+	# TODO edob? via local function?
+	while ! nvcc "${NVCCFLAGS}" -ccbin "${NVCC_CCBIN}" - -x cu <<<"int main(){}" &>> "${T}/cuda_get_host_compiler.log" ; do
 		eend 1
 
 		while true; do
 			# prepare next version
-			if ! package_version="<$(best_version "${package_version}")"; then
-				die "could not find a supported version of ${compiler}"
+			local package_version_next
+			package_version_next="$(best_version "${package_version}")"
+
+			if [[ -z "${package_version_next}" ]]; then
+# 				eerror "$(cat "${T}/cuda_get_host_compiler.log")"
+# 				eerror
+				eerror "Compiler lookup failed. Nothing installed matches: ${package_version}."
+				eerror "You can use NVCC_CCBIN to specify the exact compiler to use."
+				eerror "Check ${T}/cuda_get_host_compiler.log for details."
+				die "Could not find a supported version of ${compiler}. Did not find \"${package_version}\". NVCC_CCBIN is unset."
 			fi
 
+			package_version="<${package_version_next}"
+# 			eqawarn "asdf package_version: $package_version"
+			eqawarn "1 ${package_version/#<${package}-/}"
+			eqawarn "2 ${package_version}"
+			eqawarn "3 ${package}-"
 			NVCC_CCBIN="${compiler}-$(ver_cut 1 "${package_version/#<${package}-/}")"
+# 			eqawarn "NVCC_CCBIN: ${NVCC_CCBIN}"
 
+			# skip the next version equals the already checked system default
 			[[ "${NVCC_CCBIN}" != "${NVCC_CCBIN_default}" ]] && break
 		done
 		ebegin "testing ${NVCC_CCBIN}"
@@ -456,8 +506,12 @@ cuda_get_host_compiler() {
 }
 
 cuda_get_host_native_arch() {
-	[[ -n ${CUDAARCHS} ]] && echo "${CUDAARCHS}"
+	if [[ -v CUDAARCHS ]]; then
+		echo "${CUDAARCHS}"
+		return
+	fi
 
+	# TODO nvptx-arch ?
 	__nvcc_device_query || die "failed to query the native device"
 }
 
@@ -474,7 +528,7 @@ pkg_pretend() {
 	fi
 
 	# When building binpkgs you probably want to include all targets
-	if use cuda && [[ ${MERGE_TYPE} == "buildonly" ]] && [[ -n "${CUDA_GENERATION}" || -n "${CUDA_ARCH_BIN}" ]]; then
+	if use cuda && [[ ${MERGE_TYPE} == "buildonly" ]] && [[ -v CUDA_GENERATION || -v CUDA_ARCH_BIN ]]; then
 		local info_message="When building a binary package it's recommended to unset CUDA_GENERATION and CUDA_ARCH_BIN"
 		einfo "$info_message so all available architectures are build."
 	fi
@@ -525,6 +579,12 @@ src_prepare() {
 		-i \
 			modules/gapi/test/render/gapi_render_tests_ocv.cpp \
 			modules/gapi/test/render/ftp_render_test.cpp \
+		|| die
+
+	sed \
+		-e '/find_package(OpenMP/s/)/ COMPONENTS C CXX)/g' \
+		-i \
+			cmake/OpenCVFindFrameworks.cmake \
 		|| die
 
 	if use contrib; then
@@ -929,27 +989,75 @@ multilib_src_configure() {
 	tc-export CC CXX
 
 	if multilib_native_use cuda; then
+		# Check if we can get the arch from the present gpu
 		if ! SANDBOX_WRITE=/dev/nvidiactl test -w /dev/nvidiactl; then
+
+			# Needs write access to /dev/nvidiactl.
+			# /dev/nvidiactl usually is 660 root:video .
+
 			# eqawarn "Can't access the GPU at /dev/nvidiactl."
 			# eqawarn "User $(id -nu) is not in the group \"video\"."
-			if [[ -z "${CUDA_GENERATION}" ]] && [[ -z "${CUDA_ARCH_BIN}" ]]; then
-				# build all targets
+			# export CUDAARCHS="all"
+			# build all targets
+			mycmakeargs+=(
+				# can't use "all" as that breaks openmp
+				# nvcc fatal   : Unsupported gpu architecture 'compute_all'
+				# -DCMAKE_CUDA_ARCHITECTURES="all"
+
+				# with openmp -> CUDA_ARCHITECTURES is empty for target "cmTC_0088f"
+				# -DCUDA_GENERATION="Auto" # requires access to GPU
+
+				# wrong arch....
+				# -DCMAKE_CUDA_ARCHITECTURES="${CUDAARCHS:-50}" # breaks with openmp otherwise..
+
+				-DOpenMP_CUDA_FLAGS=""
+				-DOpenMP_CUDA_LIB_NAMES=""
+			)
+
+			local CUDA_DEVICE_ACCESS="false"
+		fi
+
+		# order of preference CMAKE_CUDA_ARCHITECTURES > CUDA_GENERATION > CUDA_ARCH_BIN and/or CUDA_ARCH_PTX
+		# CMAKE_CUDA_ARCHITECTURES is set from the CUDAARCHS env var
+		if [[ -v CUDAARCHS ]]; then
+			eqawarn CUDAARCHS
+			mycmakeargs+=(
+				-DCMAKE_CUDA_ARCHITECTURES="${CUDAARCHS}"
+			)
+		elif [[ -v CUDA_GENERATION ]]; then
+			eqawarn CUDA_GENERATION
+			mycmakeargs+=(
+				-DCUDA_GENERATION="${CUDA_GENERATION}"
+			)
+		elif [[ -v CUDA_ARCH_BIN ]]; then
+			eqawarn CUDA_ARCH_BIN
+			mycmakeargs+=(
+				-DCUDA_ARCH_BIN="${CUDA_ARCH_BIN}"
+			)
+			if [[ -v CUDA_ARCH_PTX ]]; then
+				eqawarn CUDA_ARCH_PTX
 				mycmakeargs+=(
-					-DCUDA_GENERATION=""
-					-DCMAKE_CUDA_ARCHITECTURES="${CUDAARCHS:-50}" # breaks with openmp otherwise..
+					-DCUDA_ARCH_PTX="${CUDA_ARCH_PTX}"
 				)
 			fi
 		else
-			cuda_add_sandbox -w
-			addwrite "/proc/self/task"
-			addpredict "/dev/char/"
+			if [[ "${CUDA_DEVICE_ACCESS}" == "false" ]]; then
+				mycmakeargs+=(
+					-DCUDA_GENERATION="Auto"
+				)
+			else
+				eqawarn detect
+				cuda_add_sandbox -w
+				addwrite "/proc/self/task"
+				addpredict "/dev/char/"
 
-			: "${CUDAARCHS:="$(cuda_get_host_native_arch)"}"
-			export CUDAARCHS
-			mycmakeargs+=(
-				-DCUDA_GENERATION="${CUDAARCHS}"
-				-DCMAKE_CUDA_ARCHITECTURES="${CUDAARCHS}"
-			)
+				: "${CUDAARCHS:="$(cuda_get_host_native_arch)"}"
+				export CUDAARCHS
+				mycmakeargs+=(
+					-DCUDA_GENERATION="${CUDAARCHS}"
+					-DCMAKE_CUDA_ARCHITECTURES="${CUDAARCHS}"
+				)
+			fi
 		fi
 
 		local -x CUDAHOSTCXX CUDAHOSTLD
@@ -966,6 +1074,7 @@ multilib_src_configure() {
 		fi
 
 		mycmakeargs+=(
+			-DOPENCV_CMAKE_CUDA_DEBUG="$(usex debug 1 0)"
 			-DENABLE_CUDA_FIRST_CLASS_LANGUAGE="yes"
 		)
 	fi
@@ -1483,6 +1592,7 @@ multilib_src_install() {
 		cmake_src_install
 	fi
 
+	# TODO
 	for plugin in "${ED}/usr/$(get_libdir)/libopencv_"*".$(ver_rs 1-2 '' "$(ver_cut 1-2)").${ARCH}"* ; do
 		patchelf --set-soname "$(basename "${plugin}" ".$(get_libname)")" "${plugin}"
 	done
