@@ -898,6 +898,7 @@ _python_wrapper_setup() {
 		mkdir -p "${workdir}"/{bin,pkgconfig} || die
 
 		# Clean up, in case we were supposed to do a cheap update.
+		# BUG rm -f does not fail on missing files
 		rm -f "${workdir}"/bin/python{,2,3}{,-config} || die
 		rm -f "${workdir}"/bin/2to3 || die
 		rm -f "${workdir}"/pkgconfig/python{2,3}{,-embed}.pc || die
@@ -909,38 +910,64 @@ _python_wrapper_setup() {
 		# note: we don't use symlinks because python likes to do some
 		# symlink reading magic that breaks stuff
 		# https://bugs.gentoo.org/show_bug.cgi?id=555752
-		cat > "${workdir}/bin/python" <<-_EOF_ || die
+		cat > "${workdir}/bin/${EPYTHON}" <<-_EOF_ || die
 			#!/bin/sh
 			exec "${PYTHON}" "\${@}"
 		_EOF_
-		cp "${workdir}/bin/python" "${workdir}/bin/python3" || die
-		chmod +x "${workdir}/bin/python" "${workdir}/bin/python3" || die
+		chmod +x "${workdir}/bin/${EPYTHON}" || die
 
-		local nonsupp=( python2 python2-config )
+		cp "${workdir}/bin/${EPYTHON}" \
+			"${workdir}/bin/python3" || die
+		chmod +x "${workdir}/bin/python3" || die
+
+		cp "${workdir}/bin/${EPYTHON}" \
+			"${workdir}/bin/python" || die
+		chmod +x "${workdir}/bin/python" || die
+
+		local nonsupp=()
+		if command -v python2; then
+			nonsupp+=(
+				python2 python2-config
+			)
+		fi
 
 		# CPython-specific
 		if [[ ${EPYTHON} == python* ]]; then
-			cat > "${workdir}/bin/python-config" <<-_EOF_ || die
+			cat > "${workdir}/bin/${EPYTHON}-config" <<-_EOF_ || die
 				#!/bin/sh
 				exec "${PYTHON}-config" "\${@}"
 			_EOF_
-			cp "${workdir}/bin/python-config" \
-				"${workdir}/bin/python3-config" || die
-			chmod +x "${workdir}/bin/python-config" \
-				"${workdir}/bin/python3-config" || die
+			chmod +x "${workdir}/bin/${EPYTHON}-config" || die
 
-			# Python 2.6+.
-			ln -s "${PYTHON/python/2to3-}" "${workdir}"/bin/2to3 || die
+			ln -sr "${workdir}/bin/${EPYTHON}-config" \
+				"${workdir}/bin/python3-config" || die
+			ln -sr "${workdir}/bin/${EPYTHON}-config" \
+				"${workdir}/bin/python-config" || die
+
+			# Python 2.6 - 3.12.
+			if [[ -x "${PYTHON/python/2to3-}" ]]; then
+				echo ln -s "${PYTHON/python/2to3-}" "${workdir}"/bin/2to3 > "${workdir}"/bin/log
+				# || die
+			else
+				nonsupp+=( 2to3 )
+			fi
 
 			# Python 2.7+.
-			ln -s "${EPREFIX}"/usr/$(get_libdir)/pkgconfig/${EPYTHON/n/n-}.pc \
-				"${workdir}"/pkgconfig/python3.pc || die
+			ln -s "${EPREFIX}/usr/$(get_libdir)/pkgconfig/${EPYTHON/n/n-}.pc" \
+				"${workdir}/pkgconfig/python3.pc" || die
+			ln -s "${EPREFIX}/usr/$(get_libdir)/pkgconfig/${EPYTHON/n/n-}.pc" \
+				"${workdir}/pkgconfig/${EPYTHON/n/n-}.pc" || die
 
 			# Python 3.8+.
-			ln -s "${EPREFIX}"/usr/$(get_libdir)/pkgconfig/${EPYTHON/n/n-}-embed.pc \
-				"${workdir}"/pkgconfig/python3-embed.pc || die
+			ln -s "${EPREFIX}/usr/$(get_libdir)/pkgconfig/${EPYTHON/n/n-}-embed.pc" \
+				"${workdir}/pkgconfig/python3-embed.pc" || die
+			ln -s "${EPREFIX}/usr/$(get_libdir)/pkgconfig/${EPYTHON/n/n-}-embed.pc" \
+				"${workdir}/pkgconfig/${EPYTHON/n/n-}-embed.pc" || die
 		else
-			nonsupp+=( 2to3 python-config python3-config )
+			nonsupp+=(
+				2to3
+				python-config python3-config
+			)
 		fi
 
 		local x
