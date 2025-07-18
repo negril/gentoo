@@ -1,4 +1,4 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 # @ECLASS: virtualx.eclass
@@ -139,9 +139,9 @@ virtx() {
 	kill "$(<"${pidfile}")"
 
 	# die if our command failed
-	[[ ${retval} -ne 0 ]] && die "Failed to run '$@'"
+	[[ ${retval} -ne 0 ]] && die -n "Command \"$*\" failed with exit status ${retval}"
 
-	return 0 # always return 0, it can be altered by failed kill for Xvfb
+	return "${retval}"
 }
 
 fi
