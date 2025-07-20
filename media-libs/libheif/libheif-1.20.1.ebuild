@@ -66,7 +66,6 @@ multilib_src_configure() {
 		-DWITH_AOM_ENCODER=$(usex aom)
 		-DWITH_DAV1D=$(usex dav1d)
 		-DWITH_EXAMPLES=$(usex examples)
-		-DWITH_EXAMPLE_HEIF_VIEW=$(usex examples $(usex tools))
 		-DWITH_FFMPEG_DECODER=$(usex ffmpeg)
 		-DWITH_GDK_PIXBUF=$(usex gdk-pixbuf)
 		-DWITH_OpenH264_DECODER=$(usex openh264)
@@ -96,7 +95,7 @@ multilib_src_configure() {
 	fi
 
 	# TODO WITH_EXAMPLE_HEIF_VIEW in -9999
-	if ! use tools; then
+	if use examples && ! use tools; then
 		mycmakeargs+=(
 			-DCMAKE_DISABLE_FIND_PACKAGE_SDL2=ON
 		)
