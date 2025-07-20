@@ -11,7 +11,10 @@ SRC_URI="https://github.com/PDAL/PDAL/releases/download/${PV}/PDAL-${PV}-src.tar
 S="${WORKDIR}/PDAL-${PV}-src"
 
 LICENSE="BSD"
-SLOT="0/18"
+
+# NOTE check on bump
+# cmake/libraries.cmake PDAL_SOLIB_MAJOR
+SLOT="0/19"
 KEYWORDS="~amd64 ~arm ~arm64 ~x86"
 IUSE="debug postgres test"
 
