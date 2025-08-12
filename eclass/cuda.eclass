@@ -144,21 +144,20 @@ cuda_sanitize() {
 # Add nvidia dev nodes to the sandbox predict list.
 # with -w, add to the sandbox write list.
 cuda_add_sandbox() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	addwrite "/proc/self/task/"
+	# tries to recreate symlinks
+	addpredict "/dev/char/"
 
 	local i
 	for i in /dev/nvidia*; do
 		if [[ $1 == '-w' ]]; then
-			addwrite $i
+			addwrite "${i}"
 		else
-			addpredict $i
+			addpredict "${i}"
 		fi
 	done
-	if [[ $1 == '-w' ]]; then
-		addwrite /proc/self/task
-	else
-		addpredict /proc/self/task
-	fi
 }
 
 # @FUNCTION: cuda_toolkit_version
