@@ -286,7 +286,8 @@ src_install() {
 
 	# remove rdma libs (unless USE=rdma)
 	if ! use rdma; then
-		rm "${ED}/${CUDA_PATH}/targets/${narch}-linux/lib/libcufile_rdma"* || die "failed to remove rdma files"
+		# intentionally -f to support SKIP_COMPONENTS
+		rm -f "${ED}/${CUDA_PATH}/targets/${narch}-linux/lib/libcufile_rdma"* || die "failed to remove rdma files"
 	fi
 
 	# Add include and lib symlinks
@@ -324,6 +325,7 @@ src_install() {
 	# https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements
 	local cuda_supported_gcc=( 8.5 9.5 10 11 12 13 "${GCC_MAX_VER}" )
 
+	mkdir -p "${ED}/${CUDA_PATH}/bin" || die
 	sed \
 		-e "s:CUDA_SUPPORTED_GCC:${cuda_supported_gcc[*]}:g" \
 		"${FILESDIR}"/cuda-config.in > "${ED}/${CUDA_PATH}/bin/cuda-config" || die
