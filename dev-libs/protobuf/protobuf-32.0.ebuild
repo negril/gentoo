@@ -64,7 +64,7 @@ RDEPEND="
 
 PATCHES=(
 	"${FILESDIR}/${PN}-23.3-static_assert-failure.patch"
-	"${FILESDIR}/${PN}-28.0-disable-test_upb-lto.patch"
+# 	"${FILESDIR}/${PN}-28.0-disable-test_upb-lto.patch"
 	"${FILESDIR}/${PN}-30.0-findJsonCpp.patch"
 )
 
@@ -80,6 +80,8 @@ multilib_src_configure() {
 	# Currently, the only static library is libupb (and there is no
 	# USE=static-libs), so optimize away the fat-lto build time penalty.
 	use libupb && lto-guarantee-fat
+
+	use libupb && filter-lto
 
 	local mycmakeargs=(
 		-Dprotobuf_BUILD_CONFORMANCE="$(usex test "$(usex conformance)")"
@@ -122,28 +124,32 @@ src_compile() {
 	fi
 }
 
+# we override here to inject env vars
+multilib_src_test() {
+	local -x TEST_TMPDIR="${T%/}/TEST_TMPDIR_${ABI}"
+	mkdir -p -m 770 "${TEST_TMPDIR}" || die
+
+	ln -srf "${S}/src" "${BUILD_DIR}/include" || die
+
+	cmake_src_test "${_cmake_args[@]}"
+}
+
 src_test() {
 	local -x srcdir="${S}/src"
 
-	# we override here to inject env vars
-	multilib_src_test() {
-		local -x TEST_TMPDIR="${T%/}/TEST_TMPDIR_${ABI}"
-		mkdir -p -m 770 "${TEST_TMPDIR}" || die
-
-		ln -srf "${S}/src" "${BUILD_DIR}/include" || die
-
-		cmake_src_test "${_cmake_args[@]}"
-	}
-
-	# Do headstands for LTO # 942985
-	local -x GTEST_FILTER
-	GTEST_FILTER="-FileDescriptorSetSource/EncodeDecodeTest*:LazilyBuildDependenciesTest.GeneratedFile:PythonGeneratorTest/PythonGeneratorTest.PythonWithCppFeatures/*"
+# 	if tc-is-lto; then
+		# Do headstands for LTO # 942985
+		local -x GTEST_FILTER
+		GTEST_FILTER="-FileDescriptorSetSource/EncodeDecodeTest*:LazilyBuildDependenciesTest.GeneratedFile:PythonGeneratorTest/PythonGeneratorTest.PythonWithCppFeatures/*:PackedTest/12.DecodeEmptyPackedField"
+# 	fi
 
 	cmake-multilib_src_test
 
-	GTEST_FILTER="${GTEST_FILTER//-/}"
+# 	if tc-is-lto; then
+		GTEST_FILTER="${GTEST_FILTER//-/}"
 
-	cmake-multilib_src_test
+		cmake-multilib_src_test
+# 	fi
 }
 
 multilib_src_install_all() {
