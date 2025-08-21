@@ -14,8 +14,13 @@ SRC_URI="
 "
 
 LICENSE="Apache-2.0"
+
+# ABI, we want rebuilds to avoid hidden breakage
 SLOT="0/${PV:2:4}.$(ver_cut 2).0"
-KEYWORDS="~alpha amd64 arm arm64 ~hppa ~loong ~mips ~ppc ppc64 ~riscv ~s390 ~sparc x86 ~arm64-macos ~x64-macos"
+# SONAME
+# SLOT="0/${PV:2:4}.0.0"
+
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~arm64-macos ~x64-macos"
 IUSE="test test-helpers"
 
 RDEPEND="
@@ -92,7 +97,6 @@ multilib_src_test() {
 		fi
 	else
 		if ! multilib_is_native_abi; then
-			local -x GTEST_FILTER="-Table.GrowExtremelyLargeTable"
 			CMAKE_SKIP_TESTS+=(
 				absl_hash_instantiated_test
 			)
