@@ -137,6 +137,11 @@ fi
 # read-only. This is a user flag and should under _no circumstances_ be set in
 # the ebuild. Helps in improving QA of build systems that write to source tree.
 
+# @ECLASS_VARIABLE: CMAKE_RUN_TESTS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of tests that should be run when running CTest.
+
 # @ECLASS_VARIABLE: CMAKE_SKIP_TESTS
 # @DEFAULT_UNSET
 # @DESCRIPTION:
@@ -766,7 +771,8 @@ cmake_src_test() {
 	[[ -e CTestTestfile.cmake ]] || { echo "No tests found. Skipping."; return 0 ; }
 
 	[[ -n ${TEST_VERBOSE} ]] && myctestargs+=( --extra-verbose --output-on-failure )
-	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E '('$( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}")')'  )
+	[[ -n ${CMAKE_RUN_TESTS} ]] && myctestargs+=( -R "($( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}"))" )
+	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E "($( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}"))" )
 
 	[[ ! -v CTEST_PARALLEL_LEVEL ]] && local -x CTEST_PARALLEL_LEVEL="${CTEST_JOBS:-$(get_makeopts_jobs 999)}"
 
