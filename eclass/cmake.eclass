@@ -270,7 +270,8 @@ cmake_use_find_package() {
 		die "Usage: cmake_use_find_package <USE flag> <package name>"
 	fi
 
-	echo "-DCMAKE_DISABLE_FIND_PACKAGE_$2=$(use $1 && echo OFF || echo ON)"
+	# TODO !! doesn't work
+	echo "-DCMAKE_DISABLE_FIND_PACKAGE_${2}=$(usex "${1}" OFF ON)"
 }
 
 # @FUNCTION: _cmake_check_build_dir
