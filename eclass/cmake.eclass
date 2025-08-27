@@ -751,6 +751,9 @@ cmake_src_configure() {
 cmake_src_compile() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
+	# 928346
+	[[ ! -v CMAKE_BUILD_PARALLEL_LEVEL ]] && local -x CMAKE_BUILD_PARALLEL_LEVEL="$(get_makeopts_jobs)"
+
 	cmake_build "$@"
 }
 
