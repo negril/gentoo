@@ -841,18 +841,9 @@ cmake_src_test() {
 		popd > /dev/null || die
 		return 0
 	else
-		if [[ -n "${CMAKE_YES_I_WANT_TO_SEE_THE_TEST_LOG}" ]] ; then
-			# on request from Diego
-			eerror "Tests failed. Test log ${BUILD_DIR}/Testing/Temporary/LastTest.log follows:"
-			eerror "--START TEST LOG--------------------------------------------------------------"
-			cat "${BUILD_DIR}/Testing/Temporary/LastTest.log"
-			eerror "--END TEST LOG----------------------------------------------------------------"
-			die -n "Tests failed."
-		else
-			eerror "Tests failed. When you file a bug, please attach the following file:"
-			eerror "\t${BUILD_DIR}/Testing/Temporary/LastTest.log"
-			die -n "Tests failed."
-		fi
+		eerror "Tests failed. When you file a bug, please attach the following file:"
+		eerror "\t${BUILD_DIR}/Testing/Temporary/LastTest.log"
+		die -n "Tests failed."
 
 		# die might not die due to nonfatal
 		popd > /dev/null || die
