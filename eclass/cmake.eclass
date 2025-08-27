@@ -177,7 +177,7 @@ cmake_run_in() {
 
 	[[ -e ${1} ]] || die "${FUNCNAME[0]}: Nonexistent path: ${1}"
 
-	pushd ${1} > /dev/null || die
+	pushd "${1}" > /dev/null || die
 		"${@:2}"
 	popd > /dev/null || die
 }
@@ -194,7 +194,7 @@ cmake_comment_add_subdirectory() {
 	[[ -e "CMakeLists.txt" ]] || return
 
 	local d
-	for d in $@; do
+	for d in "$@"; do
 		d=${d//\//\\/}
 		sed -e "/add_subdirectory[[:space:]]*([[:space:]]*${d}[[:space:]]*)/I s/^/#DONOTCOMPILE /" \
 			-i CMakeLists.txt || die "failed to comment add_subdirectory(${d})"
@@ -343,7 +343,7 @@ _cmake_minreqver-lt() {
 		_CMAKE_MINREQVER_UNSUPPORTED=true
 		chk=0
 	fi
-	return ${chk}
+	return "${chk}"
 }
 
 # @FUNCTION: _cmake_modify-cmakelists
@@ -419,7 +419,7 @@ cmake_src_prepare() {
 
 	local modules_list
 	if [[ ${EAPI} == 7 && $(declare -p CMAKE_REMOVE_MODULES_LIST) != "declare -a"* ]]; then
-		modules_list=( ${CMAKE_REMOVE_MODULES_LIST} )
+		modules_list=( "${CMAKE_REMOVE_MODULES_LIST}" )
 	else
 		modules_list=( "${CMAKE_REMOVE_MODULES_LIST[@]}" )
 	fi
@@ -518,14 +518,14 @@ cmake_src_configure() {
 	# compiler path, and the second one with all command-line options,
 	# space separated.
 	local toolchain_file=${BUILD_DIR}/gentoo_toolchain.cmake
-	cat > ${toolchain_file} <<- _EOF_ || die
+	cat > "${toolchain_file}" <<- _EOF_ || die
 		set(CMAKE_ASM_COMPILER "${myCC/ /;}")
 		set(CMAKE_ASM-ATT_COMPILER "${myCC/ /;}")
 		set(CMAKE_C_COMPILER "${myCC/ /;}")
 		set(CMAKE_CXX_COMPILER "${myCXX/ /;}")
 		set(CMAKE_Fortran_COMPILER "${myFC/ /;}")
-		set(CMAKE_AR $(type -P $(tc-getAR)) CACHE FILEPATH "Archive manager" FORCE)
-		set(CMAKE_RANLIB $(type -P $(tc-getRANLIB)) CACHE FILEPATH "Archive index generator" FORCE)
+		set(CMAKE_AR $(type -P "$(tc-getAR)") CACHE FILEPATH "Archive manager" FORCE)
+		set(CMAKE_RANLIB $(type -P "$(tc-getRANLIB)") CACHE FILEPATH "Archive index generator" FORCE)
 		set(CMAKE_SYSTEM_PROCESSOR "${CHOST%%-*}")
 	_EOF_
 
@@ -600,7 +600,7 @@ cmake_src_configure() {
 	_EOF_
 
 	if [[ -n ${_ECM_ECLASS} ]]; then
-		cat >> ${common_config} <<- _EOF_ || die
+		cat >> "${common_config}" <<- _EOF_ || die
 			set(ECM_DISABLE_QMLPLUGINDUMP ON CACHE BOOL "")
 			set(ECM_DISABLE_APPSTREAMTEST ON CACHE BOOL "")
 			set(ECM_DISABLE_GIT ON CACHE BOOL "")
@@ -623,7 +623,7 @@ cmake_src_configure() {
 
 	# Wipe the default optimization flags out of CMake
 	if [[ ${CMAKE_BUILD_TYPE} != Gentoo ]]; then
-		cat >> ${common_config} <<- _EOF_ || die
+		cat >> "${common_config}" <<- _EOF_ || die
 			set(CMAKE_ASM_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_ASM-ATT_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 			set(CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
