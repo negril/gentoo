@@ -236,7 +236,7 @@ cmake_comment_add_subdirectory() {
 						return
 					fi
 				elif [[ ! -e ${filename} ]]; then
-					die "${FUNCNAME}: called on non-existing ${filename}"
+					die "${FUNCNAME[0]}: called on non-existing ${filename}"
 				fi
 			else
 				die "${FUNCNAME[0]}: bad number of arguments: -f <filename or directory> <subdirectory> expected"
@@ -264,7 +264,7 @@ cmake_comment_add_subdirectory() {
 # if foo is enabled and -DCMAKE_DISABLE_FIND_PACKAGE_LibFoo=ON if it is disabled.
 # This can be used to make find_package optional.
 cmake_use_find_package() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	if [[ "$#" != 2 || -z $1 ]] ; then
 		die "Usage: cmake_use_find_package <USE flag> <package name>"
@@ -426,7 +426,7 @@ cmake_prepare-per-cmakelists() {
 # Internal function for modifying hardcoded definitions.
 # Removes dangerous definitions that override Gentoo settings.
 _cmake_modify-cmakelists() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	# Only edit the files once
 	grep -qs "<<< Gentoo configuration >>>" "${CMAKE_USE_DIR}"/CMakeLists.txt && return 0
@@ -485,7 +485,7 @@ _cmake_modify-cmakelists() {
 # Check existence of and sanitise CMake files, then make ${CMAKE_USE_DIR}
 # read-only.  *MUST* be run or cmake_src_configure will fail.
 cmake_prepare() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	_cmake_check_build_dir
 
@@ -522,7 +522,7 @@ cmake_prepare() {
 # conflict with another eclass' src_prepare phase, use cmake_prepare
 # instead.
 cmake_src_prepare() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	default_src_prepare
 	cmake_prepare
@@ -549,7 +549,7 @@ cmake_src_prepare() {
 # }
 # @CODE
 cmake_src_configure() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	if [[ -z ${_CMAKE_PREPARE_HAS_RUN} ]]; then
 		die "FATAL: cmake_src_prepare (or cmake_prepare) has not been run"
@@ -736,7 +736,7 @@ cmake_src_configure() {
 	fi
 
 	pushd "${BUILD_DIR}" > /dev/null || die
-	debug-print "${LINENO} ${ECLASS} ${FUNCNAME}: mycmakeargs is ${mycmakeargs_local[*]}"
+	debug-print "${LINENO} ${ECLASS} ${FUNCNAME[0]}: mycmakeargs is ${mycmakeargs_local[*]}"
 	echo "${CMAKE_BINARY}" "${cmakeargs[@]}" "${CMAKE_USE_DIR}"
 	"${CMAKE_BINARY}" "${cmakeargs[@]}" "${CMAKE_USE_DIR}" || die "cmake failed"
 	popd > /dev/null || die
@@ -747,7 +747,7 @@ cmake_src_configure() {
 # General function for compiling with cmake. All arguments are passed
 # to cmake_build.
 cmake_src_compile() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	cmake_build "$@"
 }
@@ -758,7 +758,7 @@ cmake_src_compile() {
 # All arguments are passed to eninja (default) or emake depending on the value
 # of CMAKE_MAKEFILE_GENERATOR.
 cmake_build() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	_cmake_check_build_dir
 	pushd "${BUILD_DIR}" > /dev/null || die
@@ -800,7 +800,7 @@ cmake_build() {
 # @DESCRIPTION:
 # Function for testing the package. Automatically detects the build type.
 cmake_src_test() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	_cmake_check_build_dir
 	pushd "${BUILD_DIR}" > /dev/null || die
@@ -841,7 +841,7 @@ cmake_src_test() {
 # @DESCRIPTION:
 # Function for installing the package. Automatically detects the build type.
 cmake_src_install() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	DESTDIR="${D}" cmake_build "$@" install
 
