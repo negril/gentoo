@@ -170,6 +170,16 @@ _CMAKE_MINREQVER_CMAKE316=()
 # @DESCRIPTION:
 # Array of tests that should be skipped when running CTest.
 
+# @ECLASS_VARIABLE: CMAKE_RUN_LABELS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of labels that should be run when running CTest.
+
+# @ECLASS_VARIABLE: CMAKE_SKIP_LABELS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of labels that should be skipped when running CTest.
+
 case ${CMAKE_BUILD_TYPE} in
 	Gentoo)
 		ewarn "\${CMAKE_BUILD_TYPE} \"Gentoo\" is a no-op. Default is RelWithDebInfo."
@@ -819,6 +829,8 @@ cmake_src_test() {
 	[[ -n ${TEST_VERBOSE} ]] && myctestargs+=( --extra-verbose --output-on-failure )
 	[[ -n ${CMAKE_RUN_TESTS} ]] && myctestargs+=( -R "($( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}"))" )
 	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E "($( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}"))" )
+	[[ -n ${CMAKE_RUN_LABELS} ]] && myctestargs+=( -L "($( IFS='|'; echo "${CMAKE_RUN_LABELS[*]}"))" )
+	[[ -n ${CMAKE_SKIP_LABELS} ]] && myctestargs+=( -LE "($( IFS='|'; echo "${CMAKE_SKIP_LABELS[*]}"))" )
 
 	set -- ctest -j "${CTEST_JOBS:-$(get_makeopts_jobs 999)}" \
 		--test-load "${CTEST_LOADAVG:-$(get_makeopts_loadavg)}" \
