@@ -99,21 +99,21 @@ esac
 # }
 # @CODE
 virtx() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	[[ $# -lt 1 ]] && die "${FUNCNAME} needs at least one argument"
+	[[ $# -lt 1 ]] && die "${FUNCNAME[0]} needs at least one argument"
 
 	local i=0
 	local retval=0
 	local xvfbargs=( -screen 0 1280x1024x24 +extension RANDR )
 
-	debug-print "${FUNCNAME}: running Xvfb hack"
+	debug-print "${FUNCNAME[0]}: running Xvfb hack"
 	export XAUTHORITY=
 
 	einfo "Starting Xvfb ..."
 	addpredict /dev/dri/ # Needed for Xvfb w/ >=mesa-24.2.0
 
-	debug-print "${FUNCNAME}: Xvfb -displayfd 1 ${xvfbargs[*]}"
+	debug-print "${FUNCNAME[0]}: Xvfb -displayfd 1 ${xvfbargs[*]}"
 	local logfile=${T}/Xvfb.log
 	local pidfile=${T}/Xvfb.pid
 	# NB: bash command substitution blocks until Xvfb prints fd to stdout
@@ -131,7 +131,7 @@ virtx() {
 
 	# Do not break on error, but setup $retval, as we need to kill Xvfb
 	einfo "Xvfb started on DISPLAY=${DISPLAY}"
-	debug-print "${FUNCNAME}: $@"
+	debug-print "${FUNCNAME[0]}: $*"
 	nonfatal "$@"
 	retval=$?
 
