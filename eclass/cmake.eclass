@@ -147,6 +147,16 @@ fi
 # @DESCRIPTION:
 # Array of tests that should be skipped when running CTest.
 
+# @ECLASS_VARIABLE: CMAKE_RUN_LABELS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of labels that should be run when running CTest.
+
+# @ECLASS_VARIABLE: CMAKE_SKIP_LABELS
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Array of labels that should be skipped when running CTest.
+
 [[ ${CMAKE_MIN_VERSION} ]] && die "CMAKE_MIN_VERSION is banned; if necessary, set BDEPEND=\">=dev-build/cmake-${CMAKE_MIN_VERSION}\" directly"
 [[ ${CMAKE_BUILD_DIR} ]] && die "The ebuild must be migrated to BUILD_DIR"
 [[ ${CMAKE_REMOVE_MODULES} ]] && die "CMAKE_REMOVE_MODULES is banned, set CMAKE_REMOVE_MODULES_LIST array instead"
@@ -773,6 +783,8 @@ cmake_src_test() {
 	[[ -n ${TEST_VERBOSE} ]] && myctestargs+=( --extra-verbose --output-on-failure )
 	[[ -n ${CMAKE_RUN_TESTS} ]] && myctestargs+=( -R "($( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}"))" )
 	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E "($( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}"))" )
+	[[ -n ${CMAKE_RUN_LABELS} ]] && myctestargs+=( -L "($( IFS='|'; echo "${CMAKE_RUN_LABELS[*]}"))" )
+	[[ -n ${CMAKE_SKIP_LABELS} ]] && myctestargs+=( -LE "($( IFS='|'; echo "${CMAKE_SKIP_LABELS[*]}"))" )
 
 	[[ ! -v CTEST_PARALLEL_LEVEL ]] && local -x CTEST_PARALLEL_LEVEL="${CTEST_JOBS:-$(get_makeopts_jobs 999)}"
 
