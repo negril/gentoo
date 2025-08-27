@@ -58,6 +58,9 @@ case ${VIRTUALX_REQUIRED} in
 		;;
 esac
 
+# @ECLASS_VARIABLE: VIRTUALX_SKIP_ADDPREDICT
+# @DESCRIPTION:
+# Do not call addpredict.
 
 # @FUNCTION: virtx
 # @USAGE: <command> [command arguments]
@@ -111,7 +114,14 @@ virtx() {
 	export XAUTHORITY=
 
 	einfo "Starting Xvfb ..."
-	addpredict /dev/dri/ # Needed for Xvfb w/ >=mesa-24.2.0
+
+	# NOTE Calling addpredict in eclass scope will mask potential test failure causes.
+	# So allow skipping it.
+	if [[ ! -v VIRTUALX_SKIP_ADDPREDICT ]]; then
+		addpredict /dev/dri/ # Needed for Xvfb w/ >=mesa-24.2.0
+	elif [[ ! -v EGL_LOG_LEVEL ]]; then
+		export EGL_LOG_LEVEL="fatal"
+	fi
 
 	debug-print "${FUNCNAME[0]}: Xvfb -displayfd 1 ${xvfbargs[*]}"
 	local logfile=${T}/Xvfb.log
