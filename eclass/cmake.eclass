@@ -582,6 +582,7 @@ cmake_src_configure() {
 	fi
 
 	# Common configure parameters (invariants)
+	# 934462
 	local common_config=${BUILD_DIR}/gentoo_common_config.cmake
 	local libdir=$(get_libdir)
 	cat > "${common_config}" <<- _EOF_ || die
@@ -597,6 +598,7 @@ cmake_src_configure() {
 		set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON CACHE BOOL "")
 		set(CMAKE_TLS_VERIFY ON CACHE BOOL "")
 		set(CMAKE_COMPILE_WARNING_AS_ERROR OFF CACHE BOOL "")
+		set(CMAKE_AUTOGEN_PARALLEL "$(get_makeopts_jobs)" CACHE STRING "")
 	_EOF_
 
 	if [[ -n ${_ECM_ECLASS} ]]; then
