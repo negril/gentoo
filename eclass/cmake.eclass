@@ -696,11 +696,11 @@ cmake_src_configure() {
 		die "mycmakeargs must be declared as array"
 	fi
 
+	local cmakeargs=()
 	local mycmakeargs_local=( "${mycmakeargs[@]}" )
 
-	local warn_unused_cli=""
 	if [[ ${CMAKE_WARN_UNUSED_CLI} == no ]] ; then
-		warn_unused_cli="--no-warn-unused-cli"
+		cmakeargs+=( "--no-warn-unused-cli" )
 	fi
 
 	local generator_name
@@ -712,8 +712,7 @@ cmake_src_configure() {
 	# Common configure parameters (overridable)
 	# NOTE CMAKE_BUILD_TYPE can be only overridden via CMAKE_BUILD_TYPE eclass variable
 	# No -DCMAKE_BUILD_TYPE=xxx definitions will be in effect.
-	local cmakeargs=(
-		${warn_unused_cli}
+	cmakeargs+=(
 		-C "${common_config}"
 		-G "${generator_name}"
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
