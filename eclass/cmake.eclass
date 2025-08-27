@@ -208,7 +208,7 @@ cmake_run_in() {
 
 	[[ -e ${1} ]] || die "${FUNCNAME[0]}: Nonexistent path: ${1}"
 
-	pushd ${1} > /dev/null || die
+	pushd "${1}" > /dev/null || die
 		"${@:2}"
 	popd > /dev/null || die
 }
@@ -580,14 +580,14 @@ cmake_src_configure() {
 	# compiler path, and the second one with all command-line options,
 	# space separated.
 	local toolchain_file=${BUILD_DIR}/gentoo_toolchain.cmake
-	cat > ${toolchain_file} <<- _EOF_ || die
+	cat > "${toolchain_file}" <<- _EOF_ || die
 		set(CMAKE_ASM_COMPILER "${myCC/ /;}")
 		set(CMAKE_ASM-ATT_COMPILER "${myCC/ /;}")
 		set(CMAKE_C_COMPILER "${myCC/ /;}")
 		set(CMAKE_CXX_COMPILER "${myCXX/ /;}")
 		set(CMAKE_Fortran_COMPILER "${myFC/ /;}")
-		set(CMAKE_AR $(type -P $(tc-getAR)) CACHE FILEPATH "Archive manager" FORCE)
-		set(CMAKE_RANLIB $(type -P $(tc-getRANLIB)) CACHE FILEPATH "Archive index generator" FORCE)
+		set(CMAKE_AR $(type -P "$(tc-getAR)") CACHE FILEPATH "Archive manager" FORCE)
+		set(CMAKE_RANLIB $(type -P "$(tc-getRANLIB)") CACHE FILEPATH "Archive index generator" FORCE)
 		set(CMAKE_SYSTEM_PROCESSOR "${CHOST%%-*}")
 	_EOF_
 
@@ -674,7 +674,7 @@ cmake_src_configure() {
 	fi
 
 	# Wipe the default optimization flags out of CMake
-	cat >> ${common_config} <<- _EOF_ || die
+	cat >> "${common_config}" <<- _EOF_ || die
 		set(CMAKE_ASM_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 		set(CMAKE_ASM-ATT_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
 		set(CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE^^} "" CACHE STRING "")
