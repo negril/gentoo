@@ -502,7 +502,7 @@ cmake_prepare() {
 
 	local name
 	for name in "${modules_list[@]}" ; do
-		find -name "${name}.cmake" -exec rm -v {} + || die
+		find . -name "${name}.cmake" -exec rm -v {} + || die
 	done
 
 	# Remove dangerous things.
