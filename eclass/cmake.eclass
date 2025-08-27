@@ -697,6 +697,9 @@ cmake_src_configure() {
 cmake_src_compile() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
+	# 928346
+	[[ ! -v CMAKE_BUILD_PARALLEL_LEVEL ]] && local -x CMAKE_BUILD_PARALLEL_LEVEL="$(get_makeopts_jobs)"
+
 	cmake_build "$@"
 }
 
@@ -765,6 +768,8 @@ cmake_src_test() {
 	[[ -n ${TEST_VERBOSE} ]] && myctestargs+=( --extra-verbose --output-on-failure )
 	[[ -n ${CMAKE_SKIP_TESTS} ]] && myctestargs+=( -E '('$( IFS='|'; echo "${CMAKE_SKIP_TESTS[*]}")')'  )
 
+	[[ ! -v CTEST_PARALLEL_LEVEL ]] && local -x CTEST_PARALLEL_LEVEL="${CTEST_JOBS:-$(get_makeopts_jobs 999)}"
+
 	set -- ctest -j "${CTEST_JOBS:-$(get_makeopts_jobs 999)}" \
 		--test-load "${CTEST_LOADAVG:-$(get_makeopts_loadavg)}" \
 		"${myctestargs[@]}" "$@"
@@ -798,6 +803,8 @@ cmake_src_test() {
 # Function for installing the package. Automatically detects the build type.
 cmake_src_install() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	[[ ! -v CMAKE_INSTALL_PARALLEL_LEVEL ]] && local -x CMAKE_INSTALL_PARALLEL_LEVEL="$(get_makeopts_jobs)"
 
 	DESTDIR="${D}" cmake_build install "$@"
 
