@@ -429,7 +429,7 @@ cmake_src_prepare() {
 		if [[ ${EAPI} == 7 ]]; then
 			find "${S}" -name "${name}.cmake" -exec rm -v {} + || die
 		else
-			find -name "${name}.cmake" -exec rm -v {} + || die
+			find . -name "${name}.cmake" -exec rm -v {} + || die
 		fi
 	done
 
