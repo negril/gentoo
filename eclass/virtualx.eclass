@@ -106,9 +106,11 @@ virtx() {
 
 	[[ $# -lt 1 ]] && die "${FUNCNAME[0]} needs at least one argument"
 
-	local i=0
-	local retval=0
-	local xvfbargs=( -screen 0 1280x1024x24 +extension RANDR )
+	local xvfbargs=(
+		-nolisten tcp
+		-screen 0 1280x1024x24
+		+extension RANDR
+	)
 
 	debug-print "${FUNCNAME[0]}: running Xvfb hack"
 	export XAUTHORITY=
@@ -128,10 +130,11 @@ virtx() {
 	local pidfile=${T}/Xvfb.pid
 	# NB: bash command substitution blocks until Xvfb prints fd to stdout
 	# and then closes the fd; only then it backgrounds properly
-	export DISPLAY=:$(
+	local -x DISPLAY
+	DISPLAY=":$(
 		Xvfb -displayfd 1 "${xvfbargs[@]}" 2>"${logfile}" &
 		echo "$!" > "${pidfile}"
-	)
+	)"
 
 	if [[ ${DISPLAY} == : ]]; then
 		eerror "Xvfb failed to start, reprinting error log"
@@ -143,10 +146,10 @@ virtx() {
 	einfo "Xvfb started on DISPLAY=${DISPLAY}"
 	debug-print "${FUNCNAME[0]}: $*"
 	nonfatal "$@"
-	retval=$?
+	local retval="$?"
 
 	# Now kill Xvfb
-	kill "$(<"${pidfile}")"
+	kill "$(<"${pidfile}")" || die "Xvfb failed to stop"
 
 	# die if our command failed
 	[[ ${retval} -ne 0 ]] && die -n "Command \"$*\" failed with exit status ${retval}"
