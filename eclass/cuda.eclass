@@ -1,6 +1,9 @@
 # Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
+# TODO
+# --Ofast-compile=<level>
+
 # @ECLASS: cuda.eclass
 # @MAINTAINER:
 # Gentoo Science Project <sci@gentoo.org>
@@ -71,6 +74,21 @@ inherit edo flag-o-matic toolchain-funcs
 
 _cuda_set_globals() {
 	# [[ -n ${CUDA_SKIP_GLOBALS} ]] && return
+
+# cutlass/CMakeList.txt
+# if (CUDA_VERSION VERSION_GREATER_EQUAL 11.4)
+#   list(APPEND CUTLASS_NVCC_ARCHS_SUPPORTED 70 72 75 80 86 87)
+# endif()
+# if (CUDA_VERSION VERSION_GREATER_EQUAL 11.8)
+#   list(APPEND CUTLASS_NVCC_ARCHS_SUPPORTED 89 90)
+# endif()
+# if (CUDA_VERSION VERSION_GREATER_EQUAL 12.0)
+#   list(APPEND CUTLASS_NVCC_ARCHS_SUPPORTED 90a)
+# endif()
+#
+# if (CUDA_VERSION VERSION_GREATER_EQUAL 12.8)
+#   list(APPEND CUTLASS_NVCC_ARCHS_SUPPORTED 100 100a 101 101a 120 120a)
+# endif()
 
 	if [[ -n ${CUDA_DEVICE_TARGETS} ]]; then
 		local nvptx_device_targets_11_8=(
@@ -152,19 +170,28 @@ unset -f _cuda_set_globals
 # Being verbose during compilation to see underlying commands
 : "${CUDA_VERBOSE:=false}"
 
+# @ECLASS_VARIABLE: CUDA_SETGCC
+# @DESCRIPTION:
+# Set compiler dir in cuda_sanitize.
+: "${CUDA_SETGCC:=false}"
+
 # @FUNCTION: cuda_get_host_compiler
 # @USAGE: [-f]
 # @RETURN: compiler name compatible with current cuda
 # @DESCRIPTION:
 # Helper for determination of the latest compiler supported by
 # then current nvidia cuda toolkit.
+# NVCC_CCBIN is the variable used by nvcc.
+# https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/#nvcc-environment-variables
+# CUDAHOSTCXX is the variable used by cmake.
+# https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_HOST_COMPILER.html
 cuda_get_host_compiler() {
-	if [[ -n "${NVCC_CCBIN}" ]]; then
+	if [[ -v NVCC_CCBIN ]]; then
 		echo "${NVCC_CCBIN}"
 		return
 	fi
 
-	if [[ -n "${CUDAHOSTCXX}" ]]; then
+	if [[ -v CUDAHOSTCXX ]]; then
 		echo "${CUDAHOSTCXX}"
 		return
 	fi
@@ -172,12 +199,11 @@ cuda_get_host_compiler() {
 	einfo "Trying to find working CUDA host compiler"
 
 	if ! tc-is-gcc && ! tc-is-clang; then
-		die "$(tc-get-compiler-type) compiler is not supported"
+		die "$(tc-get-compiler-type) compiler is not supported (use gcc or clang)"
 	fi
 
 	local compiler compiler_type compiler_version
 	local package package_version
-	local -x NVCC_CCBIN
 	local NVCC_CCBIN_default
 
 	compiler_type="$(tc-get-compiler-type)"
@@ -212,14 +238,37 @@ cuda_get_host_compiler() {
 	done
 	eend $?
 
+	# clean temp file
+	nonfatal rm -f a.out
+
 	echo "${NVCC_CCBIN}"
 	export NVCC_CCBIN
+
+	einfo "Using ${NVCC_CCBIN} to build (via ${package} iteration)"
 }
 
 cuda_get_host_native_arch() {
-	[[ -n ${CUDAARCHS} ]] && echo "${CUDAARCHS}"
+	if [[ -n ${CUDAARCHS} ]]; then
+		echo "${CUDAARCHS}"
+		return
+	fi
 
-	__nvcc_device_query || die "failed to query the native device"
+	if ! SANDBOX_WRITE=/dev/nvidiactl test -w /dev/nvidiactl ; then
+		eerror
+		eerror "Can not access the GPU at /dev/nvidiactl."
+		eerror "User $(id -nu) is not in the group \"video\"."
+		eerror
+		ewarn
+		ewarn "Can not query the native device."
+		ewarn "Not setting CUDAARCHS."
+		ewarn
+		ewarn "Continuing with default value."
+		ewarn "Set CUDAARCHS manually if needed."
+		ewarn
+		return 1
+	fi
+
+	__nvcc_device_query || eerror "failed to query the native device"
 }
 
 # @FUNCTION: cuda_gccdir
@@ -242,7 +291,7 @@ cuda_gccdir() {
 	while [[ "$1" ]]; do
 		case $1 in
 			-f)
-				flag="--compiler-bindir "
+				flag="-ccbin "
 				;;
 			*)
 				;;
@@ -250,7 +299,7 @@ cuda_gccdir() {
 		shift
 	done
 
-	if ! NVCC_CCBIN="$(cuda_get_host_compiler)"; then
+	if ! cuda_get_host_compiler >/dev/null; then
 		eerror "Could not execute cuda-config"
 	fi
 	if [[ -z ${NVCC_CCBIN} ]]; then
@@ -258,13 +307,13 @@ cuda_gccdir() {
 	fi
 
 	if [[ -n ${NVCC_CCBIN} ]]; then
-		if [[ -n ${NVCC_CCBIN} ]]; then
+		if [[ -n ${flag} ]]; then
 			echo "${flag}$(type -p "${NVCC_CCBIN}")"
 		else
 			echo "${NVCC_CCBIN}"
 		fi
 		return 0
-	else
+	else # BUG
 		eerror "Only gcc version(s) ${vers} are supported,"
 		eerror "of which none is installed"
 		die "Only gcc version(s) ${vers} are supported"
@@ -284,7 +333,7 @@ cuda_sanitize() {
 	[[ "${CUDA_VERBOSE}" == true ]] && NVCCFLAGS+=" -v"
 
 	# Tell nvcc where to find a compatible compiler
-	NVCCFLAGS+=" $(cuda_gccdir -f)"
+	[[ "${CUDA_SETGCC}" == true ]] && NVCCFLAGS+=" $(cuda_gccdir -f)"
 
 	# Tell nvcc which flags should be used for underlying C compiler
 	NVCCFLAGS+=" --compiler-options \"${CXXFLAGS}\" --linker-options \"${rawldflags// /,}\""
@@ -292,6 +341,16 @@ cuda_sanitize() {
 	debug-print "Using ${NVCCFLAGS} for cuda"
 	export NVCCFLAGS
 }
+
+# 	addpredict "/dev/char/"
+# 	test -c /dev/udmabuf && addwrite /dev/udmabuf
+# 	test -c /dev/dri/card0 && addwrite /dev/dri/card0
+# 	test -c /dev/dri/renderD128 && addwrite /dev/dri/renderD128
+# 	test -c /dev/nvidiactl && addwrite /dev/nvidiactl
+# 	test -c /dev/nvidia-uvm && addwrite /dev/nvidia-uvm
+# 	test -c /dev/nvidia-uvm-tools && addwrite /dev/nvidia-uvm-tools
+# 	test -c /dev/nvidia0 && addwrite /dev/nvidia0
+# 	test -c /dev/nvidia-modeset && addwrite /dev/nvidia-modeset
 
 # @FUNCTION: cuda_add_sandbox
 # @USAGE: [-w]
@@ -347,7 +406,7 @@ cuda_add_sandbox() {
 	# done
 
 	PREDICT=(
-		# /dev/char/
+		/dev/char/
 		# /root
 		# /dev/crypto
 		# /var/cache/man
@@ -357,18 +416,18 @@ cuda_add_sandbox() {
 		# /dev/random
 		# /proc/self/task/
 	)
-	# for i in "${PREDICT[@]}"; do
-	# 	einfo "addpredict $i"
-	# 	addpredict "$i"
-	# done
+	for i in "${PREDICT[@]}"; do
+		einfo "addpredict $i"
+		addpredict "$i"
+	done
 
 	for i in "${WRITE[@]}" ; do
 		if [[ $1 == '-w' ]]; then
 			einfo "addwrite $i"
-			addwrite $i
+			addwrite "$i"
 		else
 			einfo "addpredict $i"
-			addpredict $i
+			addpredict "$i"
 		fi
 	done
 }
@@ -398,21 +457,34 @@ cuda_cudnn_version() {
 }
 
 cuda_pkg_pretend() {
-	if use cuda; then
-		if [[ -z "${CUDA_GENERATION}" ]] && [[ -z "${CUDA_ARCH_BIN}" ]]; then # TODO CUDAARCHS
-			einfo "The target CUDA architecture can be set via one of:"
-			einfo "  - CUDA_GENERATION set to one of Maxwell, Pascal, Volta, Turing, Ampere, Lovelace, Hopper, Auto"
-			einfo "  - CUDA_ARCH_BIN, (and optionally CUDA_ARCH_PTX) in the form of x.y tuples."
-			einfo "      You can specify multiple tuple separated by \";\"."
-			einfo ""
-			einfo "The CUDA architecture tuple for your device can be found at https://developer.nvidia.com/cuda-gpus."
-		fi
+	if [[ $(tc-get-cxx-stdlib) == "libc++" ]] ; then
+		eerror "CUDA requires glibc"
+		die "CUDA requires glibc"
+	fi
 
-		# When building binpkgs you probably want to include all targets
-		if [[ ${MERGE_TYPE} == "buildonly" ]] && [[ -n "${CUDA_GENERATION}" || -n "${CUDA_ARCH_BIN}" ]]; then
-			local info_message="When building a binary package it's recommended to unset CUDA_GENERATION and CUDA_ARCH_BIN"
-			einfo "$info_message so all available architectures are build."
-		fi
+	if [[ -z "${CUDA_GENERATION}" ]] && [[ -z "${CUDA_ARCH_BIN}" ]]; then # TODO CUDAARCHS
+		einfo "The target CUDA architecture can be set via one of:"
+		einfo "  - CUDA_GENERATION set to one of Maxwell, Pascal, Volta, Turing, Ampere, Lovelace, Hopper, Auto"
+		einfo "  - CUDA_ARCH_BIN, (and optionally CUDA_ARCH_PTX) in the form of x.y tuples."
+		einfo "      You can specify multiple tuple separated by \";\"."
+		einfo ""
+		einfo "The CUDA architecture tuple for your device can be found at https://developer.nvidia.com/cuda-gpus."
+	fi
+
+	# When building binpkgs you probably want to include all targets
+	if [[ ${MERGE_TYPE} == "buildonly" ]] && [[ -n "${CUDA_GENERATION}" || -n "${CUDA_ARCH_BIN}" ]]; then
+		local info_message="When building a binary package it's recommended to unset CUDA_GENERATION and CUDA_ARCH_BIN"
+		einfo "$info_message so all available architectures are build."
+	fi
+}
+
+cuda_pkg_setup() {
+	if [[ ! -e /dev/nvidia-uvm ]]; then
+		# NOTE We try to load nvidia-uvm and nvidia-modeset here,
+		# so __nvcc_device_query does not fail later.
+
+		# we use nvidia-smi as it creates all dev files when run
+		nvidia-smi -L >/dev/null || true
 	fi
 }
 
@@ -423,15 +495,113 @@ cuda_src_prepare() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	cuda_sanitize
+
+	# NOTE Append some useful summary here # TODO
+	cat >> "${CMAKE_USE_DIR}"/CMakeLists.txt <<- _EOF_ || die
+
+		message(STATUS "<<< Gentoo CUDA configuration >>>
+			Compiler         \${CMAKE_CUDA_COMPILER}
+			Host Compiler    \${CMAKE_CUDA_HOST_COMPILER}
+			Compiler flags:
+			CMAKE_CUDA_FLAGS \${CMAKE_CUDA_FLAGS}
+			CMAKE_CUDA_FLAGS_\${CMAKE_BUILD_TYPE} \${CMAKE_CUDA_FLAGS_\${CMAKE_BUILD_TYPE}}
+			Architectures    \${CMAKE_CUDA_ARCHITECTURES}\n")
+	_EOF_
 }
 
 cuda_src_configure() {
-	:;
+	cuda_add_sandbox -w
+	addwrite "/proc/self/task"
+	addpredict "/dev/char"
+
+	if [[ ! -w /dev/nvidiactl ]]; then
+		# eqawarn "Can't access the GPU at /dev/nvidiactl."
+		# eqawarn "User $(id -nu) is not in the group \"video\"."
+		if [[ -z "${CUDA_GENERATION}" ]] && [[ -z "${CUDA_ARCH_BIN}" ]]; then
+			# build all targets
+			mycmakeargs+=(
+				-DCUDA_GENERATION=""
+			)
+		fi
+	else
+		local -x CUDAARCHS
+		: "${CUDAARCHS:="$(cuda_get_host_native_arch)"}"
+	fi
+
+	# set NVCC_CCBIN
+	local -x CUDAHOSTCXX CUDAHOSTLD
+	CUDAHOSTCXX="$(cuda_get_host_compiler)"
+	CUDAHOSTLD="$(tc-getCXX)"
+	export NVCC_CCBIN="${CUDAHOSTCXX}"
+
+	if tc-is-gcc; then
+		# Filter out IMPLICIT_LINK_DIRECTORIES picked up by CMAKE_DETERMINE_COMPILER_ABI(CUDA)
+		# See /usr/share/cmake/Help/variable/CMAKE_LANG_IMPLICIT_LINK_DIRECTORIES.rst
+		CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES_EXCLUDE=$(
+			"${CUDAHOSTLD}" -E -v - <<<"int main(){}" |& \
+			grep LIBRARY_PATH | cut -d '=' -f 2 | cut -d ':' -f 1
+		)
+	fi
+}
+
+cuda_src_test() {
+	local WRITE=()
+
+	# mesa via virtx will make use of udmabuf if it exists
+	[[ -c "/dev/udmabuf" ]] && WRITE+=( "/dev/udmabuf" )
+
+	readarray -t dris <<<"$(
+		for dri in /sys/class/drm/*/dev; do
+			realpath "/dev/char/$(cat "${dri}")"
+			eqawarn "dri ${dri} $(cat "${dri}") $(realpath "/dev/char/$(cat "${dri}")")"
+		done
+	)"
+
+	[[ -n "${dris[*]}" ]] && WRITE+=( "${dris[@]}" )
+
+	if [[ -d /sys/module/nvidia ]]; then
+		# /dev/nvidia{0-9}
+		readarray -t nvidia_devs <<<"$(
+			find /dev -regextype posix-extended  -regex '/dev/nvidia(|-(nvswitch|vgpu))[0-9]*'
+		)"
+		[[ -n "${nvidia_devs[*]}" ]] && WRITE+=( "${nvidia_devs[@]}" )
+
+		WRITE+=(
+			"/dev/nvidiactl"
+			"/dev/nvidia-modeset"
+
+			"/dev/nvidia-vgpuctl"
+
+			"/dev/nvidia-nvlink"
+			"/dev/nvidia-nvswitchctl"
+
+			"/dev/nvidia-uvm"
+			"/dev/nvidia-uvm-tools"
+
+			# "/dev/nvidia-caps/nvidia-cap%d"
+			"/dev/nvidia-caps/"
+			# "/dev/nvidia-caps-imex-channels/channel%d"
+			"/dev/nvidia-caps-imex-channels/"
+		)
+	fi
+
+	# for portage
+	WRITE+=( "/proc/self/task/" )
+
+	local dev
+	for dev in "${WRITE[@]}"; do
+		[[ ! -e "${dev}" ]] && return
+
+		[[ -w "${dev}" ]] && return
+
+		eqawarn "addwrite ${dev}"
+		addwrite "${dev}"
+		if [[ ! -d "${dev}" ]] && [[ ! -w "${dev}" ]]; then
+			eerror "can not access ${dev} after addwrite"
+		fi
+	done
 }
 
 fi
 
-EXPORT_FUNCTIONS src_prepare src_configure
-
-
-# --Ofast-compile=<level>
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_test
