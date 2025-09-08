@@ -95,7 +95,7 @@ IUSE+=" gtk3 qt6 opengl truetype vtk vulkan wayland"
 # parallel
 IUSE+=" openmp tbb"
 # lapack options
-IUSE+=" atlas lapack mkl"
+IUSE+=" lapack atlas mkl openblas +reference"
 
 # from cmake/OpenCVCompilerOptimizations.cmake
 # TODO make this only relevant for binhost
@@ -181,6 +181,7 @@ REQUIRED_USE="
 	contribxfeatures2d? ( contrib )
 	jasper? ( !abi_x86_32 )
 	java? ( python )
+	lapack? ( ?? ( atlas mkl openblas reference ) )
 	mkl? ( lapack )
 	opengl? ( || ( gtk3 qt6 wayland ) )
 	python? ( ${PYTHON_REQUIRED_USE} )
@@ -243,6 +244,8 @@ COMMON_DEPEND="
 			sci-libs/mkl[tbb?]
 			openmp? ( sci-libs/mkl[gnu-openmp] )
 		)
+		openblas? ( sci-libs/openblas )
+		reference? ( sci-libs/lapack[lapacke] )
 		!atlas? (
 			!mkl? (
 				virtual/cblas
@@ -368,7 +371,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-3.4.1-cuda-add-relaxed-constexpr.patch"
 	"${FILESDIR}/${PN}-4.1.2-opencl-license.patch"
 	"${FILESDIR}/${PN}-4.4.0-disable-native-cpuflag-detect.patch"
-	"${FILESDIR}/${PN}-4.12.0-link-with-cblas-for-lapack.patch"
+	# "${FILESDIR}/${PN}-4.12.0-link-with-cblas-for-lapack.patch"
 
 	"${FILESDIR}/${PN}-4.8.1-use-system-flatbuffers.patch"
 	"${FILESDIR}/${PN}-4.8.1-use-system-opencl.patch"
@@ -1135,9 +1138,36 @@ multilib_src_configure() {
 				-DMKL_WITH_TBB="$(usex tbb)"
 			)
 		else
+			local blas_backend
+			use atlas && blas_backend="atlas"
+			use openblas && blas_backend="openblas"
+			use reference && blas_backend="reference"
+
+			local lapack_libaries=(
+				# lapack blas cblas
+				"${ESYSROOT}/usr/$(get_libdir)/lapack/${blas_backend}/liblapack.so"
+				"${ESYSROOT}/usr/$(get_libdir)/blas/${blas_backend}/libblas.so"
+				"${ESYSROOT}/usr/$(get_libdir)/blas/${blas_backend}/libcblas.so"
+			)
+
+			local lapack_include
+			if use reference; then
+				lapack_include="${ESYSROOT}/usr/include"
+			else
+				lapack_include="${ESYSROOT}/usr/include/${blas_backend}"
+			fi
+
 			mycmakeargs+=(
-				-DSKIP_OPENBLAS_PACKAGE="yes"
+				-DSKIP_OPENBLAS_PACKAGE="$(usex !openblas)"
 				-DOPENCV_LAPACK_DISABLE_MKL="yes"
+
+				-DOPENCV_LAPACK_FIND_PACKAGE_ONLY="yes"
+				-DLAPACK_IMPL="LAPACK/Gentoo"
+				-DLAPACK_CBLAS_H="cblas.h"
+				-DLAPACK_LAPACKE_H="lapacke.h"
+				-DLAPACK_INCLUDE_DIR="${lapack_include}"
+				# -DLAPACK_LIBRARIES="lapack;blas;cblas"
+				-DLAPACK_LIBRARIES="$(IFS=';'; echo "${lapack_libaries[*]}")"
 			)
 		fi
 	fi
