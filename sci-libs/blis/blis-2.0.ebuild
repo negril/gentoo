@@ -4,7 +4,7 @@
 EAPI=8
 
 PYTHON_COMPAT=( python3_{11..13} )
-inherit python-any-r1 toolchain-funcs
+inherit python-any-r1 edo flag-o-matic toolchain-funcs
 
 DESCRIPTION="BLAS-like Library Instantiation Software Framework"
 HOMEPAGE="https://github.com/flame/blis"
@@ -41,72 +41,109 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-0.8.1-pkg-config.patch
 	"${FILESDIR}"/${PN}-0.9.0-rpath.patch
 	"${FILESDIR}"/${PN}-1.0-no-helper-headers.patch
-	# https://github.com/flame/blis/pull/874
-	"${FILESDIR}"/${P}-gcc15.patch
 )
 
 get_confname() {
-	local confname=generic
+	local confname="generic"
 	if use x86 || use amd64; then
-		use cpu_flags_x86_ssse3 && confname=penryn
-		use cpu_flags_x86_avx && use cpu_flags_x86_fma3 && confname=sandybridge
-		use cpu_flags_x86_avx && use cpu_flags_x86_fma4 && confname=bulldozer
-		use cpu_flags_x86_avx && use cpu_flags_x86_fma4 && use cpu_flags_x86_fma3 && confname=piledriver
-		use cpu_flags_x86_avx2 && confname=haswell
-		use cpu_flags_x86_avx512vl && confname=skx
+		if use cpu_flags_x86_avx512vl; then
+			confname="skx"
+		elif use cpu_flags_x86_avx2; then
+			confname="haswell"
+		elif use cpu_flags_x86_avx && use cpu_flags_x86_fma4 && use cpu_flags_x86_fma3; then
+			confname="piledriver"
+		elif use cpu_flags_x86_avx && use cpu_flags_x86_fma4; then
+			confname="bulldozer"
+		elif use cpu_flags_x86_avx && use cpu_flags_x86_fma3; then
+			confname="sandybridge"
+		elif use cpu_flags_x86_ssse3; then
+			confname="penryn"
+		fi
 	elif use arm || use arm64; then
-		use arm && confname=arm32
-		use arm64 && confname=arm64
-		use cpu_flags_arm_neon && use cpu_flags_arm_v7 && confname=cortexa9
-		use cpu_flags_arm_v8 && confname=cortexa53
-		use cpu_flags_arm_sve && confname=armsve
+		if use cpu_flags_arm_sve; then
+			confname="armsve"
+		elif use cpu_flags_arm_v8; then
+			confname="cortexa53"
+		elif use cpu_flags_arm_neon && use cpu_flags_arm_v7; then
+			confname="cortexa9"
+		elif use arm64; then
+			confname="arm64"
+		elif use arm; then
+			confname="arm32"
+		fi
 	elif use ppc || use ppc64; then
-		confname=power
-		use cpu_flags_ppc_vsx && confname=power7
-		use cpu_flags_ppc_vsx3 && confname=power9
+		confname="power"
+		if use cpu_flags_ppc_vsx3; then
+			confname="power9"
+		elif use cpu_flags_ppc_vsx; then
+			confname="power7"
+		fi
 	fi
-	echo ${confname}
+	echo "${confname}"
 }
 
 src_configure() {
+	# https://github.com/flame/blis/pull/874
+	if use cpu_flags_x86_avx2 && tc-is-gcc && [[ $(gcc-major-version) -ge 15 ]]; then
+		append-cflags "-fno-tree-vectorize"
+	fi
+
 	local BLIS_FLAGS=()
+
 	# determine flags
 	if use openmp; then
 		BLIS_FLAGS+=( -t openmp )
 	elif use pthread; then
 		BLIS_FLAGS+=( -t pthreads )
+	elif use serial; then
+		BLIS_FLAGS+=( -t no )
 	else
+		eqawarn "no threading model selected, defaulting to serial"
 		BLIS_FLAGS+=( -t no )
 	fi
-	use 64bit-index && BLIS_FLAGS+=( -b 64 -i 64 )
+
+	if use 64bit-index; then
+		BLIS_FLAGS+=(
+			-b 64
+			-i 64
+		)
+	fi
+
+	local myeconfargs=(
+		--enable-verbose-make
+		--prefix="${BROOT}/usr"
+		--libdir="${BROOT}/usr/$(get_libdir)"
+		"$(use_enable static-libs static)"
+		--enable-blas
+		--enable-cblas
+		"${BLIS_FLAGS[@]}"
+		--enable-shared
+		"$(get_confname)"
+	)
 
 	# This is not an autotools configure file. We don't use econf here.
-	CC="$(tc-getCC)" AR="$(tc-getAR)" RANLIB="$(tc-getRANLIB)" ./configure \
-		--enable-verbose-make \
-		--prefix="${BROOT}"/usr \
-		--libdir="${BROOT}"/usr/$(get_libdir) \
-		$(use_enable static-libs static) \
-		--enable-blas \
-		--enable-cblas \
-		"${BLIS_FLAGS[@]}" \
-		--enable-shared \
-		$(get_confname) || die
+	CC="$(tc-getCC)" AR="$(tc-getAR)" RANLIB="$(tc-getRANLIB)" edo ./configure "${myeconfargs[@]}"
 }
 
 src_compile() {
-	DEB_LIBBLAS=libblas.so.3 DEB_LIBCBLAS=libcblas.so.3 \
-		LDS_BLAS="${FILESDIR}"/blas.lds LDS_CBLAS="${FILESDIR}"/cblas.lds \
+	DEB_LIBBLAS=libblas.so.3 \
+	DEB_LIBCBLAS=libcblas.so.3 \
+	LDS_BLAS="${FILESDIR}/blas.lds" \
+	LDS_CBLAS="${FILESDIR}/cblas.lds" \
 		default
 }
 
 src_test() {
 	LD_LIBRARY_PATH=lib/$(get_confname) emake testblis-fast
-	./testsuite/check-blistest.sh ./output.testsuite || die
+	edo ./testsuite/check-blistest.sh ./output.testsuite
 }
 
 src_install() {
 	default
-	use doc && dodoc README.md docs/*.md
+
+	if use doc; then
+		dodoc README.md docs/*.md
+	fi
 
 	if use eselect-ldso; then
 		insinto /usr/$(get_libdir)/blas/blis
@@ -117,15 +154,17 @@ src_install() {
 }
 
 pkg_postinst() {
-	use eselect-ldso || return
+	if ! use eselect-ldso; then
+		return
+	fi
 
 	local libdir=$(get_libdir) me="blis"
 
 	# check blas
-	eselect blas add ${libdir} "${EROOT}"/usr/${libdir}/blas/${me} ${me}
-	local current_blas=$(eselect blas show ${libdir} | cut -d' ' -f2)
+	eselect blas add "${libdir}" "${EROOT}/usr/${libdir}/blas/${me}" "${me}"
+	local current_blas=$(eselect blas show "${libdir}" | cut -d' ' -f2)
 	if [[ ${current_blas} == "${me}" || -z ${current_blas} ]]; then
-		eselect blas set ${libdir} ${me}
+		eselect blas set "${libdir}" "${me}"
 		elog "Current eselect: BLAS/CBLAS ($libdir) -> [${current_blas}]."
 	else
 		elog "Current eselect: BLAS/CBLAS ($libdir) -> [${current_blas}]."
@@ -135,5 +174,7 @@ pkg_postinst() {
 }
 
 pkg_postrm() {
-	use eselect-ldso && eselect blas validate
+	if use eselect-ldso; then
+		eselect blas validate
+	fi
 }
