@@ -520,6 +520,15 @@ cmake_prepare() {
 		find . -name "${name}.cmake" -exec rm -v {} + || die
 	done
 
+	if ! is-flagq '-D?(N)DEBUG?(=*)'; then
+		if in_iuse debug; then
+			# TODO append to correct flags
+			append-cppflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
+		else
+			append-cppflags '-DNDEBUG'
+		fi
+	fi
+
 	# Remove dangerous things.
 	_cmake_modify-cmakelists
 	_cmake_minreqver-info
