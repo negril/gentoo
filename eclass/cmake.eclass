@@ -449,6 +449,15 @@ cmake_src_prepare() {
 		fi
 	done
 
+	if ! is-flagq '-D?(N)DEBUG?(=*)'; then
+		if in_iuse debug; then
+			# TODO append to correct flags
+			append-cppflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
+		else
+			append-cppflags '-DNDEBUG'
+		fi
+	fi
+
 	# Remove dangerous things.
 	_cmake_modify-cmakelists
 
