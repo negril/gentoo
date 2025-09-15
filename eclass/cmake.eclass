@@ -848,6 +848,9 @@ cmake_src_test() {
 cmake_src_install() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
+	# 928346
+	[[ ! -v CMAKE_INSTALL_PARALLEL_LEVEL ]] && local -x CMAKE_INSTALL_PARALLEL_LEVEL="$(get_makeopts_jobs)"
+
 	DESTDIR="${D}" cmake_build "$@" install
 
 	pushd "${CMAKE_USE_DIR}" > /dev/null || die
