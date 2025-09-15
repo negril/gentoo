@@ -851,6 +851,9 @@ cmake_src_test() {
 	[[ -n ${CMAKE_RUN_LABELS} ]] && myctestargs+=( -L "($( IFS='|'; echo "${CMAKE_RUN_LABELS[*]}"))" )
 	[[ -n ${CMAKE_SKIP_LABELS} ]] && myctestargs+=( -LE "($( IFS='|'; echo "${CMAKE_SKIP_LABELS[*]}"))" )
 
+	# BUG This breaks cmake tests
+	[[ ! -v CTEST_PARALLEL_LEVEL ]] && local -x CTEST_PARALLEL_LEVEL="${CTEST_JOBS:-$(get_makeopts_jobs 999)}"
+
 	set -- ctest -j "${CTEST_JOBS:-$(get_makeopts_jobs 999)}" \
 		--test-load "${CTEST_LOADAVG:-$(get_makeopts_loadavg)}" \
 		"${myctestargs[@]}" "$@"
