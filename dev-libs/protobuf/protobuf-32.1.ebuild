@@ -67,7 +67,6 @@ PATCHES=(
 	"${FILESDIR}/${PN}-23.3-static_assert-failure.patch"
 	# "${FILESDIR}/${PN}-28.0-disable-test_upb-lto.patch" # applied manually
 	"${FILESDIR}/${PN}-30.0-findJsonCpp.patch"
-	"${FILESDIR}/${PN}-do-not-propagate-abseil-cpp-deps.patch"
 )
 
 DOCS=( CONTRIBUTORS.txt README.md )
@@ -83,13 +82,13 @@ src_prepare() {
 }
 
 multilib_src_configure() {
-	# bug #963340 (seems to only happen when upgrading from older pb,
-	# possibly w/o tests too).
 	use libupb && filter-lto
 
 	# Currently, the only static library is libupb (and there is no
 	# USE=static-libs), so optimize away the fat-lto build time penalty.
 	use libupb && lto-guarantee-fat
+
+	use libupb && filter-lto
 
 	local mycmakeargs=(
 		-Dprotobuf_BUILD_CONFORMANCE="$(usex test "$(usex conformance)")"
@@ -145,6 +144,10 @@ multilib_src_test() {
 src_test() {
 	local -x srcdir="${S}/src"
 
+# 	local CMAKE_SKIP_TESTS=(
+# 		"^full-test$"
+# 	)
+
 	local GTEST_SKIP_TESTS=(
 		"PackedTest/12.DecodeEmptyPackedField"
 	)
@@ -161,13 +164,15 @@ src_test() {
 	if [[ ! -v GTEST_FILTER ]]; then
 		local -x GTEST_FILTER
 	fi
+
 	[[ -n ${GTEST_RUN_TESTS[*]} ]] && GTEST_FILTER+="$(IFS=':' ; echo "${GTEST_SKIP_TESTS[*]}")"
 	[[ -n ${GTEST_SKIP_TESTS[*]} ]] && GTEST_FILTER+="${GTEST_FILTER+:}-$(IFS=':' ; echo "${GTEST_SKIP_TESTS[*]}")"
 
 	cmake-multilib_src_test
 
 # 	if tc-is-lto; then
-# 		GTEST_FILTER="${GTEST_FILTER//-/}"
+# 		# GTEST_FILTER="${GTEST_FILTER//-/}"
+# 		GTEST_FILTER="$(IFS=':' ; echo "${GTEST_SKIP_TESTS[*]}")"
 #
 # 		cmake-multilib_src_test
 # 	fi
@@ -175,6 +180,7 @@ src_test() {
 
 multilib_src_install_all() {
 	use libupb && strip-lto-bytecode
+
 	find "${ED}" -name "*.la" -delete || die
 
 	if [[ ! -f "${ED}/usr/$(get_libdir)/libprotobuf$(get_libname "${SLOT#*/}")" ]]; then
