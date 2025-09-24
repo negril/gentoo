@@ -422,10 +422,10 @@ src_test() {
 		)
 	fi
 
-	local myctestargs=(
-		--output-on-failure
-		-j1
-	)
+# 	local myctestargs=(
+# 		--output-on-failure
+# 		-j1
+# 	)
 
 	xdg_environment_reset
 
