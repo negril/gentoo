@@ -38,6 +38,8 @@ RDEPEND="${DEPEND}
 
 src_prepare() {
 	default
+	rm m4/ax_cxx_compile_stdcxx.m4 || die
+	sed -e '/AX_CXX_COMPILE_STDCXX/s/17/20/' -i configure.ac || die
 	eautoreconf
 }
 
