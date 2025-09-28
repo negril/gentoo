@@ -487,8 +487,8 @@ _cmake_modify-cmakelists() {
 		Build type      \${CMAKE_BUILD_TYPE}
 		Install path    \${CMAKE_INSTALL_PREFIX}
 		Compiler flags:
-		C               \${CMAKE_C_FLAGS}
-		C++             \${CMAKE_CXX_FLAGS}
+		C               \${CMAKE_C_FLAGS} ${CPPFLAGS}
+		C++             \${CMAKE_CXX_FLAGS} ${CPPFLAGS}
 		Linker flags:
 		Executable      \${CMAKE_EXE_LINKER_FLAGS}
 		Module          \${CMAKE_MODULE_LINKER_FLAGS}
