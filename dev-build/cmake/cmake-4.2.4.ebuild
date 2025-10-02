@@ -293,6 +293,9 @@ src_test() {
 
 	local -x QT_QPA_PLATFORM=offscreen
 
+	# Higher values break nested tests
+	local -x CTEST_PARALLEL_LEVEL=1
+
 	cmake_src_test
 }
 
