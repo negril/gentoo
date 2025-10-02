@@ -280,6 +280,7 @@ src_test() {
 	)
 
 	local -x QT_QPA_PLATFORM=offscreen
+	local -x CTEST_PARALLEL_LEVEL=1
 
 	cmake_src_test
 }
