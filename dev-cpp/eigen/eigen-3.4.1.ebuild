@@ -158,7 +158,6 @@ PATCHES=(
 	"${FILESDIR}/${PN}-3.4.0-doc-nocompress.patch" # bug 830064
 	"${FILESDIR}/${PN}-3.4.0-buildstring.patch"
 	"${FILESDIR}/${PN}-3.4.1-cxxstandard-17.patch"
-	"${FILESDIR}/${PN}-3.4.0-c++-20.patch"
 )
 
 # TODO should be in cuda.eclass
@@ -270,9 +269,6 @@ src_configure() {
 	fi
 
 	if use test; then
-		# bug 878987
-		filter-lto
-
 		append-cppflags "-DEIGEN_COMP_CLANG_STRICT=$(usex debug true false)"
 
 		mycmakeargs+=(
@@ -490,19 +486,18 @@ src_test() {
 	if use cuda ; then
 		cuda_add_sandbox -w
 
-# 		CMAKE_SKIP_TESTS+=(
-# 			cxx11_tensor_cast_float16_gpu
-# 			cxx11_tensor_gpu_5
-# 		)
+		CMAKE_SKIP_TESTS+=(
+			# "^cxx11_tensor_cast_float16_gpu$"
+			# "^cxx11_tensor_gpu_5$"
+		)
 	fi
 
 	if use lapack ; then
-		:
-# 		CMAKE_SKIP_TESTS+=(
-# 			"^LAPACK-.*$"
-# 		)
+		CMAKE_SKIP_TESTS+=(
+			# "^LAPACK-.*$"
+		)
 	fi
-# 	unset CMAKE_SKIP_TESTS
+
 	local myctestargs=(
 		# slowdowns?
 		-j1 # otherwise breaks due to cmake reruns
