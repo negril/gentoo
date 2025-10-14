@@ -17,7 +17,7 @@ case ${EAPI} in
 	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
-# FUNCTION: strip-linguas
+# @FUNCTION: strip-linguas
 # @USAGE: [<allow LINGUAS>|<-i|-u> <directories of .po files>]
 # @DESCRIPTION:
 # Make sure that LINGUAS only contains languages that a package can
