@@ -15,7 +15,7 @@ case ${EAPI} in
 	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
-# FUNCTION: make_wrapper
+# @FUNCTION: make_wrapper
 # @USAGE: <wrapper> <target> [chdir] [libpaths] [installpath]
 # @DESCRIPTION:
 # Create a shell wrapper script named wrapper in installpath
