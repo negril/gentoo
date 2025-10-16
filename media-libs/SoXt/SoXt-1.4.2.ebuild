@@ -5,22 +5,29 @@ EAPI=8
 
 inherit cmake flag-o-matic
 
-MY_P=${P/soxt/SoXt}
-
 DESCRIPTION="GUI binding for using Coin/Open Inventor with Xt/Motif"
-HOMEPAGE="https://github.com/coin3d/coin/wiki"
-SRC_URI="https://github.com/coin3d/soxt/releases/download/v${PV}/${P}-src.tar.gz"
-S="${WORKDIR}/soxt"
+HOMEPAGE="https://github.com/coin3d/soxt https://github.com/coin3d/coin/wiki"
+
+if [[ ${PV} == *9999* ]]; then
+	inherit git-r3
+	EGIT_REPO_URI="https://github.com/coin3d/${PN,,}.git"
+else
+	SRC_URI="https://github.com/coin3d/${PN,,}/releases/download/v${PV}/${P/${PN}/${PN,,}}-src.tar.gz"
+	S="${WORKDIR}/${PN,,}"
+
+	KEYWORDS="~amd64 ~arm ~x86 ~amd64-linux ~x86-linux"
+fi
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~arm ~x86 ~amd64-linux ~x86-linux"
-IUSE="debug doc"
+IUSE="debug doc test"
+
+RESTRICT="test"
 
 RDEPEND="
 	media-libs/coin
 	x11-libs/motif:0
-	virtual/opengl
+	virtual/opengl[X]
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
@@ -29,17 +36,31 @@ BDEPEND="
 	doc? ( app-text/doxygen )
 "
 
-DOCS=( AUTHORS ChangeLog HACKING NEWS README TODO BUGS.txt )
+DOCS=(
+	AUTHORS
+	ChangeLog
+	HACKING
+	NEWS
+	README
+	TODO
+	BUGS.txt
+)
 
 src_configure() {
-	use debug && append-cppflags -DSOXT_DEBUG=1
+	use debug && append-cppflags "-D${PN^^}_DEBUG=1"
+
 	local mycmakeargs=(
-		-DCMAKE_INSTALL_DOCDIR="${EPREFIX}/usr/share/doc/${PF}"
-		-DSOXT_BUILD_DOCUMENTATION=$(usex doc)
-		-DSOXT_BUILD_INTERNAL_DOCUMENTATION=OFF
+		-D${PN^^}_BUILD_SHARED_LIBS="yes"
+
+		-D${PN^^}_BUILD_AWESOME_DOCUMENTATION="$(usex doc)"
+		-D${PN^^}_BUILD_DOCUMENTATION="$(usex doc)"
+		-D${PN^^}_BUILD_DOC_MAN="$(usex doc)"
+		-D${PN^^}_BUILD_INTERNAL_DOCUMENTATION="no"
+
 		# Interactive test programs
-		-DSOXT_BUILD_TESTS=OFF
-		-DSOXT_VERBOSE=$(usex debug)
+		-D${PN^^}_BUILD_TESTS="$(usex test)"
+		-D${PN^^}_VERBOSE="$(usex debug)"
 	)
+
 	cmake_src_configure
 }
