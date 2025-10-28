@@ -47,6 +47,7 @@ BDEPEND="${PYTHON_DEPS}"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-2.3.3-amdgpu-targets.patch"
+	"${FILESDIR}/${PN}-2.3.3-backport-ck-utility-get_id.hpp-from-composable_kernel.patch"
 )
 
 src_prepare() {
