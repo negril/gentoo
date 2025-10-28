@@ -114,7 +114,7 @@ src_compile() {
 src_test() {
 	if use cuda; then
 		addpredict /dev/char/
-		cuda_add_sandbox
+		cuda_add_sandbox -w
 	fi
 
 	"${BUILD_DIR}"/oidnTest || die "There were test failures!"
