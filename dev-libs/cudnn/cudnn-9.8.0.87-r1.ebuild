@@ -23,7 +23,7 @@ KEYWORDS="~amd64 ~arm64 ~amd64-linux ~arm64-linux"
 RESTRICT="bindist test"
 
 RDEPEND="
-	>=dev-util/nvidia-cuda-toolkit-12
+	=dev-util/nvidia-cuda-toolkit-12*
 "
 
 QA_PREBUILT="/opt/cuda*/targets/*-linux/lib/*"
