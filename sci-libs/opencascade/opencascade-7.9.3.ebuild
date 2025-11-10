@@ -123,11 +123,11 @@ BDEPEND="
 
 PATCHES=(
 	"${FILESDIR}/${PN}-7.9.2-0001-fix-installation-of-cmake-config-files.patch"
-	# "${FILESDIR}/${PN}-7.9.0-0002-avoid-pre-stripping-binaries.patch"
-	# "${FILESDIR}/${PN}-7.9.2-0003-Fix-building-with-musl.patch"
+	"${FILESDIR}/${PN}-7.9.0-0002-avoid-pre-stripping-binaries.patch"
+	"${FILESDIR}/${PN}-7.9.2-0003-Fix-building-with-musl.patch"
 	"${FILESDIR}/${PN}-7.9.0-0004-Only-try-to-find-the-jemalloc-libs-we-are-going-to-u.patch"
 	"${FILESDIR}/${PN}-7.8.0-tests.patch"
-	# "${FILESDIR}/${PN}-7.8.0-jemalloc-noexcept.patch"
+	"${FILESDIR}/${PN}-7.8.0-jemalloc-noexcept.patch"
 )
 
 src_unpack() {
@@ -148,7 +148,7 @@ src_unpack() {
 
 src_prepare() {
 	# File DEFINES has not been found in
-	touch src/Visualization/TKOpenGles/DEFINES || die
+	touch src/TKOpenGles/DEFINES || die
 
 	cmake_src_prepare
 
@@ -353,12 +353,6 @@ src_test() {
 			'opengles3 raytrace msaa'
 			'opengles3 textures alpha_mask'
 			'perf mesh bug26965'
-
-			'de step_2 T9'
-			'de step_2 U8'
-			'de step_3 D7'
-			'geometry circ2d3Tan CircleCirclePoint_13'
-			'lowalgos intss bug23972'
 
 			'opengl background bug27836'
 			'opengles3 background bug27836'
