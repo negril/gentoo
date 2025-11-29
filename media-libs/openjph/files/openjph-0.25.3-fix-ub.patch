@@ -1,0 +1,23 @@
+From a716239a034dd4c12ae5d6893e90eb3ede4da40d Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx@gmail.com>
+Date: Sat, 29 Nov 2025 19:36:59 +0100
+Subject: [PATCH] fix ub
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
+diff --git a/src/core/coding/ojph_block_decoder_avx2.cpp b/src/core/coding/ojph_block_decoder_avx2.cpp
+index cccb4fd..1cc486a 100644
+--- a/src/core/coding/ojph_block_decoder_avx2.cpp
++++ b/src/core/coding/ojph_block_decoder_avx2.cpp
+@@ -1769,7 +1769,7 @@ namespace ojph {
+               // We need data for at least 5 columns out of 8.
+               // Therefore loading 32 bits is easier than loading 16 bits
+               // twice.
+-              ui32 ps = *(ui32*)prev_sig;
++              ui32 ps = prev_sig[0] + ((ui32)prev_sig[1] << 16);
+               ui32 ns = *(ui32*)(cur_sig + mstr);
+               ui32 u = (ps & 0x88888888) >> 3; // the row on top
+               if (!stripe_causal)
+-- 
+2.52.0
+
