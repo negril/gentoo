@@ -3,7 +3,7 @@
 
 EAPI=8
 
-LLVM_COMPAT=( {18..20} )
+LLVM_COMPAT=( {18..21} )
 inherit cmake cuda llvm-r1
 
 DESCRIPTION="Portable Computing Language (an implementation of OpenCL)"
@@ -15,6 +15,9 @@ SLOT="0"
 KEYWORDS="~amd64 ~ppc64"
 # TODO: hsa tce
 IUSE="accel +conformance cuda debug examples +hwloc memmanager server spirv test"
+# CMake Error at CMakeLists.txt:2202 (message):
+#   CUDA driver does not work with LLVM/Clang 21
+REQUIRED_USE="cuda? ( ^^ ( llvm_slot_18 llvm_slot_19 llvm_slot_20 ) !llvm_slot_21 )"
 RESTRICT="!test? ( test )"
 
 CLANG_DEPS="
