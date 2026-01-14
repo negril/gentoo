@@ -230,6 +230,12 @@ src_configure() {
 		mycmakeargs+=( -DUSE_MMGR_TYPE=FLEXIBLE )
 	fi
 
+	if use debug; then
+		mycmakeargs+=(
+			-DBUILD_WITH_DEBUG="yes"
+		)
+	fi
+
 	if use doc; then
 		mycmakeargs+=(
 			-DINSTALL_DOC_Overview="yes"
@@ -289,7 +295,7 @@ src_test() {
 	local test_file="${T}/testscript.tcl"
 
 	local draw_opts=(
-		i # see ${BUILD_DIR}/custom*.sh
+		"$(usex debug "d" "i")" # see ${BUILD_DIR}/custom*.sh
 		# -b # batch mode (no GUI, no viewers)
 		-v # no GUI, use virtual (off-screen) windows for viewers
 	)
