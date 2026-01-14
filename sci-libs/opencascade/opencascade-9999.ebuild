@@ -364,14 +364,14 @@ src_test() {
 			'opengles3 textures alpha_mask'
 			'perf mesh bug26965'
 
-			'de step_2 T9'
-			'de step_2 U8'
-			'de step_3 D7'
-			'geometry circ2d3Tan CircleCirclePoint_13'
-			'lowalgos intss bug23972'
-
 			'opengl background bug27836'
 			'opengles3 background bug27836'
+
+			'de step_2 U8'
+			'de step_3 D7'
+			'de step_2 T9'
+			'geometry circ2d3Tan CircleCirclePoint_13'
+			'lowalgos intss bug23972'
 		)
 
 		DEL_TESTS+=(
