@@ -288,6 +288,10 @@ src_configure() {
 }
 
 src_test() {
+	# override variable from /etc/env.d/99opencascade
+	local -x CASROOT="${BUILD_DIR}"
+
+	# inject custom test data location
 	cat >> "${BUILD_DIR}/custom.sh" <<- _EOF_ || die
 		export CSF_TestDataPath="${WORKDIR}/${PN}-dataset-${MY_TEST_PV}"
 	_EOF_
@@ -428,8 +432,6 @@ src_test() {
 	# Work around zink warnings
 	export LIBGL_ALWAYS_SOFTWARE="true"
 
-	local -x CASROOT="${BUILD_DIR}"
-
 	virtx \
 		"${BUILD_DIR}/draw.sh" \
 		"${draw_opts[@]}" \
@@ -444,7 +446,7 @@ src_test() {
 	if [[ -n ${failed_tests} ]]; then
 		eerror "Failed tests:"
 		eerror "${failed_tests}"
-		die
+		die "Test failed"
 	fi
 }
 
