@@ -310,9 +310,9 @@ src_test() {
 
 	local test_name
 	for test_name in "${test_names[@]}"; do
-		mkdir -vp "$(dirname "${BUILD_DIR}/test_results/${test_name// /\/}.html")" || die
+		mkdir -vp "$(dirname "${BUILD_DIR}/test_results/${test_name// /\/}")" || die
 		cat >> "${test_file}" <<- _EOF_ || die
-			test ${test_name} -outfile "${BUILD_DIR}/test_results/${test_name// /\/}.html" ${test_opts[@]}
+			test ${test_name} -outfile "${BUILD_DIR}/test_results/${test_name// /\/}" ${test_opts[@]}
 		_EOF_
 	done
 
