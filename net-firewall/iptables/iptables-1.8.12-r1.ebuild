@@ -18,7 +18,7 @@ LICENSE="GPL-2"
 # the last time.
 SLOT="0/1.8.3"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
-IUSE="conntrack netlink nftables pcap static-libs test"
+IUSE="conntrack netlink +nftables pcap static-libs test"
 RESTRICT="!test? ( test )"
 # TODO: skip tests needing nftables if no xtables-nft-multi (bug #890628)
 REQUIRED_USE="test? ( conntrack nftables )"
@@ -136,22 +136,25 @@ src_install() {
 
 pkg_postinst() {
 	local default_iptables="xtables-legacy-multi"
-	if ! eselect iptables show &>/dev/null; then
-		elog "Current iptables implementation is unset, setting to ${default_iptables}"
-		eselect iptables set "${default_iptables}"
-	fi
+	local table tables=(
+		"iptables"
+	)
 
 	if use nftables; then
-		local tables
-		for tables in {arp,eb}tables; do
-			if ! eselect "${tables}" show &>/dev/null; then
-				elog "Current ${tables} implementation is unset, setting to xtables-nft-multi"
-				eselect "${tables}" set "xtables-nft-multi"
-			fi
-		done
+		default_iptables="xtables-nft-multi"
+		tables+=(
+			{arp,eb}tables
+		)
 	fi
 
-	eselect iptables show
+	for table in "${tables[@]}"; do
+		if ! eselect "${table}" show &>/dev/null; then
+			elog "Current ${table} implementation is unset, setting to ${default_iptables}"
+			eselect "${table}" set "${default_iptables}"
+		fi
+
+		nonfatal eselect "${tables}" show
+	done
 }
 
 pkg_prerm() {
