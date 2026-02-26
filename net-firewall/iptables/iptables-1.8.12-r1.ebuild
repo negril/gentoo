@@ -160,25 +160,22 @@ pkg_postinst() {
 pkg_prerm() {
 	if [[ -z ${REPLACED_BY_VERSION} ]]; then
 		elog "Unsetting iptables symlinks before removal"
-		eselect iptables unset
+		nonfatal eselect iptables unset
 	fi
 
 	if ! has_version 'net-firewall/ebtables'; then
 		elog "Unsetting ebtables symlinks before removal"
-		eselect ebtables unset
+		nonfatal eselect ebtables unset
 	elif [[ -z ${REPLACED_BY_VERSION} ]]; then
 		elog "Resetting ebtables symlinks to ebtables-legacy"
-		eselect ebtables set ebtables-legacy
+		nonfatal eselect ebtables set ebtables-legacy
 	fi
 
 	if ! has_version 'net-firewall/arptables'; then
 		elog "Unsetting arptables symlinks before removal"
-		eselect arptables unset
+		nonfatal eselect arptables unset
 	elif [[ -z ${REPLACED_BY_VERSION} ]]; then
 		elog "Resetting arptables symlinks to arptables-legacy"
-		eselect arptables set arptables-legacy
+		nonfatal eselect arptables set arptables-legacy
 	fi
-
-	# The eselect module failing should not be fatal
-	return 0
 }
