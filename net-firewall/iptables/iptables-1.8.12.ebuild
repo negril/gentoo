@@ -144,9 +144,9 @@ pkg_postinst() {
 	if use nftables; then
 		local tables
 		for tables in {arp,eb}tables; do
-			if ! eselect ${tables} show &>/dev/null; then
-				elog "Current ${tables} implementation is unset, setting to ${default_iptables}"
-				eselect ${tables} set xtables-nft-multi
+			if ! eselect "${tables}" show &>/dev/null; then
+				elog "Current ${tables} implementation is unset, setting to xtables-nft-multi"
+				eselect "${tables}" set "xtables-nft-multi"
 			fi
 		done
 	fi
