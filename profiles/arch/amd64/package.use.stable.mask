@@ -17,6 +17,10 @@
 
 #--- END OF EXAMPLES ---
 
+# Michał Górny <mgorny@gentoo.org> (2026-03-03)
+# OpenMP offloading GPU runtimes are not keyworded everywhere.
+llvm-runtimes/clang-runtime llvm_targets_AMDGPU llvm_targets_NVPTX
+
 # Matt Jolly <kangie@gentoo.org> (2026-03-10)
 # mrustc is not yet stable on amd64, but we want bootstrap for Rust
 ~dev-lang/rust-1.90.0 mrustc-bootstrap
