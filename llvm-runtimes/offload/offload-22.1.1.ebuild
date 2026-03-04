@@ -104,6 +104,9 @@ src_configure() {
 
 		# this breaks building static target libs
 		-DBUILD_SHARED_LIBS=OFF
+
+		# this project does not use standard LLVM cmake macros
+		-DOPENMP_LLVM_LIT_EXECUTABLE=$(usex test "${EPREFIX}/usr/bin/lit" NOTFOUND)
 	)
 
 	[[ ! ${LLVM_ALLOW_GPU_TESTING} ]] && mycmakeargs+=(
@@ -114,7 +117,6 @@ src_configure() {
 	)
 	use test && mycmakeargs+=(
 		# this project does not use standard LLVM cmake macros
-		-DOPENMP_LLVM_LIT_EXECUTABLE="${EPREFIX}/usr/bin/lit"
 		-DOPENMP_LIT_ARGS="$(get_lit_flags)"
 
 		-DOPENMP_TEST_C_COMPILER="$(type -P "${CHOST}-clang")"
