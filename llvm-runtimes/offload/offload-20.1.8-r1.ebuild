@@ -108,6 +108,9 @@ src_configure() {
 		-DFFI_LIBRARY_DIR="${ffi_ldflags#-L}"
 		# force using shared libffi
 		-DFFI_STATIC_LIBRARIES=NO
+
+		# this project does not use standard LLVM cmake macros
+		-DOPENMP_LLVM_LIT_EXECUTABLE=$(usex test "${EPREFIX}/usr/bin/lit" NOTFOUND)
 	)
 
 	[[ ! ${LLVM_ALLOW_GPU_TESTING} ]] && mycmakeargs+=(
@@ -117,7 +120,6 @@ src_configure() {
 	)
 	use test && mycmakeargs+=(
 		# this project does not use standard LLVM cmake macros
-		-DOPENMP_LLVM_LIT_EXECUTABLE="${EPREFIX}/usr/bin/lit"
 		-DOPENMP_LIT_ARGS="$(get_lit_flags)"
 
 		-DOPENMP_TEST_C_COMPILER="$(type -P "${CHOST}-clang")"
