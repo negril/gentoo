@@ -13,12 +13,14 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 LICENSE="BSD"
-SLOT="0/3"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 IUSE="test"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}"
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+"
 RDEPEND="${DEPEND}"
 
 src_configure() {
@@ -30,6 +32,7 @@ src_configure() {
 		-DBUILD_STATIC_LIBS=OFF
 		-DSUITESPARSE_DEMOS=$(usex test)
 		-DSUITESPARSE_INCLUDEDIR_POSTFIX=""
+		-DSUITESPARSE_USE_CUDA=OFF
 	)
 	cmake_src_configure
 }

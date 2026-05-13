@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cmake toolchain-funcs
+inherit cmake cuda toolchain-funcs
 
 Sparse_PV=$(ver_rs 3 '.')
 Sparse_P="SuiteSparse-${Sparse_PV}"
@@ -13,13 +13,15 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/SuiteSparse_config"
 LICENSE="BSD"
-SLOT="0/7"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
-IUSE="openmp"
+IUSE="cuda openmp"
 
 # we need to depend on blas as the cmake file looks for it.
 # It is also a runtime dependency as it has headers to link with blas
-DEPEND="virtual/blas"
+DEPEND="
+	virtual/blas
+"
 RDEPEND="${DEPEND}"
 
 pkg_pretend() {
@@ -28,6 +30,14 @@ pkg_pretend() {
 
 pkg_setup() {
 	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
+}
+
+src_prepare() {
+	cmake_src_prepare
+
+	if use cuda; then 
+		cuda_src_prepare
+	fi
 }
 
 src_configure() {
@@ -43,6 +53,22 @@ src_configure() {
 		-DSUITESPARSE_USE_FORTRAN=ON
 		-DSUITESPARSE_USE_OPENMP=$(usex openmp ON OFF)
 		-DSUITESPARSE_INCLUDEDIR_POSTFIX=""
+
+		-DSUITESPARSE_USE_64BIT_BLAS="yes"
+		# # -DBLA_VENDOR=Generic
+		# -DBLA_VENDOR=FlexiBLAS
+		-DBLA_VENDOR=Generic -DBLAS_LIBRARIES=-lcblas
 	)
+
+	if use cuda; then
+		cuda_add_sandbox
+		addpredict "/dev/char/"
+
+		mycmakeargs+=(
+			-DSUITESPARSE_CUDA_ARCHITECTURES="${CUDAARCHS}" # TODO
+		)
+		export CUDAHOSTLD="$(tc-getCXX)"
+	fi
+
 	cmake_src_configure
 }

@@ -44,37 +44,39 @@ src_prepare() {
 }
 
 src_configure() {
-	local lapack_libs=no
-	local blas_libs=no
+	local lapack_libs="no"
+	local blas_libs="no"
 	if use lapack; then
-		blas_libs=$($(tc-getPKG_CONFIG) --libs blas)
-		lapack_libs=$($(tc-getPKG_CONFIG) --libs lapack)
+		blas_libs="$($(tc-getPKG_CONFIG) --libs blas)"
+		lapack_libs="$($(tc-getPKG_CONFIG) --libs lapack)"
 	fi
 
 	local cudaconfargs=( $(use_with cuda) )
 	if use cuda ; then
 		cudaconfargs+=(
-			--with-cublas-libs="-L${EPREFIX}/opt/cuda/$(get_libdir) -lcublas"
-			--with-cublas-cflags="-I${EPREFIX}/opt/cuda/include"
+			--with-cublas-libs="-L${CUDA_PATH:-${ESYSROOT}/opt/cuda}/$(get_libdir) -lcublas"
+			--with-cublas-cflags="-I${CUDA_PATH:-${ESYSROOT}/opt/cuda}/include"
 		)
 	fi
 
-	econf \
-		--disable-static \
-		--with-blas="${blas_libs}" \
-		--with-lapack="${lapack_libs}" \
-		$(use_with doc) \
-		$(use_with modify) \
-		$(use_with matrixops) \
-		$(use_with partition) \
-		$(use_with partition camd) \
-		$(use_with lapack supernodal) \
+	local myeconfargs=(
+		--disable-static
+		--with-blas="${blas_libs}"
+		--with-lapack="${lapack_libs}"
+		"$(use_with doc)"
+		"$(use_with modify)"
+		"$(use_with matrixops)"
+		"$(use_with partition)"
+		"$(use_with partition camd)"
+		"$(use_with lapack supernodal)"
 		"${cudaconfargs[@]}"
+	)
+	econf "${myeconfargs[@]}"
 }
 
 src_install() {
 	default
 
 	# no static archives
-	find "${D}" -name '*.la' -delete || die
+	find "${ED}" -name '*.la' -delete || die
 }

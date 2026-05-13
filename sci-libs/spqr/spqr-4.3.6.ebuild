@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cmake
+inherit cmake cuda
 
 Sparse_PV="7.12.2"
 Sparse_P="SuiteSparse-${Sparse_PV}"
@@ -13,23 +13,35 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 LICENSE="GPL-2+"
-SLOT="0/4"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="cuda doc test"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}
-	>=sci-libs/cholmod-5.3.4
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+	>=sci-libs/cholmod-5.3.4:=
 	virtual/blas
-    cuda? (
-        dev-util/nvidia-cuda-toolkit
-        x11-drivers/nvidia-drivers
-    )"
+	cuda? (
+		dev-util/nvidia-cuda-toolkit:=
+		x11-drivers/nvidia-drivers
+	)
+"
 RDEPEND="${DEPEND}"
-BDEPEND="doc? (
-	virtual/latex-base
-	dev-texlive/texlive-plaingeneric
-)"
+BDEPEND="
+	doc? (
+		virtual/latex-base
+		dev-texlive/texlive-plaingeneric
+	)
+"
+
+src_prepare() {
+	cmake_src_prepare
+
+	if use cuda; then
+		cuda_src_prepare
+	fi
+}
 
 src_configure() {
 	# Define SUITESPARSE_INCLUDEDIR_POSTFIX to "" otherwise it take
@@ -41,7 +53,23 @@ src_configure() {
 		-DSPQR_USE_CUDA=$(usex cuda)
 		-DSUITESPARSE_DEMOS=$(usex test)
 		-DSUITESPARSE_INCLUDEDIR_POSTFIX=""
+
+		-DSUITESPARSE_USE_64BIT_BLAS="yes"
+		# # -DBLA_VENDOR=Generic
+		# -DBLA_VENDOR=FlexiBLAS
+		-DBLA_VENDOR=Generic -DBLAS_LIBRARIES=-lcblas
 	)
+
+	if use cuda; then
+		cuda_add_sandbox
+		addpredict "/dev/char/"
+
+		mycmakeargs+=(
+			-DSUITESPARSE_CUDA_ARCHITECTURES="${CUDAARCHS}" # TODO
+		)
+		export CUDAHOSTLD="$(tc-getCXX)"
+	fi
+
 	cmake_src_configure
 }
 
