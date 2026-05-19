@@ -5,7 +5,7 @@ EAPI=8
 
 Sparse_PV="7.12.2"
 Sparse_P="SuiteSparse-${Sparse_PV}"
-inherit cmake toolchain-funcs
+inherit cmake cuda toolchain-funcs
 
 DESCRIPTION="Sparse Cholesky factorization and update/downdate library"
 HOMEPAGE="https://people.engr.tamu.edu/davis/suitesparse.html"
@@ -55,6 +55,14 @@ pkg_setup() {
 	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
 }
 
+src_prepare() {
+	cmake_src_prepare
+
+	if use cuda; then
+		cuda_src_prepare
+	fi
+}
+
 src_configure() {
 	# Note that "N" prefixed options are negative options
 	# so, they need to be turned OFF if you want that option.
@@ -87,6 +95,17 @@ src_configure() {
 		mycmakeargs+=( -DBLA_VENDOR=Generic )
 	fi
 	# TODO: Figure out how to make sci-libs/mkl work. Bug 974246
+
+	if use cuda; then
+		cuda_add_sandbox
+		addpredict "/dev/char/"
+
+		mycmakeargs+=(
+			-DSUITESPARSE_CUDA_ARCHITECTURES="${CUDAARCHS:-all-major}"
+		)
+		local -x CUDAHOSTCXX="$(cuda_gccdir)"
+		local -x CUDAHOSTLD="$(tc-getCXX)"
+	fi
 
 	cmake_src_configure
 }
