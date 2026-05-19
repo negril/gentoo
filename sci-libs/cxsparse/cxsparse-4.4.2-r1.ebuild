@@ -13,12 +13,14 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/CXSparse"
 LICENSE="LGPL-2.1"
-SLOT="0/4"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="test"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}"
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+"
 RDEPEND="${DEPEND}"
 
 src_configure() {
@@ -84,21 +86,21 @@ src_test() {
 		["cs_demo2"]=${demo_set_1[@]}
 		["cs_demo3"]=${demo_set_2[@]}
 
-        ["cs_ci_demo1"]=t2
-        ["cs_ci_demo2"]=${demo_set_3[@]}
-        ["cs_ci_demo3"]=${demo_set_4[@]}
+		["cs_ci_demo1"]=t2
+		["cs_ci_demo2"]=${demo_set_3[@]}
+		["cs_ci_demo3"]=${demo_set_4[@]}
 
-        ["cs_cl_demo1"]=t2
-        ["cs_cl_demo2"]=${demo_set_3[@]}
-        ["cs_cl_demo3"]=${demo_set_4[@]}
+		["cs_cl_demo1"]=t2
+		["cs_cl_demo2"]=${demo_set_3[@]}
+		["cs_cl_demo3"]=${demo_set_4[@]}
 
-        ["cs_di_demo1"]=t1
-        ["cs_di_demo2"]=${demo_set_1[@]}
-        ["cs_di_demo3"]=${demo_set_2[@]}
+		["cs_di_demo1"]=t1
+		["cs_di_demo2"]=${demo_set_1[@]}
+		["cs_di_demo3"]=${demo_set_2[@]}
 
-        ["cs_dl_demo1"]=t1
-        ["cs_dl_demo2"]=${demo_set_1[@]}
-        ["cs_dl_demo3"]=${demo_set_2[@]}
+		["cs_dl_demo1"]=t1
+		["cs_dl_demo2"]=${demo_set_1[@]}
+		["cs_dl_demo3"]=${demo_set_2[@]}
 	)
 
 	# Run demo files
