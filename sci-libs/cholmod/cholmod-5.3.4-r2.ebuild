@@ -13,30 +13,37 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 
 LICENSE="LGPL-2.1+ modify? ( GPL-2+ ) matrixops? ( GPL-2+ )"
-SLOT="0/5"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 IUSE="+cholesky cuda doc openmp +matrixops +modify +partition +supernodal test"
 RESTRICT="!test? ( test )"
 
 DEPEND="
-	>=sci-libs/suitesparseconfig-${Sparse_PV}
-	>=sci-libs/amd-3.3.4
-	>=sci-libs/colamd-3.3.5
-	supernodal? ( virtual/lapack )
-	partition? (
-		>=sci-libs/camd-3.3.5
-		>=sci-libs/ccolamd-3.3.5
-	)
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+	>=sci-libs/amd-3.3.4:=
+	>=sci-libs/colamd-3.3.5:=
 	cuda? (
-		dev-util/nvidia-cuda-toolkit
+		dev-util/nvidia-cuda-toolkit:=
 		x11-drivers/nvidia-drivers
-	)"
+	)
+	partition? (
+		>=sci-libs/camd-3.3.5:=
+		>=sci-libs/ccolamd-3.3.5:=
+	)
+	supernodal? (
+		virtual/lapack
+	)
+"
 RDEPEND="${DEPEND}"
-BDEPEND="doc? ( virtual/latex-base )"
+BDEPEND="
+	doc? ( virtual/latex-base )
+"
 
-REQUIRED_USE="supernodal? ( cholesky )
+REQUIRED_USE="
+	supernodal? ( cholesky )
 	modify? ( cholesky )
-	test? ( cholesky matrixops supernodal )"
+	test? ( cholesky matrixops supernodal )
+"
 
 PATCHES=( "${FILESDIR}"/${P}-{metis,gklib}-cmake4.patch ) # bug 957609
 
