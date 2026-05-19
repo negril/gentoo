@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cmake
+inherit cmake cuda toolchain-funcs
 
 Sparse_PV="7.12.2"
 Sparse_P="SuiteSparse-${Sparse_PV}"
@@ -35,6 +35,14 @@ BDEPEND="
 	)
 "
 
+src_prepare() {
+	cmake_src_prepare
+
+	if use cuda; then
+		cuda_src_prepare
+	fi
+}
+
 src_configure() {
 	# Define SUITESPARSE_INCLUDEDIR_POSTFIX to "" otherwise it take
 	# the value suitesparse, and the include directory would be set to
@@ -57,6 +65,17 @@ src_configure() {
 		mycmakeargs+=( -DBLA_VENDOR=Generic )
 	fi
 	# TODO: Figure out how to make sci-libs/mkl work. Bug 974246
+
+	if use cuda; then
+		cuda_add_sandbox
+		addpredict "/dev/char/"
+
+		mycmakeargs+=(
+			-DSUITESPARSE_CUDA_ARCHITECTURES="${CUDAARCHS:-all-major}"
+		)
+		local -x CUDAHOSTCXX="$(cuda_gccdir)"
+		local -x CUDAHOSTLD="$(tc-getCXX)"
+	fi
 
 	cmake_src_configure
 }
