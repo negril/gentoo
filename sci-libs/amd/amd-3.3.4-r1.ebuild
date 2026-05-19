@@ -37,6 +37,7 @@ src_configure() {
 		-DSUITESPARSE_USE_FORTRAN=$(usex fortran)
 		-DSUITESPARSE_DEMOS=$(usex test)
 		-DSUITESPARSE_INCLUDEDIR_POSTFIX=""
+		-DSUITESPARSE_USE_CUDA=OFF
 	)
 	cmake_src_configure
 }
