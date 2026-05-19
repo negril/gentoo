@@ -13,13 +13,15 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/SuiteSparse_config"
 LICENSE="BSD"
-SLOT="0/7"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 IUSE="openmp"
 
 # we need to depend on blas as the cmake file looks for it.
 # It is also a runtime dependency as it has headers to link with blas
-DEPEND="virtual/blas"
+DEPEND="
+	virtual/blas
+"
 RDEPEND="${DEPEND}"
 
 pkg_pretend() {
@@ -41,7 +43,7 @@ src_configure() {
 	local mycmakeargs=(
 		-DBUILD_STATIC_LIBS=OFF
 		-DSUITESPARSE_USE_FORTRAN=ON
-		-DSUITESPARSE_USE_OPENMP=$(usex openmp ON OFF)
+		-DSUITESPARSE_USE_OPENMP=$(usex openmp)
 		-DSUITESPARSE_INCLUDEDIR_POSTFIX=""
 	)
 
