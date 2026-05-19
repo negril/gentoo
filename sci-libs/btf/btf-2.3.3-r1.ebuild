@@ -29,6 +29,7 @@ src_configure() {
 	local mycmakeargs=(
 		-DBUILD_STATIC_LIBS=OFF
 		-DSUITESPARSE_INCLUDEDIR_POSTFIX=""
+		-DSUITESPARSE_USE_CUDA=OFF
 	)
 	cmake_src_configure
 }
