@@ -13,23 +13,27 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 LICENSE="GPL-2+"
-SLOT="0/4"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="cuda doc test"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}
-	>=sci-libs/cholmod-5.3.4
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+	>=sci-libs/cholmod-5.3.4:=
 	virtual/blas
-    cuda? (
-        dev-util/nvidia-cuda-toolkit
-        x11-drivers/nvidia-drivers
-    )"
+	cuda? (
+		dev-util/nvidia-cuda-toolkit:=
+		x11-drivers/nvidia-drivers
+	)
+"
 RDEPEND="${DEPEND}"
-BDEPEND="doc? (
-	virtual/latex-base
-	dev-texlive/texlive-plaingeneric
-)"
+BDEPEND="
+	doc? (
+		virtual/latex-base
+		dev-texlive/texlive-plaingeneric
+	)
+"
 
 src_configure() {
 	# Define SUITESPARSE_INCLUDEDIR_POSTFIX to "" otherwise it take
