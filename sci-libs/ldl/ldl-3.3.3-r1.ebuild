@@ -13,15 +13,19 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 LICENSE="LGPL-2.1+"
-SLOT="0/3"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="doc test"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}
-	>=sci-libs/amd-3.3.4"
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+	>=sci-libs/amd-3.3.4:=
+"
 RDEPEND="${DEPEND}"
-BDEPEND="doc? ( virtual/latex-base )"
+BDEPEND="
+	doc? ( virtual/latex-base )
+"
 
 src_configure() {
 	# May slightly skew FP numbers if enabled, and we want to match
