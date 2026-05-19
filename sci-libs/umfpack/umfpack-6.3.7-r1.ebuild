@@ -13,15 +13,17 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 LICENSE="GPL-2+"
-SLOT="0/6"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 IUSE="doc openmp test"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}
-	>=sci-libs/amd-3.3.4
-	>=sci-libs/cholmod-5.3.4[openmp=]
-	virtual/blas"
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+	>=sci-libs/amd-3.3.4:=
+	>=sci-libs/cholmod-5.3.4:=[openmp=]
+	virtual/blas
+"
 RDEPEND="${DEPEND}"
 BDEPEND="doc? ( virtual/latex-base )"
 
