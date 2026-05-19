@@ -119,13 +119,24 @@ src_test() {
 		young1c
 	)
 
+	local simples=(
+		qrsimple
+		qrsimplec
+		qrsimplec_int32
+	)
+	local demos=(
+		qrdemo
+		qrdemo_int32
+		qrdemoc
+		qrdemoc_int32
+	)
 	declare -A testsuite
 	local i
 	local j
-	for i in qrsimple qrsimplec; do
+	for i in "${simples[@]}"; do
 		testsuite["${i}"]=${simple[@]}
 	done
-	for i in qrdemo qrdemoc; do
+	for i in "${demos[@]}"; do
 		testsuite["${i}"]=${demo[@]}
 	done
 	# Run demo files
