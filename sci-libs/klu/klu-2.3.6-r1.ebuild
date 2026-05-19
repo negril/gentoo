@@ -13,18 +13,22 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 LICENSE="LGPL-2.1+"
-SLOT="0/2"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86"
 IUSE="doc test"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}
-	>=sci-libs/amd-3.3.4
-	>=sci-libs/btf-2.3.3
-	>=sci-libs/colamd-3.3.5
-	>=sci-libs/cholmod-5.3.4"
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+	>=sci-libs/amd-3.3.4:=
+	>=sci-libs/btf-2.3.3:=
+	>=sci-libs/colamd-3.3.5:=
+	>=sci-libs/cholmod-5.3.4:=
+"
 RDEPEND="${DEPEND}"
-BDEPEND="doc? ( virtual/latex-base )"
+BDEPEND="
+	doc? ( virtual/latex-base )
+"
 
 src_configure() {
 	# Define SUITESPARSE_INCLUDEDIR_POSTFIX to "" otherwise it take
