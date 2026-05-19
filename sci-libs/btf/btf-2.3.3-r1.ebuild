@@ -13,10 +13,12 @@ SRC_URI="https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v$
 
 S="${WORKDIR}/${Sparse_P}/${PN^^}"
 LICENSE="LGPL-2.1"
-SLOT="0/2"
+SLOT="0/$(ver_cut 1)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~mips ~ppc ~ppc64 ~riscv ~sparc ~x86"
 
-DEPEND=">=sci-libs/suitesparseconfig-${Sparse_PV}"
+DEPEND="
+	>=sci-libs/suitesparseconfig-${Sparse_PV}:=
+"
 RDEPEND="${DEPEND}"
 
 src_configure() {
