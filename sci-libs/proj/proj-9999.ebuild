@@ -1,7 +1,10 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
+
+# TODO
+# rename USE curl to projsync iff usemove is available
 
 inherit cmake
 
@@ -18,9 +21,11 @@ else
 	PROJ_DATA_PV="1.18"
 	SRC_URI="
 		https://github.com/OSGeo/PROJ/releases/download/${PV}/${P}.tar.gz
-		https://github.com/OSGeo/PROJ-data/releases/download/${PROJ_DATA_PV}.0/${PN}-data-${PROJ_DATA_PV}.tar.gz
 		https://download.osgeo.org/proj/${P}.tar.gz
-		https://download.osgeo.org/proj/${PN}-data-${PROJ_DATA_PV}.tar.gz
+		proj-data? (
+			https://github.com/OSGeo/PROJ-data/releases/download/${PROJ_DATA_PV}.0/${PN}-data-${PROJ_DATA_PV}.tar.gz
+			https://download.osgeo.org/proj/${PN}-data-${PROJ_DATA_PV}.tar.gz
+		)
 	"
 	KEYWORDS="~amd64 ~arm ~arm64 ~loong ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 fi
@@ -28,7 +33,7 @@ fi
 LICENSE="MIT"
 SLOT="0/$(ver_cut 1)"
 # Changes on every major release
-IUSE="curl test +tiff"
+IUSE="curl proj-data test +tiff"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
@@ -53,10 +58,12 @@ src_unpack() {
 	else
 		unpack "${P}.tar.gz"
 
-		cd "${S}"/data || die
-		mv README README.DATA || die
+		if use proj-data; then
+			cd "${S}"/data || die
+			mv README README.DATA || die
 
-		unpack "${PN}-data-${PROJ_DATA_PV}.tar.gz"
+			unpack "${PN}-data-${PROJ_DATA_PV}.tar.gz"
+		fi
 	fi
 }
 
@@ -80,12 +87,14 @@ src_configure() {
 }
 
 src_test() {
-	CMAKE_SKIP_TESTS=(
-		# proj_test_cpp_api: https://lists.osgeo.org/pipermail/proj/2019-September/008836.html
-		# testprojinfo: Also related to map data?
-		"proj_test_cpp_api"
-		"testprojinfo"
-	)
+	local CMAKE_SKIP_TESTS=()
+
+	if ! use curl; then
+		CMAKE_SKIP_TESTS+=(
+			# fails with Reason: build without Curl support
+			"^test_projinfo.yaml$"
+		)
+	fi
 
 	cmake_src_test
 }
@@ -93,8 +102,10 @@ src_test() {
 src_install() {
 	cmake_src_install
 
-	cd data || die
-	dodoc README.DATA
+	if use proj-data; then
+		cd data || die
+		dodoc README.DATA
+	fi
 
 	find "${ED}" -name '*.la' -type f -delete || die
 }
