@@ -23,7 +23,7 @@ IUSE="static-libs"
 RDEPEND="
 	dev-cpp/abseil-cpp:=
 	dev-libs/protobuf:=
-	dev-util/google-perftools
+	dev-util/google-perftools:=
 	!sci-ml/pysentencepiece
 "
 DEPEND="${RDEPEND}
