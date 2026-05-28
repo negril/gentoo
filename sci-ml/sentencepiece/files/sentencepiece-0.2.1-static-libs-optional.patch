@@ -1,0 +1,69 @@
+From 15bdd00cc05ac708995b06d90a1851c026b5b928 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Thu, 28 May 2026 14:43:37 +0200
+Subject: static libs optional
+
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9bc8bbe..8a3e1b7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,7 +23,8 @@ endif()
+ project(sentencepiece VERSION ${SPM_VERSION} LANGUAGES C CXX)
+ 
+ option(SPM_ENABLE_NFKC_COMPILE "Enables NFKC compile" OFF)
+-option(SPM_ENABLE_SHARED "Builds shared libaries in addition to static libraries." ON)
++option(SPM_ENABLE_SHARED "Builds shared libaries." ON)
++option(SPM_ENABLE_STATIC "Builds static libaries." ON)
+ option(SPM_BUILD_TEST "Builds test binaries." OFF)
+ option(SPM_ENABLE_TCMALLOC "Enable TCMalloc if available." ON)
+ option(SPM_TCMALLOC_STATIC "Link static library of TCMALLOC." OFF)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 880b268..36cfec4 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -234,16 +234,18 @@ if (SPM_ENABLE_SHARED)
+   endif()
+ endif()
+ 
++if (SPM_ENABLE_STATIC)
+ add_library(sentencepiece-static STATIC ${SPM_SRCS})
+ add_library(sentencepiece_train-static STATIC ${SPM_TRAIN_SRCS})
+ 
+ target_link_libraries(sentencepiece-static INTERFACE ${SPM_LIBS})
+ target_link_libraries(sentencepiece_train-static INTERFACE sentencepiece-static ${SPM_LIBS})
++endif()
+ 
+ if (SPM_ENABLE_SHARED)
+   target_link_libraries(sentencepiece ${SPM_LIBS})
+   target_link_libraries(sentencepiece_train ${SPM_LIBS} sentencepiece)
+-  set(SPM_INSTALLTARGETS sentencepiece sentencepiece_train sentencepiece-static sentencepiece_train-static)
++  list(APPEND SPM_INSTALLTARGETS sentencepiece sentencepiece_train)
+   set_target_properties(sentencepiece sentencepiece_train PROPERTIES SOVERSION 0 VERSION 0.0.0)
+   set_target_properties(sentencepiece PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS YES)
+   set_target_properties(sentencepiece_train PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS YES)
+@@ -254,14 +256,18 @@ if (SPM_ENABLE_SHARED)
+     set_target_properties(sentencepiece PROPERTIES IMPORT_SUFFIX ".dll.a")
+     set_target_properties(sentencepiece_train PROPERTIES IMPORT_SUFFIX ".dll.a")
+   endif()
+-else()
++elseif (SPM_ENABLE_STATIC)
+   add_library(sentencepiece ALIAS sentencepiece-static)
+   add_library(sentencepiece_train ALIAS sentencepiece_train-static)
+-  set(SPM_INSTALLTARGETS sentencepiece-static sentencepiece_train-static)
++else()
++  message(FATAL_ERROR "Not building any libs")
+ endif()
+ 
++if (SPM_ENABLE_STATIC)
++list(APPEND SPM_INSTALLTARGETS sentencepiece-static sentencepiece_train-static)
+ set_target_properties(sentencepiece-static PROPERTIES OUTPUT_NAME "sentencepiece")
+ set_target_properties(sentencepiece_train-static PROPERTIES OUTPUT_NAME "sentencepiece_train")
++endif()
+ 
+ if (NOT MSVC)
+   set(CMAKE_CXX_FLAGS "-O3 -Wall -fPIC ${CMAKE_CXX_FLAGS}")
+-- 
+2.54.0
+

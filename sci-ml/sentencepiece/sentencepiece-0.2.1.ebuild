@@ -17,6 +17,8 @@ LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64"
 
+IUSE="static-libs"
+
 # depends on abseil-cpp via protobuf targets
 RDEPEND="
 	dev-cpp/abseil-cpp:=
@@ -37,6 +39,11 @@ DOCS=(
 	doc/special_symbols.md
 )
 
+PATCHES=(
+	"${FILESDIR}/${PN}-0.2.1-nostrip.patch"
+	"${FILESDIR}/${PN}-0.2.1-static-libs-optional.patch"
+)
+
 src_prepare() {
 	sed -i \
 		-e "s:third_party/darts_clone/darts.h:darts.h:" \
@@ -46,9 +53,10 @@ src_prepare() {
 		src/unigram_model.h \
 		src/builder.cc \
 		|| die
-	eapply "${FILESDIR}"/${P}-nostrip.patch
-	cmake_src_prepare
+
+	cmake_prepare
 	distutils-r1_src_prepare
+
 	sed \
 		-e 's|@libprotobuf_lite@|protobuf-lite|' \
 		-e "s|@includedir_for_pc_file@|${S}/src|" \
@@ -65,6 +73,7 @@ src_configure() {
 	local mycmakeargs=(
 		-DSPM_ABSL_PROVIDER=package
 		-DSPM_PROTOBUF_PROVIDER=package
+		-DSPM_ENABLE_STATIC="$(usex static-libs)"
 	)
 
 	if has_version ">=dev-cpp/abseil-cpp-20260107.0"; then
