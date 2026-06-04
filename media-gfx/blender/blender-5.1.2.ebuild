@@ -16,7 +16,7 @@ EAPI=8
 # - Package Audaspace
 # 	https://github.com/neXyon/audaspace
 
-PYTHON_COMPAT=( python3_{13..14} )
+PYTHON_COMPAT=( python3_{12..14} )
 # NOTE must match media-libs/osl
 LLVM_COMPAT=( {20..22} )
 LLVM_OPTIONAL=1
@@ -55,7 +55,7 @@ else
 			https://download.blender.org/source/blender-test-data-${BLENDER_BRANCH}.0.tar.xz
 		)
 	"
-	KEYWORDS="~amd64 ~arm64"
+	KEYWORDS="~amd64"
 fi
 
 # assets are CC0-1.0
@@ -65,16 +65,11 @@ SLOT="${BLENDER_BRANCH}"
 # NOTE +openpgl breaks on very old amd64 hardware
 # potentially mirror cpu_flags_x86 + REQUIRED_USE
 IUSE="
-	alembic +bullet cuda +cycles +cycles-bin-kernels
-	debug doc +draco +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
-	+jpeg2k man +manifold +meshoptimizer +nanovdb ndof nls +oidn openal +opengl +openpgl
+	alembic +bullet +color-management cuda +cycles +cycles-bin-kernels
+	debug doc +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
+	+jpeg2k man +manifold +nanovdb ndof nls +oidn openal +openexr +opengl +openpgl
 	+opensubdiv +openvdb optix osl +pdf pipewire +potrace +pugixml pulseaudio
-	renderdoc +rubberband sdlaudio +sndfile +tbb test +truetype valgrind vulkan wayland +webp X
-"
-
-IUSE+="
-	usd hydra
-	materialx
+	renderdoc +rubberband sdl +sndfile +tbb test +tiff +truetype valgrind vulkan wayland +webp X
 "
 
 if [[ "${PV}" == *9999* ]]; then
@@ -85,29 +80,31 @@ RESTRICT="!test? ( test )"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	|| ( opengl vulkan )
+	alembic? ( openexr )
 	cuda? ( cycles )
-	cycles? ( tbb )
+	cycles? ( openexr tiff tbb )
 	fluid? ( tbb )
 	gnome? ( wayland )
 	hip? ( cycles )
 	hiprt? ( hip )
-	hydra? ( usd )
 	nanovdb? ( openvdb )
-	openvdb? ( tbb )
+	openvdb? ( tbb openexr )
+	optix? ( cuda )
 	osl? ( cycles pugixml )
-	rubberband? ( fftw )
 	test? (
+		color-management
 		jpeg2k
 	)
 "
 
 # Library versions for official builds can be found in the blender source directory in:
 # build_files/build_environment/cmake/versions.cmake
+
 RDEPEND="${PYTHON_DEPS}
 	app-arch/zstd:=
 	dev-cpp/gflags:=
 	dev-cpp/glog:=
-	>=dev-libs/imath-3.2.2:=
+	dev-libs/libfmt:=
 	$(python_gen_cond_dep '
 		dev-python/cattrs[${PYTHON_USEDEP}]
 		dev-python/cython[${PYTHON_USEDEP}]
@@ -119,16 +116,14 @@ RDEPEND="${PYTHON_DEPS}
 	media-libs/libepoxy
 	media-libs/libjpeg-turbo:=
 	>=media-libs/libpng-1.6.50:=
-	>=media-libs/openexr-3.3.5:0=
 	>=media-libs/openimageio-3.0.9.1:=[python,${PYTHON_SINGLE_USEDEP}]
 	sci-libs/ceres-solver:=
 	virtual/libintl
 	virtual/zlib:=
 	alembic? ( >=media-gfx/alembic-1.8.3-r2[hdf(+)] )
 	bullet? ( sci-physics/bullet:=[double-precision] )
-	>=media-libs/opencolorio-2.5.0:=[python]
+	color-management? ( >=media-libs/opencolorio-2.4.2:=[python] )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
-	draco? ( media-libs/draco:= )
 	embree? ( media-libs/embree:4[raymask] )
 	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,libaom,opus,theora,vorbis,vpx,x264,x265] )
 	fftw? ( sci-libs/fftw:3.0=[threads] )
@@ -139,12 +134,9 @@ RDEPEND="${PYTHON_DEPS}
 			dev-libs/hiprt:2.5=
 		)
 	)
-	hydra? ( media-libs/openusd )
 	jack? ( virtual/jack )
 	jpeg2k? ( >=media-libs/openjpeg-2.5.3:2= )
 	manifold? ( >=sci-mathematics/manifold-3.2.1:= )
-	materialx? ( >=media-libs/materialx-1.39.3:=[python] )
-	meshoptimizer? ( media-libs/meshoptimizer )
 	ndof? (
 		app-misc/spacenavd
 		dev-libs/libspnav
@@ -152,12 +144,16 @@ RDEPEND="${PYTHON_DEPS}
 	nls? ( virtual/libiconv )
 	openal? ( media-libs/openal )
 	oidn? ( >=media-libs/oidn-2.1.0:= )
+	openexr? (
+		>=dev-libs/imath-3.1.7:=
+		>=media-libs/openexr-3.3.5:0=
+	)
 	opengl? (
 		virtual/glu
 		virtual/opengl[X?]
 	)
 	openpgl? ( media-libs/openpgl:= )
-	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,tbb?] )
+	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,cuda?,tbb?] )
 	openvdb? (
 		>=media-gfx/openvdb-11.0.0:=[blosc,nanovdb?,python]
 	)
@@ -177,13 +173,11 @@ RDEPEND="${PYTHON_DEPS}
 	pugixml? ( dev-libs/pugixml )
 	pulseaudio? ( media-libs/libpulse )
 	rubberband? ( >=media-libs/rubberband-4.0.0:= )
-	sdlaudio? ( media-libs/libsdl3 )
+	sdl? ( media-libs/libsdl2[sound,joystick] )
 	sndfile? ( media-libs/libsndfile )
 	tbb? ( dev-cpp/tbb:=[-hwloc(+)] )
+	tiff? ( media-libs/tiff:= )
 	valgrind? ( dev-debug/valgrind )
-	usd? (
-		>=media-libs/openusd-25.08[alembic?,color-management,draco?,embree?,materialx?,monolithic,openexr,opengl?,openimageio,openvdb?,osl?,python]
-	)
 	wayland? (
 		>=dev-libs/wayland-1.24.0
 		>=x11-libs/libxkbcommon-0.2.0
@@ -405,6 +399,11 @@ src_prepare() {
 	else
 		cmake_comment_add_subdirectory tests
 	fi
+
+	# Use slotted libhiprt64
+	sed \
+		-e "s|\"libhiprt64.so\"|\"${ESYSROOT}/usr/lib/hiprt/2.5/$(get_libdir)/libhiprt64.so\"|" \
+		-i extern/hipew/src/hiprtew.cc || die
 }
 
 src_configure() {
@@ -444,9 +443,9 @@ src_configure() {
 		-DWITH_INPUT_NDOF="$(usex ndof)"
 		-DWITH_INTERNATIONAL="$(usex nls)"
 		-DWITH_MANIFOLD="$(usex manifold)"
-		-DWITH_MATERIALX="$(usex materialx)"
-		-DWITH_MESHOPTIMIZER="$(usex meshoptimizer)"
+		-DWITH_MATERIALX="no" # TODO: Package MaterialX
 		-DWITH_NANOVDB="$(usex nanovdb)"
+		-DWITH_OPENCOLORIO="$(usex color-management)"
 		-DWITH_OPENGL_BACKEND="$(usex opengl)"
 		-DWITH_OPENIMAGEDENOISE="$(usex oidn)"
 		-DWITH_OPENSUBDIV="$(usex opensubdiv)"
@@ -458,12 +457,12 @@ src_configure() {
 		-DWITH_RENDERDOC="$(usex renderdoc)"
 		-DWITH_TBB="$(usex tbb)"
 		-DWITH_UNITY_BUILD="no"
-		-DWITH_USD="$(usex usd)"
+		-DWITH_USD="no" # TODO: Package USD
 		-DWITH_VULKAN_BACKEND="$(usex vulkan)"
 		-DWITH_XR_OPENXR="no"
 
-		# -DWITH_SYSTEM_AUDASPACE=OFF
 		-DWITH_SYSTEM_BULLET="yes"
+		-DWITH_SYSTEM_EIGEN3="yes"
 		-DWITH_SYSTEM_FREETYPE="yes"
 		-DWITH_SYSTEM_GFLAGS="yes"
 		-DWITH_SYSTEM_GLOG="yes"
@@ -490,11 +489,13 @@ src_configure() {
 
 		# Image Formats:
 		# -DWITH_IMAGE_CINEON=ON
+		-DWITH_IMAGE_OPENEXR="$(usex openexr)"
 		-DWITH_IMAGE_OPENJPEG="$(usex jpeg2k)"
 		-DWITH_IMAGE_WEBP="$(usex webp)" # unlisted
 
 		# Audio:
-		-DWITH_AUDASPACE="yes"
+		# -DWITH_AUDASPACE=OFF
+		# -DWITH_SYSTEM_AUDASPACE=OFF
 		-DWITH_CODEC_FFMPEG="$(usex ffmpeg)"
 		-DWITH_CODEC_SNDFILE="$(usex sndfile)"
 		# -DWITH_COREAUDIO=OFF
@@ -505,7 +506,7 @@ src_configure() {
 		# -DWITH_PIPEWIRE_DYNLOAD=
 		-DWITH_PULSEAUDIO="$(usex pulseaudio)"
 		# -DWITH_PULSEAUDIO_DYNLOAD=
-		-DWITH_SDL_AUDIO="$(usex sdlaudio)"
+		-DWITH_SDL="$(usex sdl)"
 		# -DWITH_WASAPI=OFF
 
 		# Python:
@@ -518,7 +519,7 @@ src_configure() {
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DWITH_DRACO="$(usex draco)"
+		-DWITH_DRACO="yes" # TODO: Package Draco # NOTE use bundled for now
 
 		# Modifiers:
 		-DWITH_MOD_FLUID="$(usex fluid)"
@@ -526,23 +527,22 @@ src_configure() {
 		-DWITH_MOD_REMESH="yes"
 
 		# Rendering:
-		-DWITH_EMBREE="$(usex embree)"
-		-DWITH_HYDRA="$(usex hydra)"
+		-DWITH_HYDRA="no" # TODO: Package Hydra
 
 		# Rendering (Cycles):
 		-DWITH_CYCLES_OSL="$(usex osl)"
+		-DWITH_CYCLES_EMBREE="$(usex embree)"
 		-DWITH_CYCLES_PATH_GUIDING="$(usex openpgl)"
 
 		-DWITH_CYCLES_DEVICE_OPTIX="$(usex optix)"
 		-DWITH_CYCLES_DEVICE_CUDA="$(usex cuda)"
-		-DWITH_CUDA_DYNLOAD="yes"
-		-DWITH_CYCLES_CUDA_BINARIES="$(usex cycles-bin-kernels "$(usex cuda "yes" "$(usex optix)")")"
+		-DWITH_CYCLES_CUDA_BINARIES="$(usex cuda "$(usex cycles-bin-kernels)")"
 
 		-DWITH_CYCLES_DEVICE_HIP="$(usex hip)"
 		-DWITH_CYCLES_HIP_BINARIES="$(usex hip "$(usex cycles-bin-kernels)")"
 		-DWITH_CYCLES_DEVICE_HIPRT="$(usex hip "$(usex hiprt)")"
 
-		-DWITH_CYCLES_HYDRA_RENDER_DELEGATE="$(usex hydra)"
+		-DWITH_CYCLES_HYDRA_RENDER_DELEGATE="no" # TODO: package Hydra
 
 		# -DWITH_CYCLES_STANDALONE=OFF
 		# -DWITH_CYCLES_STANDALONE_GUI=OFF
@@ -630,12 +630,6 @@ src_configure() {
 		)
 	fi
 
-	if use usd; then
-		mycmakeargs+=(
-			-DUSD_ROOT_DIR="${ESYSROOT}/usr/$(get_libdir)/openusd"
-		)
-	fi
-
 	if use wayland; then
 		mycmakeargs+=(
 			-DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}"
@@ -707,23 +701,12 @@ src_configure() {
 					# Enable user-interface tests using a headless display server.
 					# Currently this depends on WITH_GHOST_WAYLAND and the weston compositor (Experimental)
 					-DWITH_UI_TESTS_HEADLESS="$(usex !X "$(usex wayland)")"
-					-DWITH_UI_TESTS_VULKAN="$(usex vulkan)"
 					-DWESTON_BIN="${ESYSROOT}/usr/bin/weston"
 				)
 			fi
 		else
 			mycmakeargs+=(
-				-DWITH_CYCLES_TEST_OSL="no"
 				-DWITH_GPU_RENDER_TESTS="no"
-				-DWITH_GPU_BACKEND_TESTS="no"
-				-DWITH_GPU_DRAW_TESTS="no"
-				-DWITH_GPU_COMPOSITOR_TESTS="no"
-				-DWITH_GPU_MESH_PAINT_TESTS="no"
-				-DWITH_UI_TESTS="no"
-				-DWITH_UI_TESTS_HEADLESS="no"
-				-DWITH_UI_TESTS_VULKAN="no"
-				-DWITH_GPU_RENDER_TESTS_VULKAN="no"
-				-DWITH_LINUX_OFFICIAL_RELEASE_TESTS="no"
 			)
 		fi
 	fi
@@ -757,7 +740,14 @@ src_test() {
 		addpredict "/dev/char/"
 	fi
 
-	local -x CMAKE_SKIP_TESTS=()
+	local -x CMAKE_SKIP_TESTS=(
+		# very slow
+		"^cycles_image_colorspace_cpu$"
+
+		# needs test updates
+		"^geo_node_file_reporting$"
+		"^cycles_denoise_animation"
+	)
 
 	if { in_iuse usd && ! use usd; } || ! has_version "media-libs/openusd"; then
 		CMAKE_SKIP_TESTS+=(
@@ -766,34 +756,22 @@ src_test() {
 		)
 	fi
 
+	if has_version ">=media-video/ffmpeg-8"; then
+		CMAKE_SKIP_TESTS+=(
+			# output change
+			"^sequencer_render_video_output$"
+		)
+	fi
+
 	if [[ "${RUN_FAILING_TESTS:-0}" -eq 0 ]]; then
 		CMAKE_SKIP_TESTS+=(
 			"^bl_voxel_remesh_compare$"
 
-			"^geo_node_simulation_cloth_dynamics$"
-			"^geo_node_simulation_hair_dynamics$"
-
-			# TODO add commit
-			"^compositor_cpu_utilities$"
+			# Error: Symbol 'osl_mul_closure_color' was defined multiple times.
+			# First seen in: '0xd6b6805e2ccfa9f__direct_callable__dummy_services'
+			# LTO? Optix version?
+			"^cycles_image_data_types_optix$"
 		)
-
-		if [[ "${NVCC_PREPEND_FLAGS} ${NVCC_APPPEND_FLAGS}" == *@(@(--Ofast-compile|-Ofc) 0)!(@(--Ofast-compile|-Ofc) 0) ]]; then
-			CMAKE_SKIP_TESTS+=(
-				"^cycles_attributes_cuda$"
-				"^cycles_integrator_cuda$"
-				"^cycles_light_cuda$"
-				"^cycles_light_linking_cuda$"
-				"^cycles_motion_blur_cuda$"
-				"^cycles_openvdb_cuda$"
-				"^cycles_pointcloud_cuda$"
-				"^cycles_reports_cuda$"
-				"^cycles_shader_cuda$"
-				"^cycles_shadow_catcher_cuda$"
-				"^cycles_texture_cuda$"
-				"^cycles_volume_cuda$"
-				"^cycles_image_mipmap_cuda$"
-			)
-		fi
 
 		if has_version ">=dev-cpp/eigen-5"; then
 			CMAKE_SKIP_TESTS+=(

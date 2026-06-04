@@ -55,7 +55,7 @@ else
 			https://download.blender.org/source/blender-test-data-${BLENDER_BRANCH}.0.tar.xz
 		)
 	"
-	KEYWORDS="~amd64 ~arm64"
+	KEYWORDS="~amd64"
 fi
 
 # assets are CC0-1.0
@@ -103,6 +103,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 
 # Library versions for official builds can be found in the blender source directory in:
 # build_files/build_environment/cmake/versions.cmake
+
 RDEPEND="${PYTHON_DEPS}
 	app-arch/zstd:=
 	dev-cpp/gflags:=
@@ -181,9 +182,7 @@ RDEPEND="${PYTHON_DEPS}
 	sndfile? ( media-libs/libsndfile )
 	tbb? ( dev-cpp/tbb:=[-hwloc(+)] )
 	valgrind? ( dev-debug/valgrind )
-	usd? (
-		>=media-libs/openusd-25.08[alembic?,color-management,draco?,embree?,materialx?,monolithic,openexr,opengl?,openimageio,openvdb?,osl?,python]
-	)
+	usd? ( >=media-libs/openusd-25.08[materialx?,monolithic,python] )
 	wayland? (
 		>=dev-libs/wayland-1.24.0
 		>=x11-libs/libxkbcommon-0.2.0
@@ -526,11 +525,11 @@ src_configure() {
 		-DWITH_MOD_REMESH="yes"
 
 		# Rendering:
-		-DWITH_EMBREE="$(usex embree)"
 		-DWITH_HYDRA="$(usex hydra)"
 
 		# Rendering (Cycles):
 		-DWITH_CYCLES_OSL="$(usex osl)"
+		-DWITH_CYCLES_EMBREE="$(usex embree)"
 		-DWITH_CYCLES_PATH_GUIDING="$(usex openpgl)"
 
 		-DWITH_CYCLES_DEVICE_OPTIX="$(usex optix)"
@@ -769,12 +768,6 @@ src_test() {
 	if [[ "${RUN_FAILING_TESTS:-0}" -eq 0 ]]; then
 		CMAKE_SKIP_TESTS+=(
 			"^bl_voxel_remesh_compare$"
-
-			"^geo_node_simulation_cloth_dynamics$"
-			"^geo_node_simulation_hair_dynamics$"
-
-			# TODO add commit
-			"^compositor_cpu_utilities$"
 		)
 
 		if [[ "${NVCC_PREPEND_FLAGS} ${NVCC_APPPEND_FLAGS}" == *@(@(--Ofast-compile|-Ofc) 0)!(@(--Ofast-compile|-Ofc) 0) ]]; then

@@ -1,0 +1,36 @@
+From f35a085b3592592a940ab6cfea0749b3916c4f32 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx@gmail.com>
+Date: Sun, 14 Jun 2026 03:19:51 +0200
+Subject: gcc-17 include string
+
+Signed-off-by: Paul Zander <negril.nx@gmail.com>
+
+diff --git a/extern/audaspace/plugins/pipewire/PipeWireDevice.h b/extern/audaspace/plugins/pipewire/PipeWireDevice.h
+index 846fc721962..d2d94c1c585 100644
+--- a/extern/audaspace/plugins/pipewire/PipeWireDevice.h
++++ b/extern/audaspace/plugins/pipewire/PipeWireDevice.h
+@@ -30,6 +30,8 @@
+ 
+ #include "devices/MixingThreadDevice.h"
+ 
++#include <string>
++
+ AUD_NAMESPACE_BEGIN
+ 
+ /**
+diff --git a/extern/audaspace/plugins/pulseaudio/PulseAudioDevice.h b/extern/audaspace/plugins/pulseaudio/PulseAudioDevice.h
+index 846fc721962..d2d94c1c585 100644
+--- a/extern/audaspace/plugins/pulseaudio/PulseAudioDevice.h
++++ b/extern/audaspace/plugins/pulseaudio/PulseAudioDevice.h
+@@ -30,6 +30,8 @@
+
+ #include "devices/MixingThreadDevice.h"
+
++#include <string>
++
+ AUD_NAMESPACE_BEGIN
+
+ /**
+--
+2.54.0
+

@@ -526,11 +526,11 @@ src_configure() {
 		-DWITH_MOD_REMESH="yes"
 
 		# Rendering:
-		-DWITH_EMBREE="$(usex embree)"
 		-DWITH_HYDRA="$(usex hydra)"
 
 		# Rendering (Cycles):
 		-DWITH_CYCLES_OSL="$(usex osl)"
+		-DWITH_CYCLES_EMBREE="$(usex embree)"
 		-DWITH_CYCLES_PATH_GUIDING="$(usex openpgl)"
 
 		-DWITH_CYCLES_DEVICE_OPTIX="$(usex optix)"
@@ -769,12 +769,6 @@ src_test() {
 	if [[ "${RUN_FAILING_TESTS:-0}" -eq 0 ]]; then
 		CMAKE_SKIP_TESTS+=(
 			"^bl_voxel_remesh_compare$"
-
-			"^geo_node_simulation_cloth_dynamics$"
-			"^geo_node_simulation_hair_dynamics$"
-
-			# TODO add commit
-			"^compositor_cpu_utilities$"
 		)
 
 		if [[ "${NVCC_PREPEND_FLAGS} ${NVCC_APPPEND_FLAGS}" == *@(@(--Ofast-compile|-Ofc) 0)!(@(--Ofast-compile|-Ofc) 0) ]]; then

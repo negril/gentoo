@@ -33,6 +33,9 @@
 		<flag name="cuda">
 			Build cycles renderer with nVidia CUDA support.
 		</flag>
+		<flag name="draco">
+			Enable Draco mesh compression Python module (used for glTF)
+		</flag>
 		<flag name="hip">
 			Build cycles renderer with AMD HIP support.
 		</flag>
@@ -56,8 +59,17 @@
 		<flag name="fluid">
 			Adds fluid simulation support via the built-in Mantaflow library.
 		</flag>
+		<flag name="hydra">
+			Build Cycles Hydra render delegate
+		</flag>
 		<flag name="manifold">
 			Enable Manifold render backend via <pkg>sci-mathematics/manifold</pkg>
+		</flag>
+		<flag name="meshoptimizer">
+			Enable meshoptimizer compression Python module (used for glTF)
+		</flag>
+		<flag name="materialx">
+			Enable MaterialX Support
 		</flag>
 		<flag name="nanovdb">
 			Enable nanoVDB support in Cycles. Uses less memory than regular openVDB when rendering.
@@ -95,8 +107,14 @@
 		<flag name="rubberband">
 			Build with Rubber Band for audio time-stretching and pitch-scaling (used by Audaspace) via <pkg>media-libs/rubberband</pkg>
 		</flag>
+		<flag name="sdlaudio">
+			Enable SDL Audio
+		</flag>
 		<flag name="tbb">
 			Use threading building blocks library from <pkg>dev-cpp/tbb</pkg>.
+		</flag>
+		<flag name="usd">
+			Enable Universal Scene Description (USD) Support
 		</flag>
 		<flag name="vulkan" restrict="&lt;media-gfx/blender-5">
 			Add support for the experimental Vulkan viewport backend
