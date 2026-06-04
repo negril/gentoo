@@ -59,7 +59,6 @@ RESTRICT="!test? ( test )"
 
 # if opencascade[tbb], we link to tbb
 # if vtk[cuda], we use cuda
-		# dev-python/pycxx[${PYTHON_USEDEP}]
 RDEPEND="
 	${PYTHON_DEPS}
 	dev-cpp/tbb:=
@@ -74,6 +73,7 @@ RDEPEND="
 	$(python_gen_cond_dep '
 		dev-python/numpy[${PYTHON_USEDEP}]
 		>=dev-python/pybind11-3.0.1[${PYTHON_USEDEP}]
+		dev-python/pycxx[${PYTHON_USEDEP}]
 		dev-python/pyyaml[${PYTHON_USEDEP}]
 	')
 	assembly? ( sci-libs/ondselsolver )
@@ -145,7 +145,7 @@ BDEPEND="
 "
 
 PATCHES=(
-	"${FILESDIR}/${PN}-9999-Gentoo-specific-don-t-check-vcs.patch"
+	"${FILESDIR}/${PN}-1.1.0-Gentoo-specific-don-t-check-vcs.patch"
 	"${FILESDIR}"/${PN}-9999-tests-src-Qt-only-build-test-for-BUILD_GUI-ON.patch
 	"${FILESDIR}/${PN}-1.0.0-r4-error-cannot-convert-bool-to-App-DocumentInitFlags.patch"
 	"${FILESDIR}/${PN}-9999-fastsignals-disconnect.patch"
@@ -301,10 +301,10 @@ src_prepare() {
 	# TODO
 	sed -e '/TestExternalFacePreselection/d' -i src/Mod/Sketcher/TestSketcherGui.py || die
 
-	# # removed bundled pycxx
-	# if [[ ${PV} != *9999* ]]; then
-	# 	rm -r src/3rdParty/PyCXX || die "remove bundled pycxx"
-	# fi
+	# removed bundled pycxx
+	if [[ ${PV} != *9999* ]]; then
+		rm -r src/3rdParty/PyCXX || die "remove bundled pycxx"
+	fi
 
 	cmake_src_prepare
 }
@@ -379,23 +379,14 @@ src_configure() {
 
 		-DFREECAD_BUILD_DEBIAN=OFF
 
-		-DE57_ENABLE_DIAGNOSTIC_OUTPUT="no"
-		-DE57_VALIDATION_LEVEL=0
-
-		# -DFREECAD_PARALLEL_COMPILE_JOBS=""
-		# -DFREECAD_PARALLEL_LINK_JOBS=""
-
-		-DFREECAD_USE_3DCONNEXION_LEGACY="no"
 		-DFREECAD_USE_CCACHE="no" # Do not use CCache
 
-		-DFREECAD_USE_EXTERNAL_CLIPPER2="yes"
 		-DFREECAD_USE_EXTERNAL_E57FORMAT="no"
+		-DFREECAD_USE_EXTERNAL_FMT="yes"
 		-DFREECAD_USE_EXTERNAL_GTEST="$(usex test)"
-		-DFREECAD_USE_EXTERNAL_JSON="yes"
 		-DFREECAD_USE_EXTERNAL_KDL=OFF # https://github.com/FreeCAD/FreeCAD/commit/9f98866
-		-DFREECAD_USE_EXTERNAL_KDTREE=OFF
-		-DFREECAD_USE_EXTERNAL_ONDSELSOLVER=$(usex assembly)
 		-DFREECAD_USE_EXTERNAL_PYCXX="no"
+		-DFREECAD_USE_EXTERNAL_ONDSELSOLVER=$(usex assembly)
 		-DFREECAD_USE_EXTERNAL_SMESH=OFF		# no package in Gentoo
 		-DFREECAD_USE_EXTERNAL_ZIPIOS=OFF		# doesn't work yet, also no package in Gentoo tree
 
@@ -403,11 +394,8 @@ src_configure() {
 		-Dfreetype_DIR="${ESYSROOT}/usr"
 		-DFREECAD_USE_OCC_VARIANT:STRING="Official Version"
 		-DFREECAD_USE_PCL=$(usex pcl)
-		# -DFREECAD_USE_PYBIND11=ON
-		-DFREECAD_USE_PYSIDE="yes"
-		-DFREECAD_USE_QT_DIALOGS="yes"
-		# -DFREECAD_USE_QT_FILEDIALOG=ON
-		-DFREECAD_USE_SHIBOKEN="yes"
+		-DFREECAD_USE_PYBIND11=ON
+		-DFREECAD_USE_QT_FILEDIALOG=ON
 
 		# install python modules to site-packages' dir. True only for the main package,
 		# sub-packages will still be installed inside /usr/lib64/freecad
@@ -424,9 +412,6 @@ src_configure() {
 
 			-DPACKAGE_WCREF="%{release} (Git)"
 			-DPACKAGE_WCURL="git://github.com/FreeCAD/FreeCAD.git main"
-
-			# -DPYCXX_INCLUDE_DIRS="${S}/src/3rdParty/PyCXX"
-			# -DPYCXX_SOURCE_DIR="${S}/src/3rdParty/PyCXX/CXX"
 		)
 	else
 		mycmakeargs+=(
@@ -472,6 +457,8 @@ src_configure() {
 			-DQt6Core_MOC_EXECUTABLE="$(qt6_get_bindir)/moc"
 			-DQt6Core_RCC_EXECUTABLE="$(qt6_get_bindir)/rcc"
 			-DBUILD_QT5=OFF
+			# Drawing module unmaintained and not ported to qt6
+			-DBUILD_DRAWING=OFF
 		)
 	fi
 
