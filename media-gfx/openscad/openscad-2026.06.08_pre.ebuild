@@ -21,9 +21,9 @@ if [[ ${PV} = *9999* ]] ; then
 	)
 else
 	if [[ ${PV} = *pre* ]] ; then
-		COMMIT="f3cac59bf973502ad4b278fd3f20298f9bc2fc84"
-		SANITIZERS_CMAKE_COMMIT="0573e2ea8651b9bb3083f193c41eb086497cc80a"
-		MCAD_COMMIT="bd0a7ba3f042bfbced5ca1894b236cea08904e26"
+		COMMIT="52c25cfd5d45e31d8997d553ae6fbad6b8acd752"
+		SANITIZERS_CMAKE_COMMIT="bcb1fc68616e9645ca5acea2992412606373ab04"
+		MCAD_COMMIT="1ea402208c3127ffb443931e9bb1681c191dacca"
 
 		SRC_URI="
 			https://github.com/openscad/openscad/archive/${COMMIT}.tar.gz
