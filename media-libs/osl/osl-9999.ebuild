@@ -9,7 +9,7 @@ PYTHON_COMPAT=( python3_{12..14} )
 # Check this on updates
 LLVM_COMPAT=( {18..22} )
 
-inherit cmake cuda flag-o-matic llvm-r1 toolchain-funcs python-single-r1
+inherit cmake cuda flag-o-matic llvm-r2 toolchain-funcs python-single-r1
 
 DESCRIPTION="Advanced shading language for production GI renderers"
 HOMEPAGE="https://www.imageworks.com/technology/opensource https://github.com/AcademySoftwareFoundation/OpenShadingLanguage"
@@ -168,7 +168,7 @@ cuda_get_host_native_arch() {
 }
 
 pkg_setup() {
-	llvm-r1_pkg_setup
+	llvm-r2_pkg_setup
 
 	use python && python-single-r1_pkg_setup
 }
