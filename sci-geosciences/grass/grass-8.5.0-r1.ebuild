@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{11..14} )
+PYTHON_COMPAT=( python3_{12..14} )
 PYTHON_REQ_USE="sqlite"  # bug 572440
 
 inherit cmake desktop flag-o-matic python-single-r1 toolchain-funcs xdg
@@ -56,8 +56,6 @@ RDEPEND="
 	sys-libs/ncurses:=
 	sci-libs/proj:=
 	virtual/zlib:=
-	media-libs/libglvnd
-	media-libs/glu
 	blas? (
 		|| (
 			virtual/cblas[eselect-ldso(+)]
@@ -70,7 +68,7 @@ RDEPEND="
 	)
 	bzip2? ( app-arch/bzip2:= )
 	fftw? ( sci-libs/fftw:3.0= )
-	geos? ( sci-libs/geos:= )
+	geos? ( sci-libs/geos )
 	lapack? (
 		|| (
 			virtual/lapack[eselect-ldso(+)]
@@ -81,7 +79,10 @@ RDEPEND="
 	netcdf? ( sci-libs/netcdf:= )
 	odbc? ( dev-db/unixODBC )
 	opencl? ( virtual/opencl )
-	opengl? ( virtual/opengl )
+	opengl? (
+		virtual/glu
+		virtual/opengl
+	)
 	pdal? ( >=sci-libs/pdal-2.0.0:= )
 	png? ( media-libs/libpng:= )
 	postgres? ( >=dev-db/postgresql-8.4:= )
@@ -200,6 +201,7 @@ src_configure() {
 		-DWITH_DOCS=$(usex doc)
 		-DWITH_GUI=$(usex X)
 		-DWITH_FHS=OFF
+		-DUSE_CCACHE=OFF
 	)
 
 	cmake_src_configure
@@ -208,7 +210,7 @@ src_configure() {
 src_install() {
 	# Install phase fails if file owner doesn't match process user. GRASS
 	# allows to skip this check. See bug #974737.
-	export GRASS_SKIP_MAPSET_OWNER_CHECK=1
+	local -x GRASS_SKIP_MAPSET_OWNER_CHECK=1
 
 	cmake_src_install
 
