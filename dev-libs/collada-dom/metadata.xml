@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-  <maintainer type="person">
-    <email>aballier@gentoo.org</email>
-    <name>Alexis Ballier</name>
-  </maintainer>
-  <upstream>
-    <remote-id type="github">rdiankov/collada-dom</remote-id>
-    <remote-id type="sourceforge">collada-dom</remote-id>
-  </upstream>
+	<maintainer type="person" proxied="yes">
+		<email>negril.nx+gentoo@gmail.com</email>
+		<name>Paul Zander</name>
+	</maintainer>
+	<maintainer type="project" proxied="proxy">
+		<email>proxy-maint@gentoo.org</email>
+		<name>Proxy Maintainers</name>
+	</maintainer>
+	<upstream>
+		<remote-id type="github">rdiankov/collada-dom</remote-id>
+		<remote-id type="github">Gepetto/collada-dom</remote-id>
+		<remote-id type="sourceforge">collada-dom</remote-id>
+	</upstream>
 </pkgmetadata>
