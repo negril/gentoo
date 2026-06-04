@@ -4,6 +4,10 @@
 # New entries go on top.
 # Please use the same syntax as in use.mask.
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2026-06-05)
+# not yet keyworded
+uhdr
+
 # Paul Zander <negril.nx+gentoo@gmail.com> (2023-11-17)
 # ROCm/HIP is not suitable for stabilization.
 hip
