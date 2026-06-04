@@ -103,7 +103,9 @@ BDEPEND="
 	)
 "
 
-#	fits? ( sci-libs/cfitsio:= )
+# TODO
+# 	fits? ( sci-libs/cfitsio:= )
+# 	media-libs/libheif:=[aom,de265,jpeg,jpeg2k?,webp,x265]
 RDEPEND="
 	dev-cpp/robin-map
 	dev-libs/libfmt:=
@@ -428,9 +430,6 @@ src_configure() {
 		-DUSE_SIMD="$(local IFS=','; echo "${mysimd[*]}")"
 
 		-DWebP_DIR="${T}/cmake"
-		# TODO
-		-DVISIBILITY_INLINES_HIDDEN="no"
-		-DCMAKE_CXX_VISIBILITY_PRESET="default"
 	)
 
 	if use cuda; then

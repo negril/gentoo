@@ -5,6 +5,11 @@
 -elibc_musl
 elibc_glibc
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2026-06-04)
+# media-libs/libjxl casualties
+# https://github.com/libjxl/libjxl/issues/2433
+jpegxl
+
 # Sam James <sam@gentoo.org> (2025-07-12)
 # dev-debug/dtrace and dev-debug/systemtap don't work on musl
 dtrace
