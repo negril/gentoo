@@ -68,7 +68,7 @@ SLOT="${BLENDER_BRANCH}"
 # potentially mirror cpu_flags_x86 + REQUIRED_USE
 IUSE="
 	alembic +bullet collada +color-management cuda +cycles +cycles-bin-kernels
-	debug doc +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
+	debug doc +draco +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
 	jemalloc jpeg2k man +manifold +nanovdb ndof nls +oidn openal +openexr +opengl +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
 	renderdoc sdl +sndfile +tbb test +tiff +truetype valgrind vulkan wayland +webp X
@@ -129,13 +129,14 @@ RDEPEND="${PYTHON_DEPS}
 	collada? ( >=media-libs/opencollada-1.6.68 )
 	color-management? ( media-libs/opencolorio:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
+	draco? ( media-libs/draco:= )
 	embree? ( media-libs/embree:=[raymask] )
 	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
 	fftw? ( sci-libs/fftw:3.0=[threads] )
 	gmp? ( dev-libs/gmp:=[cxx] )
 	gnome? ( gui-libs/libdecor )
 	hip? (
-		>=dev-util/hip-5.7:=
+		>=dev-util/hip-6.0:=
 		hiprt? (
 			dev-libs/hiprt:2.5=
 		)
@@ -305,6 +306,9 @@ pkg_setup() {
 	if use osl; then
 		llvm-r2_pkg_setup
 	fi
+
+	# cuda compression and more
+	export ZSTD_NBTHREADS="$(makeopts_jobs)"
 }
 
 src_unpack() {
@@ -526,7 +530,7 @@ src_configure() {
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DWITH_DRACO="yes" # TODO: Package Draco # NOTE use bundled for now
+		-DWITH_DRACO="$(usex draco)"
 
 		# Modifiers:
 		-DWITH_MOD_FLUID="$(usex fluid)"
@@ -916,6 +920,16 @@ pkg_postinst() {
 		ewarn "an other LLVM version than what OSL is linked to."
 		ewarn "See https://bugs.gentoo.org/880671 for more details"
 		ewarn ""
+	fi
+
+	# NOTE build_files/cmake/Modules/FindPythonLibsUnix.cmake: set(_PYTHON_VERSION_SUPPORTED 3.11)
+	if ! use python_single_target_python3_11; then
+		elog "You are building Blender with a newer python version than"
+		elog "supported by this version upstream."
+		elog "If you experience breakages with e.g. plugins, please switch to"
+		elog "PYTHON_SINGLE_TARGET: python3_11 instead."
+		elog "Bug: https://bugs.gentoo.org/737388"
+		elog
 	fi
 
 	xdg_icon_cache_update

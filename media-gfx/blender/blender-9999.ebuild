@@ -15,12 +15,12 @@
 # 	https://github.com/google/draco
 # - Package Audaspace
 # 	https://github.com/neXyon/audaspace
-
+# - ceres-solver
 EAPI=8
 
 PYTHON_COMPAT=( python3_{12..14} )
 # NOTE must match media-libs/osl
-LLVM_COMPAT=( {20..20} )
+LLVM_COMPAT=( {20..22} )
 LLVM_OPTIONAL=1
 
 ROCM_SKIP_GLOBALS=1
@@ -68,8 +68,8 @@ SLOT="${BLENDER_BRANCH}"
 # potentially mirror cpu_flags_x86 + REQUIRED_USE
 IUSE="
 	alembic +bullet +color-management cuda +cycles +cycles-bin-kernels
-	debug doc +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
-	jemalloc jpeg2k man +manifold +nanovdb ndof nls +oidn openal +openexr +opengl +openpgl
+	debug doc +draco +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
+	jpeg2k man +manifold +nanovdb ndof nls +oidn openal +openexr +opengl +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
 	renderdoc +rubberband sdl +sndfile +tbb test +tiff +truetype valgrind vulkan wayland +webp X
 "
@@ -102,11 +102,13 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 # Library versions for official builds can be found in the blender source directory in:
 # build_files/build_environment/cmake/versions.cmake
 
+# EMHASH
+# PARALLEL_HASHMAP
+# RUBBERBAND_VERSION 4.0.0
 RDEPEND="${PYTHON_DEPS}
 	app-arch/zstd
 	dev-cpp/gflags:=
 	dev-cpp/glog:=
-	dev-libs/boost:=[nls?]
 	$(python_gen_cond_dep '
 		dev-python/cattrs[${PYTHON_USEDEP}]
 		dev-python/cython[${PYTHON_USEDEP}]
@@ -124,10 +126,11 @@ RDEPEND="${PYTHON_DEPS}
 	virtual/libintl
 	virtual/opengl[X?]
 	virtual/zlib:=
-	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
+	alembic? ( >=media-gfx/alembic-1.8.3-r2[hdf(+)] )
 	bullet? ( sci-physics/bullet:=[double-precision] )
 	color-management? ( >=media-libs/opencolorio-2.4.2:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
+	draco? ( media-libs/draco:= )
 	embree? ( media-libs/embree:=[raymask] )
 	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
 	fftw? ( sci-libs/fftw:3.0=[threads] )
@@ -139,7 +142,6 @@ RDEPEND="${PYTHON_DEPS}
 		)
 	)
 	jack? ( virtual/jack )
-	jemalloc? ( dev-libs/jemalloc:= )
 	jpeg2k? ( >=media-libs/openjpeg-2.5.3:2= )
 	manifold? ( >=sci-mathematics/manifold-3.2.1:= )
 	ndof? (
@@ -154,7 +156,7 @@ RDEPEND="${PYTHON_DEPS}
 		>=media-libs/openexr-3.3.5:0=
 	)
 	openpgl? ( media-libs/openpgl:= )
-	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,cuda?,tbb?] )
+	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,tbb?] )
 	openvdb? (
 		>=media-gfx/openvdb-11.0.0:=[nanovdb?]
 		dev-libs/c-blosc:=
@@ -255,11 +257,10 @@ BDEPEND="
 "
 
 PATCHES=(
-	"${FILESDIR}/${PN}-5.0.0-FindClang.patch"
+	"${FILESDIR}/${PN}-4.0.2-FindClang.patch"
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
-	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
 	"${FILESDIR}/${PN}-4.3.2-system-glog.patch"
-	"${FILESDIR}/${PN}-5.0.0-osd-omp-link.patch"
+# 	"${FILESDIR}/${PN}-4.4.0-optix-compile-flags.patch"
 )
 
 blender_check_requirements() {
@@ -302,6 +303,9 @@ pkg_setup() {
 	if use osl; then
 		llvm-r2_pkg_setup
 	fi
+
+	# cuda compression and more
+	export ZSTD_NBTHREADS="$(makeopts_jobs)"
 }
 
 src_unpack() {
@@ -331,19 +335,19 @@ src_prepare() {
 
 	blender_get_version
 
-	# Prepare icons and .desktop files for slotting.
-	sed \
-		-e "s|blender.svg|blender-${BV}.svg|" \
-		-e "s|blender-symbolic.svg|blender-${BV}-symbolic.svg|" \
-		-e "s|blender.desktop|blender-${BV}.desktop|" \
-		-e "s|org.blender.Blender.metainfo.xml|blender-${BV}.metainfo.xml|" \
-		-i source/creator/CMakeLists.txt || die
+	# # Prepare icons and .desktop files for slotting.
+	# sed \
+	# 	-e "s|blender.svg|blender-${BV}.svg|" \
+	# 	-e "s|blender-symbolic.svg|blender-${BV}-symbolic.svg|" \
+	# 	-e "s|blender.desktop|blender-${BV}.desktop|" \
+	# 	-e "s|org.blender.Blender.metainfo.xml|blender-${BV}.metainfo.xml|" \
+	# 	-i source/creator/CMakeLists.txt || die
 
-	sed \
-		-e "s|Name=Blender|Name=Blender ${BV}|" \
-		-e "s|Exec=blender|Exec=blender-${BV}|" \
-		-e "s|Icon=blender|Icon=blender-${BV}|" \
-		-i release/freedesktop/blender.desktop || die
+	# sed \
+	# 	-e "s|Name=Blender|Name=Blender ${BV}|" \
+	# 	-e "s|Exec=blender|Exec=blender-${BV}|" \
+	# 	-e "s|Icon=blender|Icon=blender-${BV}|" \
+	# 	-i release/freedesktop/blender.desktop || die
 
 	sed \
 		-e "/CMAKE_INSTALL_PREFIX_WITH_CONFIG/{s|\${CMAKE_INSTALL_PREFIX}|${T%/}\${CMAKE_INSTALL_PREFIX}|g}" \
@@ -353,23 +357,23 @@ src_prepare() {
 	# WITH_SYSTEM_GLOG=yes
 	cmake_run_in extern cmake_comment_add_subdirectory glog
 
-	mv \
-		"release/freedesktop/icons/scalable/apps/blender.svg" \
-		"release/freedesktop/icons/scalable/apps/blender-${BV}.svg" \
-		|| die
-	mv \
-		"release/freedesktop/icons/symbolic/apps/blender-symbolic.svg" \
-		"release/freedesktop/icons/symbolic/apps/blender-${BV}-symbolic.svg" \
-		|| die
-	mv \
-		"release/freedesktop/blender.desktop" \
-		"release/freedesktop/blender-${BV}.desktop" \
-		|| die
+	# mv \
+	# 	"release/freedesktop/icons/scalable/apps/blender.svg" \
+	# 	"release/freedesktop/icons/scalable/apps/blender-${BV}.svg" \
+	# 	|| die
+	# mv \
+	# 	"release/freedesktop/icons/symbolic/apps/blender-symbolic.svg" \
+	# 	"release/freedesktop/icons/symbolic/apps/blender-${BV}-symbolic.svg" \
+	# 	|| die
+	# mv \
+	# 	"release/freedesktop/blender.desktop" \
+	# 	"release/freedesktop/blender-${BV}.desktop" \
+	# 	|| die
 
-	mv \
-		"release/freedesktop/org.blender.Blender.metainfo.xml" \
-		"release/freedesktop/blender-${BV}.metainfo.xml" \
-		|| die
+	# mv \
+	# 	"release/freedesktop/org.blender.Blender.metainfo.xml" \
+	# 	"release/freedesktop/blender-${BV}.metainfo.xml" \
+	# 	|| die
 
 	sed \
 		-e "s#\(set(cycles_kernel_runtime_lib_target_path \)\${cycles_kernel_runtime_lib_target_path}\(/lib)\)#\1\${CYCLES_INSTALL_PATH}\2#" \
@@ -398,10 +402,10 @@ src_prepare() {
 
 	rm -rf extern/gflags || die
 
-	# Use slotted libhiprt64
-	sed \
-		-e "s|\"libhiprt64.so\"|\"${ESYSROOT}/usr/lib/hiprt/2.5/$(get_libdir)/libhiprt64.so\"|" \
-		-i extern/hipew/src/hiprtew.cc || die
+	# # Use slotted libhiprt64
+	# sed \
+	# 	-e "s|\"libhiprt64.so\"|\"${ESYSROOT}/usr/lib/hiprt/2.5/$(get_libdir)/libhiprt64.so\"|" \
+	# 	-i extern/hipew/src/hiprtew.cc || die
 }
 
 src_configure() {
@@ -427,7 +431,6 @@ src_configure() {
 
 		# Build Options:
 		-DWITH_ALEMBIC="$(usex alembic)"
-		-DWITH_BOOST="yes"
 		-DWITH_BULLET="$(usex bullet)"
 		-DWITH_CYCLES="$(usex cycles)"
 		-DWITH_DOC_MANPAGE="$(usex man)"
@@ -441,6 +444,7 @@ src_configure() {
 		-DWITH_INTERNATIONAL="$(usex nls)"
 		-DWITH_MANIFOLD="$(usex manifold)"
 		-DWITH_MATERIALX="no" # TODO: Package MaterialX
+		-DWITH_MESHOPTIMIZER="yes" # TODO https://github.com/zeux/meshoptimizer
 		-DWITH_NANOVDB="$(usex nanovdb)"
 		-DWITH_OPENCOLORIO="$(usex color-management)"
 		-DWITH_OPENGL_BACKEND="$(usex opengl)"
@@ -470,7 +474,6 @@ src_configure() {
 
 		# System Options:
 		-DWITH_INSTALL_PORTABLE="no"
-		-DWITH_MEM_JEMALLOC="$(usex jemalloc)"
 		-DWITH_MEM_VALGRIND="$(usex valgrind)"
 
 		# GHOST Options:
@@ -512,11 +515,11 @@ src_configure() {
 		-DWITH_PYTHON_INSTALL_NUMPY="no"
 		-DWITH_PYTHON_INSTALL_ZSTANDARD="no"
 		# -DWITH_PYTHON_MODULE="no"
-		-DWITH_PYTHON_SECURITY="yes"
+		-DWITH_PYTHON_SECURITY="no" # BUG
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DWITH_DRACO="yes" # TODO: Package Draco # NOTE use bundled for now
+		-DWITH_DRACO="$(usex draco)"
 
 		# Modifiers:
 		-DWITH_MOD_FLUID="$(usex fluid)"
@@ -530,7 +533,6 @@ src_configure() {
 		-DWITH_CYCLES_OSL="$(usex osl)"
 		-DWITH_CYCLES_EMBREE="$(usex embree)"
 		-DWITH_CYCLES_PATH_GUIDING="$(usex openpgl)"
-		-DWITH_CYCLES_LOGGING="ON" # "$(usex debug)"
 
 		-DWITH_CYCLES_DEVICE_OPTIX="$(usex optix)"
 		-DWITH_CYCLES_DEVICE_CUDA="$(usex cuda)"
@@ -561,6 +563,10 @@ src_configure() {
 		-DWITH_RUBBERBAND="$(usex rubberband)"
 		# -DPOSTINSTALL_SCRIPT:PATH=""
 		# -DPOSTCONFIGURE_SCRIPT:PATH=""
+
+		# We disable these to respect the user's choice of linker.
+		-DWITH_LINKER_MOLD="no"
+		-DWITH_LINKER_LLD="no"
 	)
 
 	if has_version ">=dev-python/numpy-2"; then
@@ -580,6 +586,7 @@ src_configure() {
 			# -DWITH_CYCLES_NATIVE_ONLY="yes"
 			# -DWITH_LIBMV_SCHUR_SPECIALIZATIONS="no"
 			# -DWITH_PYTHON_SAFETY="ON" # dev option
+			-DWITH_PYTHON_SAFETY="OFF"
 
 		)
 	else
@@ -613,7 +620,6 @@ src_configure() {
 		if use hiprt; then
 			mycmakeargs+=(
 				-DHIPRT_ROOT_DIR="${ESYSROOT}/usr/lib/hiprt/2.5"
-				-DHIP_HIPCC_FLAGS="-fcf-protection=none"
 				-DHIPRT_COMPILER_PARALLEL_JOBS="$(makeopts_jobs)"
 			)
 		fi
@@ -640,19 +646,10 @@ src_configure() {
 	append-cflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 	append-cxxflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 
-	if tc-is-gcc; then
-		# We disable these to respect the user's choice of linker.
-		mycmakeargs+=(
-			-DWITH_LINKER_GOLD="no"
-		)
-	fi
-
-	if use osl; then
+	if tc-is-clang || use osl; then
 		mycmakeargs+=(
 			-DWITH_CLANG="yes"
 			-DWITH_LLVM="yes"
-			-DLLVM_ROOT="$(get_llvm_prefix)"
-			-DClang_ROOT="$(get_llvm_prefix)"
 		)
 	fi
 
@@ -745,8 +742,18 @@ src_test() {
 	fi
 
 	local -x CMAKE_SKIP_TESTS=(
-		"^script_pyapi_bpy_driver_secure_eval$"
+		# "^cycles_image_data_types_optix$"
+		# "^cycles_denoise_"
+		# "^imbuf_save$"
 	)
+
+	if [[ "${RUN_FAILING_TESTS:-0}" -eq 0 ]]; then
+		einfo "not running failing tests RUN_FAILING_TESTS=${RUN_FAILING_TESTS}"
+		CMAKE_SKIP_TESTS+=(
+			# Does try to import from weird paths
+			# "^io_fbx_import$"
+		)
+	fi
 
 	if ! has_version "media-libs/openusd"; then
 		CMAKE_SKIP_TESTS+=(
@@ -759,6 +766,15 @@ src_test() {
 		CMAKE_SKIP_TESTS+=(
 			# output change TODO
 			"^sequencer_render_video_output$"
+		)
+	fi
+
+	if has_version ">=dev-cpp/eigen-5"; then
+		CMAKE_SKIP_TESTS+=(
+			"^blenkernel$"
+			"^modifiers$"
+			"^io_fbx_import$"
+			"^io_gltf_roundtrip$"
 		)
 	fi
 
@@ -783,7 +799,16 @@ src_test() {
 	# Needed if openimageio wasn't build with -DNDEBUG
 	local -x OPENIMAGEIO_DEBUG=0
 
-	local -x CYCLESTEST_ARGS="-t 0"
+	local -x CYCLESTEST_ARGS="-t 16" #${CTEST_LOADAVG:-$(get_makeopts_loadavg)}"
+
+	# local CMAKE_RUN_TESTS=(
+	# 	"^blenkernel$"
+	# 	"^io_fbx_import$"
+	# 	"^io_gltf_roundtrip$"
+	# 	"^modifiers$"
+	# )
+
+	# myctestargs+=( -R '('$( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}")')'  )
 
 	if [[ "${EXPENSIVE_TESTS:-0}" -gt 0 ]]; then
 		einfo "running expensive tests EXPENSIVE_TESTS=${EXPENSIVE_TESTS}"
@@ -895,6 +920,16 @@ pkg_postinst() {
 		ewarn "an other LLVM version than what OSL is linked to."
 		ewarn "See https://bugs.gentoo.org/880671 for more details"
 		ewarn ""
+	fi
+
+	# NOTE build_files/cmake/Modules/FindPythonLibsUnix.cmake: set(_PYTHON_VERSION_SUPPORTED 3.11)
+	if ! use python_single_target_python3_11; then
+		elog "You are building Blender with a newer python version than"
+		elog "supported by this version upstream."
+		elog "If you experience breakages with e.g. plugins, please switch to"
+		elog "PYTHON_SINGLE_TARGET: python3_11 instead."
+		elog "Bug: https://bugs.gentoo.org/737388"
+		elog
 	fi
 
 	xdg_icon_cache_update

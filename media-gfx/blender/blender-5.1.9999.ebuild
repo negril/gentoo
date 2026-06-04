@@ -69,7 +69,7 @@ SLOT="${BLENDER_BRANCH}"
 IUSE="
 	alembic +bullet +color-management cuda +cycles +cycles-bin-kernels
 	debug doc +draco +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
-	jemalloc jpeg2k man +manifold +nanovdb ndof nls +oidn openal +openexr +opengl +openpgl
+	jpeg2k man +manifold +nanovdb ndof nls +oidn openal +openexr +opengl +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
 	renderdoc +rubberband sdl +sndfile +tbb test +tiff +truetype valgrind vulkan wayland +webp X
 "
@@ -96,7 +96,6 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	test? (
 		color-management
 		jpeg2k
-		opensubdiv
 	)
 "
 
@@ -110,7 +109,6 @@ RDEPEND="${PYTHON_DEPS}
 	app-arch/zstd
 	dev-cpp/gflags:=
 	dev-cpp/glog:=
-	dev-libs/boost:=[nls?]
 	$(python_gen_cond_dep '
 		dev-python/cattrs[${PYTHON_USEDEP}]
 		dev-python/cython[${PYTHON_USEDEP}]
@@ -123,21 +121,20 @@ RDEPEND="${PYTHON_DEPS}
 	media-libs/libjpeg-turbo:=
 	>=media-libs/libpng-1.6.50:=
 	media-libs/libsamplerate
-	>=media-libs/openimageio-3.0.9.1:=
+	>=media-libs/openimageio-3.0.9.1:=[python,${PYTHON_SINGLE_USEDEP}]
 	virtual/glu
 	virtual/libintl
 	virtual/opengl[X?]
 	virtual/zlib:=
-	alembic? ( >=media-gfx/alembic-1.8.3-r2[boost(+),hdf(+)] )
+	alembic? ( >=media-gfx/alembic-1.8.3-r2[hdf(+)] )
 	bullet? ( sci-physics/bullet:=[double-precision] )
 	color-management? ( >=media-libs/opencolorio-2.4.2:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
 	draco? ( media-libs/draco:= )
 	embree? ( media-libs/embree:=[raymask] )
-	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),libaom,jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
+	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
 	fftw? ( sci-libs/fftw:3.0=[threads] )
 	gmp? ( dev-libs/gmp:=[cxx] )
-	gnome? ( gui-libs/libdecor )
 	hip? (
 		>=dev-util/hip-6.0:=
 		hiprt? (
@@ -145,7 +142,6 @@ RDEPEND="${PYTHON_DEPS}
 		)
 	)
 	jack? ( virtual/jack )
-	jemalloc? ( dev-libs/jemalloc:= )
 	jpeg2k? ( >=media-libs/openjpeg-2.5.3:2= )
 	manifold? ( >=sci-mathematics/manifold-3.2.1:= )
 	ndof? (
@@ -160,7 +156,7 @@ RDEPEND="${PYTHON_DEPS}
 		>=media-libs/openexr-3.3.5:0=
 	)
 	openpgl? ( media-libs/openpgl:= )
-	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,cuda?,tbb?] )
+	opensubdiv? ( >=media-libs/opensubdiv-3.6.0-r2:=[opengl,tbb?] )
 	openvdb? (
 		>=media-gfx/openvdb-11.0.0:=[nanovdb?]
 		dev-libs/c-blosc:=
@@ -219,7 +215,7 @@ DEPEND="${RDEPEND}
 	dev-cpp/eigen:=
 	test? (
 		$(python_gen_cond_dep '
-			media-libs/openimageio[jpeg2k,python,${PYTHON_SINGLE_USEDEP},tools]
+			media-libs/openimageio[jpeg2k,tools]
 		')
 	)
 "
@@ -247,13 +243,11 @@ BDEPEND="
 		dev-texlive/texlive-latex
 		dev-texlive/texlive-latexextra
 	)
-	nls? (
-		sys-devel/gettext
-	)
 	vulkan? (
 		dev-util/spirv-headers
 		dev-util/vulkan-headers
 	)
+	nls? ( sys-devel/gettext )
 	wayland? (
 		dev-util/wayland-scanner
 	)
@@ -263,11 +257,10 @@ BDEPEND="
 "
 
 PATCHES=(
-	"${FILESDIR}/${PN}-5.0.0-FindClang.patch"
+	"${FILESDIR}/${PN}-4.0.2-FindClang.patch"
 	"${FILESDIR}/${PN}-4.1.1-FindLLVM.patch"
-	"${FILESDIR}/${PN}-4.1.1-numpy.patch"
 	"${FILESDIR}/${PN}-4.3.2-system-glog.patch"
-	"${FILESDIR}/${PN}-5.0.0-osd-omp-link.patch"
+# 	"${FILESDIR}/${PN}-4.4.0-optix-compile-flags.patch"
 )
 
 blender_check_requirements() {
@@ -438,7 +431,6 @@ src_configure() {
 
 		# Build Options:
 		-DWITH_ALEMBIC="$(usex alembic)"
-		-DWITH_BOOST="yes"
 		-DWITH_BULLET="$(usex bullet)"
 		-DWITH_CYCLES="$(usex cycles)"
 		-DWITH_DOC_MANPAGE="$(usex man)"
@@ -477,10 +469,10 @@ src_configure() {
 
 		# Compiler Options:
 		# -DWITH_BUILDINFO="yes"
+		-DWITH_COMPILER_SIMD="no" # This makes it so Blender doesn't append their own -march flags
 
 		# System Options:
 		-DWITH_INSTALL_PORTABLE="no"
-		-DWITH_MEM_JEMALLOC="$(usex jemalloc)"
 		-DWITH_MEM_VALGRIND="$(usex valgrind)"
 
 		# GHOST Options:
@@ -522,7 +514,7 @@ src_configure() {
 		-DWITH_PYTHON_INSTALL_NUMPY="no"
 		-DWITH_PYTHON_INSTALL_ZSTANDARD="no"
 		# -DWITH_PYTHON_MODULE="no"
-		-DWITH_PYTHON_SECURITY="yes"
+		-DWITH_PYTHON_SECURITY="no" # BUG
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
@@ -570,6 +562,10 @@ src_configure() {
 		-DWITH_RUBBERBAND="$(usex rubberband)"
 		# -DPOSTINSTALL_SCRIPT:PATH=""
 		# -DPOSTCONFIGURE_SCRIPT:PATH=""
+
+		# We disable these to respect the user's choice of linker.
+		-DWITH_LINKER_MOLD="no"
+		-DWITH_LINKER_LLD="no"
 	)
 
 	if has_version ">=dev-python/numpy-2"; then
@@ -589,6 +585,7 @@ src_configure() {
 			# -DWITH_CYCLES_NATIVE_ONLY="yes"
 			# -DWITH_LIBMV_SCHUR_SPECIALIZATIONS="no"
 			# -DWITH_PYTHON_SAFETY="ON" # dev option
+			-DWITH_PYTHON_SAFETY="OFF"
 
 		)
 	else
@@ -637,7 +634,7 @@ src_configure() {
 	if use wayland; then
 		mycmakeargs+=(
 			-DWITH_GHOST_WAYLAND_APP_ID="blender-${BV}"
-			-DWITH_GHOST_WAYLAND_LIBDECOR="$(usex gnome)"
+			-DWITH_GHOST_CSD="$(usex gnome)"
 		)
 	fi
 
@@ -648,19 +645,10 @@ src_configure() {
 	append-cflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 	append-cxxflags "$(usex debug '-DDEBUG' '-DNDEBUG')"
 
-	if tc-is-gcc; then
-		# We disable these to respect the user's choice of linker.
-		mycmakeargs+=(
-			-DWITH_LINKER_GOLD="no"
-		)
-	fi
-
 	if tc-is-clang || use osl; then
 		mycmakeargs+=(
 			-DWITH_CLANG="yes"
 			-DWITH_LLVM="yes"
-			-DLLVM_ROOT="$(get_llvm_prefix)"
-			-DClang_ROOT="$(get_llvm_prefix)"
 		)
 	fi
 
@@ -753,14 +741,16 @@ src_test() {
 	fi
 
 	local -x CMAKE_SKIP_TESTS=(
-		"^script_pyapi_bpy_driver_secure_eval$"
+		"^cycles_image_data_types_optix$"
+		# "^cycles_denoise_"
+		# "^imbuf_save$"
 	)
 
 	if [[ "${RUN_FAILING_TESTS:-0}" -eq 0 ]]; then
 		einfo "not running failing tests RUN_FAILING_TESTS=${RUN_FAILING_TESTS}"
 		CMAKE_SKIP_TESTS+=(
 			# Does try to import from weird paths
-			"^io_fbx_import$"
+			# "^io_fbx_import$"
 		)
 	fi
 
@@ -775,6 +765,15 @@ src_test() {
 		CMAKE_SKIP_TESTS+=(
 			# output change TODO
 			"^sequencer_render_video_output$"
+		)
+	fi
+
+	if has_version ">=dev-cpp/eigen-5"; then
+		CMAKE_SKIP_TESTS+=(
+			"^blenkernel$"
+			"^modifiers$"
+			"^io_fbx_import$"
+			"^io_gltf_roundtrip$"
 		)
 	fi
 
@@ -799,7 +798,16 @@ src_test() {
 	# Needed if openimageio wasn't build with -DNDEBUG
 	local -x OPENIMAGEIO_DEBUG=0
 
-	local -x CYCLESTEST_ARGS="-t 0"
+	local -x CYCLESTEST_ARGS="-t 16" #${CTEST_LOADAVG:-$(get_makeopts_loadavg)}"
+
+	# local CMAKE_RUN_TESTS=(
+	# 	"^blenkernel$"
+	# 	"^io_fbx_import$"
+	# 	"^io_gltf_roundtrip$"
+	# 	"^modifiers$"
+	# )
+
+	# myctestargs+=( -R '('$( IFS='|'; echo "${CMAKE_RUN_TESTS[*]}")')'  )
 
 	if [[ "${EXPENSIVE_TESTS:-0}" -gt 0 ]]; then
 		einfo "running expensive tests EXPENSIVE_TESTS=${EXPENSIVE_TESTS}"

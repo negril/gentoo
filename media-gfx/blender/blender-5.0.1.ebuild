@@ -15,12 +15,12 @@
 # 	https://github.com/google/draco
 # - Package Audaspace
 # 	https://github.com/neXyon/audaspace
-# - ceres-solver
+
 EAPI=8
 
 PYTHON_COMPAT=( python3_{12..14} )
 # NOTE must match media-libs/osl
-LLVM_COMPAT=( {20..22} )
+LLVM_COMPAT=( {20..20} )
 LLVM_OPTIONAL=1
 
 ROCM_SKIP_GLOBALS=1
@@ -68,7 +68,7 @@ SLOT="${BLENDER_BRANCH}"
 # potentially mirror cpu_flags_x86 + REQUIRED_USE
 IUSE="
 	alembic +bullet +color-management cuda +cycles +cycles-bin-kernels
-	debug doc +draco +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
+	debug doc +embree +ffmpeg +fftw +fluid +gmp gnome hip hiprt jack
 	jemalloc jpeg2k man +manifold +nanovdb ndof nls +oidn openal +openexr +opengl +openpgl
 	+opensubdiv +openvdb optix osl pipewire +pdf +potrace +pugixml pulseaudio
 	renderdoc +rubberband sdl +sndfile +tbb test +tiff +truetype valgrind vulkan wayland +webp X
@@ -96,16 +96,12 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	test? (
 		color-management
 		jpeg2k
-		opensubdiv
 	)
 "
 
 # Library versions for official builds can be found in the blender source directory in:
 # build_files/build_environment/cmake/versions.cmake
 
-# EMHASH
-# PARALLEL_HASHMAP
-# RUBBERBAND_VERSION 4.0.0
 RDEPEND="${PYTHON_DEPS}
 	app-arch/zstd
 	dev-cpp/gflags:=
@@ -132,9 +128,8 @@ RDEPEND="${PYTHON_DEPS}
 	bullet? ( sci-physics/bullet:=[double-precision] )
 	color-management? ( >=media-libs/opencolorio-2.4.2:= )
 	cuda? ( dev-util/nvidia-cuda-toolkit:= )
-	draco? ( media-libs/draco:= )
 	embree? ( media-libs/embree:=[raymask] )
-	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),libaom,jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
+	ffmpeg? ( media-video/ffmpeg:=[encode(+),lame(-),jpeg2k?,opus,theora,vorbis,vpx,x264,xvid] )
 	fftw? ( sci-libs/fftw:3.0=[threads] )
 	gmp? ( dev-libs/gmp:=[cxx] )
 	gnome? ( gui-libs/libdecor )
@@ -247,13 +242,11 @@ BDEPEND="
 		dev-texlive/texlive-latex
 		dev-texlive/texlive-latexextra
 	)
-	nls? (
-		sys-devel/gettext
-	)
 	vulkan? (
 		dev-util/spirv-headers
 		dev-util/vulkan-headers
 	)
+	nls? ( sys-devel/gettext )
 	wayland? (
 		dev-util/wayland-scanner
 	)
@@ -310,9 +303,6 @@ pkg_setup() {
 	if use osl; then
 		llvm-r2_pkg_setup
 	fi
-
-	# cuda compression and more
-	export ZSTD_NBTHREADS="$(makeopts_jobs)"
 }
 
 src_unpack() {
@@ -526,7 +516,7 @@ src_configure() {
 		-DPYTHON_INCLUDE_DIR="$(python_get_includedir)"
 		-DPYTHON_LIBRARY="$(python_get_library_path)"
 		-DPYTHON_VERSION="${EPYTHON/python/}"
-		-DWITH_DRACO="$(usex draco)"
+		-DWITH_DRACO="yes" # TODO: Package Draco # NOTE use bundled for now
 
 		# Modifiers:
 		-DWITH_MOD_FLUID="$(usex fluid)"
@@ -655,7 +645,7 @@ src_configure() {
 		)
 	fi
 
-	if tc-is-clang || use osl; then
+	if use osl; then
 		mycmakeargs+=(
 			-DWITH_CLANG="yes"
 			-DWITH_LLVM="yes"
@@ -911,16 +901,6 @@ pkg_postinst() {
 		ewarn "an other LLVM version than what OSL is linked to."
 		ewarn "See https://bugs.gentoo.org/880671 for more details"
 		ewarn ""
-	fi
-
-	# NOTE build_files/cmake/Modules/FindPythonLibsUnix.cmake: set(_PYTHON_VERSION_SUPPORTED 3.11)
-	if ! use python_single_target_python3_11; then
-		elog "You are building Blender with a newer python version than"
-		elog "supported by this version upstream."
-		elog "If you experience breakages with e.g. plugins, please switch to"
-		elog "PYTHON_SINGLE_TARGET: python3_11 instead."
-		elog "Bug: https://bugs.gentoo.org/737388"
-		elog
 	fi
 
 	xdg_icon_cache_update

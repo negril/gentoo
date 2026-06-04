@@ -33,6 +33,9 @@
 		<flag name="cuda">
 			Build cycles renderer with nVidia CUDA support.
 		</flag>
+		<flag name="draco">
+			Enable Draco mesh compression Python module (used for glTF)
+		</flag>
 		<flag name="hip">
 			Build cycles renderer with AMD HIP support.
 		</flag>
