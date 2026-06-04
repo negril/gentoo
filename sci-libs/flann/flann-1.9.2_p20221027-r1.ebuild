@@ -56,6 +56,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.9.2-boost-config-1.89.patch
 	"${FILESDIR}"/${PN}-1.9.2-system-gtest.patch
 	"${FILESDIR}"/${PN}-1.9.2-gettimeofday.patch
+	"${FILESDIR}/${PN}-1.9.2-cccl-3.0.patch"
 
 	# "${FILESDIR}/${PN}-1.9.2-lz4-dependency-fix.patch" # https://github.com/flann-lib/flann/pull/523
 	# "${FILESDIR}/${PN}-1.9.2-fix-build.patch"
@@ -100,6 +101,7 @@ src_configure() {
 
 	if use cuda; then
 		cuda_add_sandbox -w
+		addpredict "/dev/char/"
 
 		export CUDAHOSTCXX="$(cuda_gccdir)"
 		export CUDAHOSTLD="$(tc-getCXX)"
