@@ -1,4 +1,4 @@
-# Copyright 1999-2025 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -110,7 +110,7 @@ src_unpack() {
 			die "sha256sum mismatch"
 		fi
 	else
-		my_A="blender-${PV}-linux-x64.tar.xz"
+		my_A="${DISTDIR}/blender-${PV}-linux-x64.tar.xz"
 	fi
 
 	unpack "${my_A}"
