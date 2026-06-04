@@ -4,23 +4,27 @@
 EAPI=8
 
 # keep in sync with blender
-PYTHON_COMPAT=( python3_{12..13} )
+PYTHON_COMPAT=( python3_{12..14} )
 
 # Check this on updates
-LLVM_COMPAT=( {18..20} )
+LLVM_COMPAT=( {18..22} )
 
 inherit cmake cuda flag-o-matic llvm-r1 toolchain-funcs python-single-r1
 
 DESCRIPTION="Advanced shading language for production GI renderers"
 HOMEPAGE="https://www.imageworks.com/technology/opensource https://github.com/AcademySoftwareFoundation/OpenShadingLanguage"
 
-if [[ ${PV} = *9999* ]] ; then
+if [[ ${PV} == *9999* ]] ; then
 	inherit git-r3
 	EGIT_REPO_URI="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage.git"
+	if [[ ${PV} != 9999* ]] ; then
+		EGIT_BRANCH="dev-$(ver_cut 1-2)"
+	fi
 else
 	# If a development release, please don't keyword!
 	SRC_URI="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 	S="${WORKDIR}/OpenShadingLanguage-${PV}"
+
 	KEYWORDS="~amd64 ~arm ~arm64 ~ppc64"
 fi
 
@@ -170,6 +174,23 @@ pkg_setup() {
 }
 
 src_prepare() {
+	# we can use clang as default
+	if use clang-cuda && ! tc-is-clang ; then
+		export CC="${CHOST}-clang"
+		export CXX="${CHOST}-clang++"
+	else
+		tc-export CXX CC
+	fi
+	# clang-cuda needs to filter mfpmath
+	if use clang-cuda ; then
+		filter-mfpmath sse
+		filter-mfpmath i386
+	fi
+
+	if use test && use optix; then
+		cuda_src_prepare
+	fi
+
 	sed -e "/^install.*llvm_macros.cmake.*cmake/d" -i CMakeLists.txt || die
 	sed -e "/install_targets ( libtestshade )/d" -i src/testshade/CMakeLists.txt || die
 

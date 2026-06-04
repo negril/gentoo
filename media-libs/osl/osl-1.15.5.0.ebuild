@@ -4,7 +4,7 @@
 EAPI=8
 
 # keep in sync with blender
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{11..14} )
 
 # Check this on updates
 LLVM_COMPAT=( {18..22} )
@@ -399,8 +399,7 @@ src_test() {
 		"^render-microfacet.optix.opt$"
 		"^render-microfacet.optix.fused$"
 
-		# TODO Unknown exception: Unable to convert function return value to a Python type!
-		# The signature was (self: oslquery.Parameter) -> OpenImageIO_v3_0::TypeDesc
+		# TODO Unknown exception: Unable to convert function return value to a Python type! The signature was (self: oslquery.Parameter) -> OpenImageIO_v3_0::TypeDesc
 		"^python-oslquery"
 	)
 
@@ -440,7 +439,7 @@ src_test() {
 		--repeat until-pass:10
 	)
 
-# 	cmake_src_test
+	cmake_src_test
 }
 
 src_install() {

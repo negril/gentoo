@@ -4,28 +4,24 @@
 EAPI=8
 
 # keep in sync with blender
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{11..14} )
 
 # Check this on updates
-LLVM_COMPAT=( {18..22} )
+LLVM_COMPAT=( {18..21} )
 
 inherit cmake cuda flag-o-matic llvm-r1 toolchain-funcs python-single-r1
 
 DESCRIPTION="Advanced shading language for production GI renderers"
 HOMEPAGE="https://www.imageworks.com/technology/opensource https://github.com/AcademySoftwareFoundation/OpenShadingLanguage"
 
-if [[ ${PV} == *9999* ]] ; then
+if [[ ${PV} = *9999* ]] ; then
 	inherit git-r3
 	EGIT_REPO_URI="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage.git"
-	if [[ ${PV} != 9999* ]] ; then
-		EGIT_BRANCH="dev-$(ver_cut 1-2)"
-	fi
 else
 	# If a development release, please don't keyword!
 	SRC_URI="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	S="${WORKDIR}/OpenShadingLanguage-${PV}"
-
 	KEYWORDS="~amd64 ~arm ~arm64 ~ppc64"
+	S="${WORKDIR}/OpenShadingLanguage-${PV}"
 fi
 
 LICENSE="BSD"
@@ -45,7 +41,6 @@ X86_CPU_FEATURES=(
 CPU_FEATURES=( "${X86_CPU_FEATURES[@]/#/cpu_flags_x86_}" )
 
 IUSE="+clang-cuda debug doc gui libcxx nofma optix partio test ${CPU_FEATURES[*]%:*} python"
-# IUSE+=" clang"
 
 RESTRICT="!test? ( test )"
 
@@ -392,20 +387,12 @@ src_test() {
 		# doesn't handle parameters
 		"^osl-imageio"
 
-		# optix
-		"^render-mx-generalized-schlick.optix$"
-		"^render-mx-generalized-schlick.optix.opt$"
-		"^render-mx-generalized-schlick.optix.fused$"
-		"^render-microfacet.optix.opt$"
-		"^render-microfacet.optix.fused$"
-
-		# TODO Unknown exception: Unable to convert function return value to a Python type!
-		# The signature was (self: oslquery.Parameter) -> OpenImageIO_v3_0::TypeDesc
+		# TODO Unknown exception: Unable to convert function return value to a Python type! The signature was (self: oslquery.Parameter) -> OpenImageIO_v3_0::TypeDesc
 		"^python-oslquery"
 	)
 
 	local myctestargs=(
-		-LE 'render'
+		-LE '(render|optix)'
 		# src/build-scripts/ci-test.bash
 		# --repeat until-pass:10
 		'--force-new-ctest-process'
@@ -424,23 +411,27 @@ src_test() {
 	einfo ""
 
 	CMAKE_SKIP_TESTS=(
+		# optix
+		"^render-microfacet.optix.opt$"
+		"^render-microfacet.optix.fused$"
+
 		# render
 		"^render-bunny.opt$"
 		"^render-displacement.opt$"
 		"^render-microfacet.opt$"
 		"^render-mx-burley-diffuse.opt$"
-		"^render-mx-generalized-schlick.opt$"
 		"^render-veachmis.opt$"
 	)
 
 	myctestargs=(
-		-L "render"
+		-L "(render|optix)"
 		# src/build-scripts/ci-test.bash
 		'--force-new-ctest-process'
 		--repeat until-pass:10
+		--output-on-failure
 	)
 
-# 	cmake_src_test
+	cmake_src_test
 }
 
 src_install() {
