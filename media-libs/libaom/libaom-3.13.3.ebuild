@@ -25,7 +25,7 @@ else
 fi
 
 LICENSE="BSD-2"
-SLOT="0/3"
+SLOT="0/$(ver_cut 1)"
 
 IUSE="big-endian debug doc +examples test
 	cpu_flags_x86_mmx
