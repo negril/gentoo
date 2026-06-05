@@ -17,6 +17,11 @@
 
 #--- END OF EXAMPLES ---
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2026-06-05)
+# >=media-libs/openexr-3.4.0 available here
+# needs media-libs/openjph
+>=media-libs/opencolorio-2.5.2 -apps
+
 # Alfredo Tupone <tupone@gentoo.org> (2026-05-18)
 # Unmask on specific arches where it's available.
 media-video/obs-studio -mpegts

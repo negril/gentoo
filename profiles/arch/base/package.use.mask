@@ -1,6 +1,11 @@
 # Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2026-06-05)
+# >=media-libs/openexr-3.4.0 not available here
+# needs media-libs/openjph
+>=media-libs/opencolorio-2.5.2 apps
+
 # Michał Górny <mgorny@gentoo.org> (2026-03-14)
 # SPIRV target requires dev-libs/level-zero.
 llvm-runtimes/offload llvm_targets_SPIRV
