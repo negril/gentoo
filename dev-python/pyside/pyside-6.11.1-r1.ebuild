@@ -41,7 +41,7 @@ SLOT="6/${PV}"
 # If a flag enables multiple Qt modules, they should be ordered
 # according to their dependencies, e.g. for 3d, 3DCore must be first.
 # Widgets for various modules are handled as a special case later
-declare -A QT_MODULES=(
+declare -gA QT_MODULES=(
 	["3d"]="3DCore 3DRender 3DLogic 3DInput 3DAnimation 3DExtras"
 	["bluetooth"]="Bluetooth"
 	["charts"]="Charts"
@@ -87,7 +87,7 @@ declare -A QT_MODULES=(
 # Manually reextract these requirements on version bumps by running the
 # following one-liner from within "${S}":
 #     $ grep -E '(set|list).*_deps' sources/pyside6/PySide6/Qt*/CMakeLists.txt
-declare -A QT_REQUIREMENTS=(
+declare -gA QT_REQUIREMENTS=(
 	["3d"]="gui network"
 	["bluetooth"]="core"
 	["charts"]="core gui widgets"
@@ -132,7 +132,7 @@ declare -A QT_REQUIREMENTS=(
 # Manually reextract these requirements on version bumps by running the
 # following one-liner from within "${S}":
 #     $ grep 'check_qt_opengl' sources/pyside6/PySide6/Qt*/CMakeLists.txt
-declare -a CONDITIONAL_OPENGL=(
+declare -ga CONDITIONAL_OPENGL=(
 	3d graphs quick
 )
 
