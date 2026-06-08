@@ -80,7 +80,7 @@ REQUIRED_USE="
 RDEPEND="
 	>=dev-cpp/tbb-2020.3:=
 	dev-libs/boost:=
-	dev-libs/jemalloc:=
+	dev-cpp/tbb:=
 	blosc? (
 		dev-libs/c-blosc:=
 	)
@@ -323,6 +323,8 @@ src_configure() {
 		-DCMAKE_FIND_PACKAGE_PREFER_CONFIG="yes"
 		-DCMAKE_INSTALL_DOCDIR="share/doc/${PF}/"
 
+		-DCONCURRENT_MALLOC="Tbbmalloc"
+
 		-DOPENVDB_ABI_VERSION_NUMBER="${abi_version}"
 
 		-DOPENVDB_BUILD_DOCS="$(usex doc)"
@@ -543,10 +545,6 @@ src_test() {
 
 		local -x GTEST_FILTER='-TestNanoVDBCUDA.CudaIndexGridToGrid_basic'
 	fi
-
-	local myctestargs=(
-		--output-on-failure
-	)
 
 	cmake_src_test
 }
