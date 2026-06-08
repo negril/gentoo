@@ -330,7 +330,7 @@ vtk_add_sandbox() {
 }
 
 pkg_pretend() {
-	[[ ${MERGE_TYPE} != binary ]] && has openmp && tc-check-openmp
+	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
 
 	vtk_check_reqs
 
@@ -342,7 +342,7 @@ pkg_pretend() {
 }
 
 pkg_setup() {
-	[[ ${MERGE_TYPE} != binary ]] && has openmp && tc-check-openmp
+	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
 
 	vtk_check_reqs
 
