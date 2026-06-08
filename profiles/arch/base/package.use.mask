@@ -48,6 +48,7 @@ net-misc/yt-dlp deno
 
 # Paul Zander <negril.nx+gentoo@gmail.com> (2025-06-29)
 # libvmaf has limited keywords
+media-libs/libaom vmaf
 media-libs/x265 vmaf
 
 # Michał Górny <mgorny@gentoo.org> (2025-09-28)

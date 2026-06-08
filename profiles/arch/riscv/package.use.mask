@@ -31,6 +31,7 @@ sci-libs/gdal parquet
 
 # Paul Zander <negril.nx+gentoo@gmail.com> (2025-06-29)
 # media-libs/libvmaf is keyworded
+media-libs/libaom -vmaf
 media-libs/x265 -vmaf
 
 # Jakov Smolić <jsmolic@gentoo.org> (2025-10-05)

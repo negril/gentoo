@@ -25,7 +25,7 @@ else
 fi
 
 LICENSE="BSD-2"
-SLOT="0/3"
+SLOT="0/$(ver_cut 1)"
 
 IUSE="big-endian debug doc +examples test
 	cpudetection jpegxl vmaf highway
@@ -78,8 +78,8 @@ DOCS=( PATENTS )
 
 PATCHES=(
 	"${FILESDIR}/${PN}-3.4.0-posix-c-source-ftello.patch"
-	"${FILESDIR}/${PN}-3.14.0-allow-fortify-source.patch"
 	"${FILESDIR}/${PN}-3.8.1-tests-parallel.patch"
+	"${FILESDIR}/${PN}-3.14.0-allow-fortify-source.patch"
 )
 
 src_prepare() {

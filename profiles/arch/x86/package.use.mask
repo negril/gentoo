@@ -40,6 +40,7 @@ media-sound/easyeffects webengine
 
 # Ionen Wolkens <ionen@gentoo.org> (2025-11-13)
 # media-libs/libvmaf is keyworded here
+media-libs/libaom -vmaf
 media-libs/x265 -vmaf
 
 # Michał Górny <mgorny@gentoo.org> (2025-10-03)

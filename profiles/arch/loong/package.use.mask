@@ -67,6 +67,7 @@ www-servers/uwsgi postgres_targets_postgres14
 
 # Ionen Wolkens <ionen@gentoo.org> (2025-11-13)
 # media-libs/libvmaf is keyworded here
+media-libs/libaom -vmaf
 media-libs/x265 -vmaf
 
 # PPN-SD <nicolas.parlant@parhuet.fr> (2025-10-04)

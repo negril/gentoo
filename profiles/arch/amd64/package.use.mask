@@ -60,6 +60,7 @@ net-misc/yt-dlp -deno
 
 # Paul Zander <negril.nx+gentoo@gmail.com> (2025-06-29)
 # media-libs/libvmaf is keyworded
+media-libs/libaom -vmaf
 media-libs/x265 -vmaf
 
 # Michał Górny <mgorny@gentoo.org> (2025-09-28)
