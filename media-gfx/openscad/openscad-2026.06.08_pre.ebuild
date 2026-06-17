@@ -270,21 +270,12 @@ hardware_add_gpu_sandbox() {
 
 		WRITE+=(
 			"/dev/nvidiactl"
-			# "/dev/nvidia-caps/nvidia-cap%d"
 			"/dev/nvidia-caps/"
-
-			# "/dev/nvidia-caps-imex-channels/channel%d"
-			# "/dev/nvidia-caps-imex-channels/"
 
 			"/dev/nvidia-modeset"
 
-			# "/dev/nvidia-nvlink"
-			# "/dev/nvidia-nvswitchctl"
-
 			"/dev/nvidia-uvm"
 			"/dev/nvidia-uvm-tools"
-
-			# "/dev/nvidia-vgpuctl"
 		)
 	fi
 
@@ -292,9 +283,6 @@ hardware_add_gpu_sandbox() {
 		# for portage
 		"/proc/self/task/"
 	)
-
-	eqawarn "SANDBOX_WRITE   ${SANDBOX_WRITE//:/ }"
-	eqawarn "SANDBOX_PREDICT ${SANDBOX_PREDICT//:/ }"
 
 	local dev
 	for dev in "${WRITE[@]}"; do
@@ -308,7 +296,6 @@ hardware_add_gpu_sandbox() {
 			continue
 		fi
 
-		eqawarn "${dev} addwrite"
 		addwrite "${dev}"
 
 		if [[ ! -d "${dev}" ]] && [[ ! -w "${dev}" ]]; then
@@ -322,12 +309,8 @@ hardware_add_gpu_sandbox() {
 			continue
 		fi
 
-		eqawarn "${dev} addpredict"
 		addpredict "${dev}"
 	done
-
-	eqawarn "SANDBOX_WRITE   ${SANDBOX_WRITE//:/ }"
-	eqawarn "SANDBOX_PREDICT ${SANDBOX_PREDICT//:/ }"
 }
 
 virtwl() {
