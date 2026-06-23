@@ -1,0 +1,27 @@
+From be39c920f102f24e6e622ebe397d5206274f91d6 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx+gentoo@gmail.com>
+Date: Tue, 23 Jun 2026 16:00:42 +0200
+Subject: Make NetworkManagerQt an optional required dependency on Linux
+
+See-also: https://invent.kde.org/plasma/ksystemstats/-/merge_requests/133
+Signed-off-by: Paul Zander <negril.nx+gentoo@gmail.com>
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index dd89453..919a445 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -34,7 +34,10 @@ find_package(KSysGuard ${PROJECT_DEP_VERSION} REQUIRED)
+ 
+ # there's no NetworkManager on FreeBSD'
+ if (LINUX)
+-    find_package(KF6NetworkManagerQt ${KF6_MIN_VERSION} CONFIG REQUIRED)
++    option(WITH_NETWORKMANAGER "Build with NetworkManager support" ON)
++    if(WITH_NETWORKMANAGER)
++        find_package(KF6NetworkManagerQt ${KF6_MIN_VERSION} CONFIG REQUIRED)
++    endif()
+ endif()
+ 
+ add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
+-- 
+2.54.0
+

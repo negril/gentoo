@@ -14,7 +14,7 @@ DESCRIPTION="Plugin-based system monitoring daemon"
 LICENSE="GPL-2+"
 SLOT="6"
 KEYWORDS="~amd64 ~arm64 ~ppc64 ~riscv ~x86"
-IUSE=""
+IUSE="networkmanager"
 
 DEPEND="
 	dev-libs/libnl:3
@@ -31,15 +31,21 @@ DEPEND="
 	sys-apps/lm-sensors:=
 	sys-libs/libcap
 	virtual/libudev:=
+	networkmanager? ( >=kde-frameworks/networkmanager-qt-${KFMIN}:6 )
 "
 RDEPEND="${DEPEND}"
 
 # -m 0755 to avoid suid with USE="-filecaps"
 FILECAPS=( -m 0755 cap_perfmon=ep usr/libexec/ksystemstats_intel_helper )
 
+PATCHES=(
+	"${FILESDIR}/${PN}-6.7.0-networkmanager-optional.patch"
+)
+
 src_configure() {
 	local mycmakeargs=(
 		-DCMAKE_DISABLE_FIND_PACKAGE_Libcap=ON
+		-DWITH_NETWORKMANAGER=$(usex networkmanager)
 	)
 	ecm_src_configure
 }
