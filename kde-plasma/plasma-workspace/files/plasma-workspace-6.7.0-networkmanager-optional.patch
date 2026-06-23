@@ -1,0 +1,34 @@
+From 32681680ffbb9e9082e191711a986a11723ea254 Mon Sep 17 00:00:00 2001
+From: Paul Zander <negril.nx@gmail.com>
+Date: Fri, 19 Jun 2026 16:41:35 +0200
+Subject: Make NetworkManagerQt an optional required dependency on Linux
+
+See-also: https://invent.kde.org/plasma/plasma-workspace/-/merge_requests/6537#note_1525466
+Signed-off-by: Paul Zander <negril.nx@gmail.com>
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 12c4c6ce5e..d5d9351be8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,6 +13,10 @@ set(KF6_MIN_VERSION "6.26.0")
+ option(WITH_X11_SESSION "Build and install X11 session (deprecated)" ON)
+ option(INSTALL_SDDM_WAYLAND_SESSION OFF)
+ option(WITH_X11 "Build with X11 support. Building without is experimental" ON)
++if (LINUX)
++    # there's no NetworkManager on FreeBSD
++    option(WITH_NETWORKMANAGER "Qt wrapper for NetworkManager API. Needed for location-based time zone changes." ON)
++endif()
+ 
+ set(CMAKE_CXX_STANDARD 23)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+@@ -98,7 +102,7 @@ set_package_properties(KF6KirigamiAddons PROPERTIES
+ )
+ 
+ # there's no NetworkManager on FreeBSD'
+-if (LINUX)
++if (LINUX AND WITH_NETWORKMANAGER)
+     find_package(KF6NetworkManagerQt ${KF6_MIN_VERSION} CONFIG REQUIRED)
+ endif()
+ 
+-- 
+2.54.0
