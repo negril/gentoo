@@ -5,6 +5,10 @@
 # Supports 64-bit NEON
 media-libs/embree -cpu_flags_arm_neon
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2026-06-05)
+# media-gfx/openmesh not available here
+sci-mathematics/cgal examples
+
 # Ionen Wolkens <ionen@gentoo.org> (2026-08-19)
 # arm64 is only supported in >=wine-mono-11.3.0 which is only used by
 # >=wine-11.16 (-mono is to override global use.mask, keeping duplicate

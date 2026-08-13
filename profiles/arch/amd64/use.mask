@@ -4,6 +4,12 @@
 # Unmask the flag which corresponds to ARCH.
 -amd64
 
+# Paul Zander <negril.nx+gentoo@gmail.com> (2026-06-05)
+# only keyworded on amd64
+-draco
+-jph
+-uhdr
+
 # Sam James <sam@gentoo.org> (2025-09-19)
 # libquadmath from GCC is only available on some arches
 # https://gcc.gnu.org/PR96016
