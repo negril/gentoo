@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit autotools bash-completion-r1 cuda desktop flag-o-matic systemd toolchain-funcs xdg-utils multilib-minimal
+inherit autotools cuda desktop flag-o-matic shell-completion systemd toolchain-funcs xdg-utils multilib-minimal
 
 MY_PV="v$(ver_cut 1-2)"
 DESCRIPTION="Displays the hardware topology in convenient formats"
@@ -45,7 +45,9 @@ DEPEND="
 	${RDEPEND}
 	valgrind? ( dev-debug/valgrind )
 "
-RDEPEND+=" selinux? ( sec-policy/selinux-hwloc )"
+RDEPEND+="
+	selinux? ( sec-policy/selinux-hwloc )
+"
 BDEPEND="virtual/pkgconfig"
 
 PATCHES=( "${FILESDIR}/${PN}-1.8.1-gl.patch" )
