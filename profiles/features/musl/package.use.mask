@@ -170,7 +170,6 @@ media-video/handbrake amf
 net-analyzer/nagios-plugin-check_raid megaraid-sas
 net-fs/openafs tsm
 net-misc/yt-dlp deno
-sys-apps/hwloc gl
 www-client/qutebrowser widevine
 
 # Petr Vaněk <arkamar@atlas.cz> (2022-03-15)
