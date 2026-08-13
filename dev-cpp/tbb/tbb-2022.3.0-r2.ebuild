@@ -15,10 +15,17 @@ LICENSE="Apache-2.0"
 # libtbb<SONAME>-libtbbmalloc<SONAME>-libtbbbind<SONAME>
 SLOT="0/12.17-2.17-3.17"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~loong ~ppc ~ppc64 ~riscv ~sparc ~x86 ~x64-macos"
-IUSE="test"
+IUSE="+hwloc test"
 RESTRICT="!test? ( test )"
 
-RDEPEND="!kernel_Darwin? ( sys-apps/hwloc:= )"
+# https://github.com/uxlfoundation/oneTBB/issues/1636
+RDEPEND="
+	!kernel_Darwin? (
+		hwloc? (
+			sys-apps/hwloc:=
+		)
+	)
+"
 DEPEND="${RDEPEND}"
 BDEPEND="virtual/pkgconfig"
 
@@ -48,6 +55,8 @@ src_configure() {
 		-DTBB_EXAMPLES=OFF # TODO: add this
 		-DTBB_ENABLE_IPO=OFF
 		-DTBB_STRICT=OFF
+
+		-DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH="$(usex !hwloc)"
 	)
 
 	cmake-multilib_src_configure

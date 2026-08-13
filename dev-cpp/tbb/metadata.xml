@@ -17,4 +17,7 @@
     <doc>https://github.com/uxlfoundation/oneTBB?tab=readme-ov-file#documentation</doc>
     <remote-id type="github">uxlfoundation/oneTBB</remote-id>
   </upstream>
+  <use>
+    <flag name="hwloc">Add support for hwloc (<pkg>sys-apps/hwloc</pkg>)</flag>
+  </use>
 </pkgmetadata>
