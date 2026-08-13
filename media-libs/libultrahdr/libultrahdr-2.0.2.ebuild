@@ -28,16 +28,13 @@ SRC_URI+="
 
 LICENSE="Apache-2.0"
 SLOT="0/$(ver_cut 1)"
-IUSE="benchmark debug egl heif tools test"
+IUSE="benchmark debug egl tools test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
 	media-libs/libjpeg-turbo:=
 	egl? (
 		media-libs/libglvnd
-	)
-	heif? (
-		media-libs/libheif:=
 	)
 "
 
@@ -81,11 +78,12 @@ src_configure() {
 		-DUHDR_BUILD_PACKAGING="no"
 		-DUHDR_BUILD_TESTS="$(usex test)"
 		-DUHDR_ENABLE_GLES="$(usex egl)"
-		-DUHDR_ENABLE_HEIF="$(usex heif)"
+		# TODO needs https://github.com/strukturag/libheif/pull/1503
+		-DUHDR_ENABLE_HEIF="no"
 		-DUHDR_ENABLE_INSTALL="yes"
 		-DUHDR_ENABLE_INTRINSICS="yes" # arm neon specific
 		-DUHDR_ENABLE_LOGS="$(usex debug)"
-		# https://github.com/webmproject/libsmpte2094-50.git
+		# TODO https://github.com/webmproject/libsmpte2094-50.git
 		-DUHDR_ENABLE_SMPTE2094_50="no"
 		-DUHDR_ENABLE_WERROR="no"
 		-DUHDR_WRITE_ISO="yes"
