@@ -45,6 +45,7 @@ X86_CPU_FEATURES=(
 CPU_FEATURES=( "${X86_CPU_FEATURES[@]/#/cpu_flags_x86_}" )
 
 IUSE="+clang-cuda debug doc gui libcxx nofma optix partio test ${CPU_FEATURES[*]%:*} python"
+# IUSE+=" clang"
 
 RESTRICT="!test? ( test )"
 
@@ -115,7 +116,7 @@ cuda_get_host_compiler() {
 
 	local compiler compiler_type compiler_version
 	local package package_version
-
+	# local -x NVCC_CCBIN
 	local NVCC_CCBIN_default
 
 	compiler_type="$(tc-get-compiler-type)"
@@ -283,6 +284,7 @@ src_configure() {
 		-DUSE_BATCHED="$(IFS=","; echo "${mybatched[*]}")"
 		-DUSE_LIBCPLUSPLUS="$(usex libcxx)"
 		-DUSE_QT="$(usex gui)"
+		# -DUSE_FAST_MATH="no"
 	)
 
 	if use debug; then
@@ -338,6 +340,9 @@ src_configure() {
 		)
 	fi
 
+	# Environment OPENIMAGEIO_CUDA=0 trumps everything else, turns off
+	# Cuda functionality. We don't even initialize in this case.
+	# export OPENIMAGEIO_CUDA=0
 	cmake_src_configure
 }
 
@@ -384,6 +389,7 @@ src_test() {
 		# batchregression
 		"^spline-reg.regress.batched.opt$"
 		"^transform-reg.regress.batched.opt$"
+		# "^texture3d-opts-reg.regress.batched.opt$"
 
 		# doesn't handle parameters
 		"^osl-imageio"
@@ -400,6 +406,7 @@ src_test() {
 		'--force-new-ctest-process'
 	)
 
+	# OPENIMAGEIO_CUDA=0 \
 	cmake_src_test
 
 	# NOTE this should go to cuda eclass
@@ -421,7 +428,6 @@ src_test() {
 		"^render-displacement.opt$"
 		"^render-microfacet.opt$"
 		"^render-mx-burley-diffuse.opt$"
-		"^render-mx-generalized-schlick.opt$"
 		"^render-veachmis.opt$"
 	)
 
