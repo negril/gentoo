@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person" proxied="yes">
+		<email>negril.nx+gentoo@gmail.com</email>
+		<name>Paul Zander</name>
+	</maintainer>
+	<maintainer type="project" proxied="proxy">
+		<email>proxy-maint@gentoo.org</email>
+		<name>Proxy Maintainers</name>
+	</maintainer>
+	<upstream>
+		<remote-id type="github">PixarAnimationStudios/OpenUSD</remote-id>
+	</upstream>
+	<use>
+		<flag name="alembic">alembic</flag>
+		<flag name="color-management">color-management</flag>
+		<flag name="draco">draco</flag>
+		<flag name="embree">embree</flag>
+		<flag name="imaging">imaging</flag>
+		<flag name="materialx">materialx</flag>
+		<flag name="monolithic">monolithic</flag>
+		<flag name="openimageio">openimageio</flag>
+		<flag name="openvdb">openvdb</flag>
+		<flag name="osl">osl</flag>
+		<flag name="ptex">ptex</flag>
+		<flag name="safety-over-speed">safety-over-speed</flag>
+		<flag name="tools">tools</flag>
+		<flag name="tutorials">tutorials</flag>
+		<flag name="usdview">usdview</flag>
+	</use>
+</pkgmetadata>
