@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person" proxied="yes">
+		<email>negril.nx+gentoo@gmail.com</email>
+		<name>Paul Zander</name>
+	</maintainer>
+	<maintainer type="project" proxied="proxy">
+		<email>proxy-maint@gentoo.org</email>
+		<name>Proxy Maintainers</name>
+	</maintainer>
+	<upstream>
+		<remote-id type="github">AcademySoftwareFoundation/openexr</remote-id>
+	</upstream>
+	<use>
+		<flag name="graph-editor">BUILD_GRAPH_EDITOR</flag>
+		<flag name="opencolorio">BUILD_OCIO</flag>
+		<flag name="openimageio">BUILD_OIIO</flag>
+		<flag name="osl">GEN_OSL</flag>
+		<flag name="renderer">BUILD_RENDER</flag>
+		<flag name="resources">INSTALL_RESOURCES</flag>
+		<flag name="viewer">BUILD_VIEWER</flag>
+	</use>
+</pkgmetadata>
