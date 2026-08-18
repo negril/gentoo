@@ -37,7 +37,7 @@ LICENSE="imagemagick"
 SLOT="0/$(ver_cut 1-3)-18"
 IUSE="bzip2 corefonts +cxx djvu fftw fontconfig fpx graphviz hardened hdri heif"
 IUSE+=" jbig jpeg jpeg2k jpegxl lcms lqr lzma opencl openexr openmp pango perl ${GENTOO_PERL_USESTRING}"
-IUSE+=" +png postscript q32 q8 raw static-libs svg test tiff truetype webp wmf"
+IUSE+=" +png postscript q32 q8 raw static-libs svg test tiff truetype +uhdr webp wmf"
 IUSE+=" X xml zip zlib"
 
 REQUIRED_USE="
@@ -84,6 +84,7 @@ RDEPEND="
 		media-fonts/urw-fonts
 		>=media-libs/freetype-2
 	)
+	uhdr? ( media-libs/libultrahdr:= )
 	webp? ( media-libs/libwebp:= )
 	wmf? ( media-libs/libwmf )
 	X? (
@@ -164,7 +165,7 @@ src_configure() {
 		$(use_with zip)
 		$(use_with zlib)
 		--without-autotrace
-		--with-uhdr
+		$(use_with uhdr)
 		$(use_with postscript dps)
 		$(use_with djvu)
 		--with-dejavu-font-dir="${EPREFIX}"/usr/share/fonts/dejavu
