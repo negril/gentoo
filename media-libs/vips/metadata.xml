@@ -13,6 +13,7 @@
 		<flag name="imagequant">Enable support for Image Quantization using <pkg>media-gfx/libimagequant</pkg></flag>
 		<flag name="matio">Enable support for matlab files using <pkg>sci-libs/matio</pkg></flag>
 		<flag name="pango">Enable support for text rendering using <pkg>x11-libs/pango</pkg></flag>
+		<flag name="uhdr">Enable support for HDR images using <pkg>media-libs/libultrahdr</pkg></flag>
 	</use>
 	<upstream>
 		<remote-id type="github">libvips/libvips</remote-id>

@@ -17,7 +17,7 @@ IUSE="
 	archive deprecated doc exif fftw fits fontconfig graphicsmagick
 	heif +highway imagemagick imagequant +introspection +jpeg jpeg2k
 	jpegxl lcms matio openexr orc pango pdf +png raw svg test tiff
-	vala webp
+	uhdr vala webp
 "
 REQUIRED_USE="
 	doc? ( introspection )
@@ -70,6 +70,7 @@ RDEPEND="
 		x11-libs/cairo
 	)
 	tiff? ( media-libs/tiff:= )
+	uhdr? ( media-libs/libultrahdr:= )
 	webp? ( media-libs/libwebp:= )
 "
 DEPEND="
@@ -145,7 +146,7 @@ src_configure() {
 		-Dspng=disabled # not packaged, and libpng is preferred
 		$(meson_feature svg rsvg)
 		$(meson_feature tiff)
-		-Duhdr=disabled # not packaged
+		$(meson_feature uhdr)
 		$(meson_feature webp)
 		$(meson_feature svg zlib) # zlib is currently only used by svgload.c
 	)
