@@ -91,9 +91,7 @@ src_configure() {
 		mycmakeargs+=(
 			-DPYTHON="no" # uses boost[python]
 			-DPYBIND11="yes"  # uses pybind
-			-DPython3_EXECUTABLE="${EPYTHON}"
-			-DPython3_INCLUDE_DIR="$(python_get_includedir)"
-			-DPython3_LIBRARY="$(python_get_library_path)"
+			-DPYTHON_INSTALL_DIR="$(python_get_sitedir)"
 		)
 	fi
 
