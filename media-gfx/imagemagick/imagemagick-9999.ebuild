@@ -58,7 +58,21 @@ RDEPEND="
 	fontconfig? ( media-libs/fontconfig )
 	fpx? ( >=media-libs/libfpx-1.3.0-r1 )
 	graphviz? ( media-gfx/graphviz )
-	heif? ( media-libs/libheif:=[x265] )
+	heif? (
+		media-libs/libheif:=
+		|| (
+			media-libs/libheif[x265]
+			media-libs/libheif[kvazaar]
+		)
+		|| (
+			media-libs/libheif[ffmpeg]
+			media-libs/libheif[de265]
+		)
+		|| (
+			media-libs/libheif[aom]
+			media-libs/libheif[dav1d]
+		)
+	)
 	jbig? ( >=media-libs/jbigkit-2:= )
 	jpeg? ( media-libs/libjpeg-turbo:= )
 	jpeg2k? ( >=media-libs/openjpeg-2.1.0:2 )
