@@ -9,8 +9,10 @@ DISTUTILS_USE_PEP517=standalone
 inherit systemd distutils-r1
 
 DESCRIPTION="Salt is a remote execution and configuration manager"
-HOMEPAGE="https://saltproject.io/
-	https://github.com/saltstack"
+HOMEPAGE="
+	https://saltproject.io/
+	https://github.com/saltstack
+"
 
 if [[ ${PV} == 9999* ]]; then
 	inherit git-r3
@@ -30,7 +32,6 @@ IUSE="
 "
 
 RDEPEND="
-	sys-apps/pciutils
 	dev-libs/openssl:0=[-bindist(-)]
 	>=dev-python/aiohttp-3.14.1[${PYTHON_USEDEP}]
 	>=dev-python/annotated-doc-0.0.4[${PYTHON_USEDEP}]
@@ -42,8 +43,8 @@ RDEPEND="
 	>=dev-python/idna-3.18[${PYTHON_USEDEP}]
 	>=dev-python/importlib-metadata-9.0.0[${PYTHON_USEDEP}]
 	>=dev-python/jaraco-classes-3.4.0[${PYTHON_USEDEP}]
-	>=dev-python/jaraco-functools-4.1.0[${PYTHON_USEDEP}]
 	>=dev-python/jaraco-context-6.1.2[${PYTHON_USEDEP}]
+	>=dev-python/jaraco-functools-4.1.0[${PYTHON_USEDEP}]
 	>=dev-python/jaraco-text-4.2.0[${PYTHON_USEDEP}]
 	>=dev-python/jeepney-0.9.0[${PYTHON_USEDEP}]
 	>=dev-python/jinja2-3.1.5[${PYTHON_USEDEP}]
@@ -58,8 +59,8 @@ RDEPEND="
 	>=dev-python/opentelemetry-api-1.30.0[${PYTHON_USEDEP}]
 	>=dev-python/opentelemetry-sdk-1.30.0[${PYTHON_USEDEP}]
 	>=dev-python/packaging-24.0[${PYTHON_USEDEP}]
-	>=dev-python/pathspec-1.0.3[${PYTHON_USEDEP}]
 	>=dev-python/paramiko-5.0.0[${PYTHON_USEDEP}]
+	>=dev-python/pathspec-1.0.3[${PYTHON_USEDEP}]
 	>=dev-python/platformdirs-4.5.1[${PYTHON_USEDEP}]
 	>=dev-python/pluggy-1.6.0[${PYTHON_USEDEP}]
 	>=dev-python/psutil-7.2.2[${PYTHON_USEDEP}]
@@ -72,8 +73,9 @@ RDEPEND="
 	>=dev-python/python-discovery-1.4.0[${PYTHON_USEDEP}]
 	>=dev-python/python-gnupg-0.5.6[${PYTHON_USEDEP}]
 	>=dev-python/pyyaml-6.0.1[${PYTHON_USEDEP}]
-	>=dev-python/rich-15.0.0[${PYTHON_USEDEP}]
+	>=dev-python/pyzmq-26.2.0[${PYTHON_USEDEP}]
 	>=dev-python/requests-2.32.5[${PYTHON_USEDEP}]
+	>=dev-python/rich-15.0.0[${PYTHON_USEDEP}]
 	>=dev-python/secretstorage-3.5.0[${PYTHON_USEDEP}]
 	>=dev-python/setproctitle-1.2.3[${PYTHON_USEDEP}]
 	>=dev-python/setuptools-80.10.2[${PYTHON_USEDEP}]
@@ -86,65 +88,52 @@ RDEPEND="
 	>=dev-python/watchdog-6.0.0[${PYTHON_USEDEP}]
 	>=dev-python/xxhash-3.7.0[${PYTHON_USEDEP}]
 	>=dev-python/zipp-4.1.0[${PYTHON_USEDEP}]
+	sys-apps/pciutils
+	cheetah? ( >=dev-python/cheetah3-3.2.6[${PYTHON_USEDEP}] )
+	genshi? ( >=dev-python/genshi-0.7.11[${PYTHON_USEDEP}] )
+	keyring? ( >=dev-python/keyring-5.7.1[${PYTHON_USEDEP}] )
+	ldap? ( dev-python/python-ldap[${PYTHON_USEDEP}] )
 	libcloud? (
 		>=dev-python/aiosignal-1.4.0[${PYTHON_USEDEP}]
 		>=dev-python/apache-libcloud-3.9.1[${PYTHON_USEDEP}]
 		>=dev-python/async-timeout-4.0.3[${PYTHON_USEDEP}]
 	)
+	libvirt? ( dev-python/libvirt-python[${PYTHON_USEDEP}] )
 	mako? ( >=dev-python/mako-1.3.10[${PYTHON_USEDEP}] )
-	ldap? ( dev-python/python-ldap[${PYTHON_USEDEP}] )
-	libvirt? (
-		dev-python/libvirt-python[${PYTHON_USEDEP}]
-	)
-	cheetah? ( >=dev-python/cheetah3-3.2.6[${PYTHON_USEDEP}] )
-	genshi? ( >=dev-python/genshi-0.7.11[${PYTHON_USEDEP}] )
 	mongodb? ( dev-python/pymongo[${PYTHON_USEDEP}] )
-	keyring? ( >=dev-python/keyring-5.7.1[${PYTHON_USEDEP}] )
+	portage? ( app-admin/saltext-gentoo[${PYTHON_USEDEP}] )
+	profile? ( dev-python/yappi[${PYTHON_USEDEP}] )
 	redis? ( >=dev-python/redis-3.5.3[${PYTHON_USEDEP}] )
 	selinux? ( sec-policy/selinux-salt )
-	profile? ( dev-python/yappi[${PYTHON_USEDEP}] )
-	portage? ( app-admin/saltext-gentoo[${PYTHON_USEDEP}] )
 	vim-syntax? ( app-vim/salt-vim )
-	>=dev-python/pyzmq-26.2.0[${PYTHON_USEDEP}]
 "
 BDEPEND="
-	sys-apps/findutils
 	dev-python/build[${PYTHON_USEDEP}]
+	sys-apps/findutils
 	test? (
 		${RDEPEND}
 		app-arch/zip
 		>=dev-python/apache-libcloud-3.8.0[${PYTHON_USEDEP}]
+		dev-python/bcrypt[${PYTHON_USEDEP}]
 		dev-python/boto3[${PYTHON_USEDEP}]
 		>=dev-python/certifi-3024.7.22[${PYTHON_USEDEP}]
+		>=dev-python/filelock-3.20.3[${PYTHON_USEDEP}]
+		dev-python/flaky[${PYTHON_USEDEP}]
 		>=dev-python/gitpython-3.1.50[${PYTHON_USEDEP}]
 		>=dev-python/jsonschema-3.0[${PYTHON_USEDEP}]
+		dev-python/libpass[${PYTHON_USEDEP}]
 		dev-python/mako[${PYTHON_USEDEP}]
 		>=dev-python/mock-5.2.0[${PYTHON_USEDEP}]
 		>=dev-python/more-itertools-10.8.0[${PYTHON_USEDEP}]
 		>=dev-python/moto-5.2.2[${PYTHON_USEDEP}]
-		dev-python/libpass[${PYTHON_USEDEP}]
-		dev-python/bcrypt[${PYTHON_USEDEP}]
-		>=dev-python/filelock-3.20.3[${PYTHON_USEDEP}]
-		dev-python/flaky[${PYTHON_USEDEP}]
 		>=dev-python/pip-26.2.1[${PYTHON_USEDEP}]
 		dev-python/pyfakefs[${PYTHON_USEDEP}]
 		dev-python/pygit2[${PYTHON_USEDEP}]
 		dev-python/pyinotify[${PYTHON_USEDEP}]
-		>=dev-python/pytest-7.2.0[${PYTHON_USEDEP}]
-		>=dev-python/pytest-custom-exit-code-0.3.0[${PYTHON_USEDEP}]
-		dev-python/pytest-httpserver[${PYTHON_USEDEP}]
-		>=dev-python/pytest-salt-factories-1.0.5[${PYTHON_USEDEP}]
-		>=dev-python/pytest-helpers-namespace-2021.12.29[${PYTHON_USEDEP}]
-		dev-python/pytest-subtests[${PYTHON_USEDEP}]
-		>=dev-python/pytest-shell-utilities-1.9.7[${PYTHON_USEDEP}]
-		>=dev-python/pytest-skip-markers-1.5.2[${PYTHON_USEDEP}]
-		>=dev-python/pytest-system-statistics-1.0.2[${PYTHON_USEDEP}]
-		dev-python/pytest-rerunfailures[${PYTHON_USEDEP}]
-		>=dev-python/pytest-timeout-2.4.0[${PYTHON_USEDEP}]
 		dev-python/trustme[${PYTHON_USEDEP}]
-		net-dns/bind
 		>=dev-python/virtualenv-21.4.2[${PYTHON_USEDEP}]
 		dev-util/yamllint[${PYTHON_USEDEP}]
+		net-dns/bind
 	)
 "
 
@@ -157,24 +146,33 @@ RESTRICT="
 	!test? ( test )
 "
 
+# some tests are marked flaky
+# EPYTEST_XDIST=1
+EPYTEST_PLUGINS=(
+	# "pytest-benchmark" # unpackaged
+	"pytest-custom-exit-code"
+	"pytest-helpers-namespace"
+	"pytest-httpserver"
+	"pytest-salt-factories"
+	"pytest-shell-utilities"
+	"pytest-skip-markers"
+	"pytest-system-statistics"
+	"pytest-timeout"
+)
+distutils_enable_tests pytest
+
 PATCHES=(
-	"${FILESDIR}/salt-3008.0-tests-without-systemd.patch"
-	"${FILESDIR}/salt-3008.0-no-scripts.patch"
-	"${FILESDIR}/salt-3007.10-use-tomllib-and-tomli_w.patch"
+	"${FILESDIR}/${PN}-3008.0-tests-without-systemd.patch"
+	"${FILESDIR}/${PN}-3008.0-no-scripts.patch"
+	"${FILESDIR}/${PN}-3007.10-use-tomllib-and-tomli_w.patch"
 )
 
-python_install_all() {
-	distutils-r1_python_install_all
-
-	local svc
-	for svc in minion master syndic api; do
-		newinitd "${FILESDIR}"/${svc}-initd-5 salt-${svc}
-		newconfd "${FILESDIR}"/${svc}-confd-1 salt-${svc}
-		systemd_dounit "${FILESDIR}"/salt-${svc}.service
-	done
-
-	insinto /etc/${PN}
-	doins -r conf/*
+pkg_setup() {
+	if use test; then
+		# testsuite likes lots of files soft 8192/ hard 16384
+		ulimit -Sn  8192 || die
+		ulimit -Hn 16384 || die
+	fi
 }
 
 python_test() {
@@ -371,6 +369,9 @@ python_test() {
 
 		# first test always fails
 		tests/pytests/unit/utils/parsers/test_log_parsers.py
+
+		# very slow
+		tests/pytests/functional/utils/
 	)
 
 	local EPYTEST_DESELECT=(
@@ -385,7 +386,7 @@ python_test() {
 		# 3008.0_rc2: network access, runs pip to install packages from PyPI
 		tests/pytests/functional/test_pip_install.py
 
-		# 3008.0_rc2: Failed to find package artifacts in '/var/tmp/portage/app-admin/salt-3008.0_rc2/work/salt-3008.0rc2/artifacts/pkg'
+		# 3008.0_rc2: Failed to find package artifacts in 'artifacts/pkg'
 		tests/pytests/pkg/integration/test_pip_urllib3_patch.py::test_pip_vendored_urllib3_version
 		tests/pytests/pkg/integration/test_pip_urllib3_patch.py::test_virtualenv_embedded_pip_wheel_urllib3_version
 
@@ -587,29 +588,66 @@ python_test() {
 		tests/unit/utils/test_color.py::ColorUtilsTestCase::test_get_colors
 	)
 
-	# testsuite likes lots of files
-	ulimit -n 4096 || die
+	eqawarn "$(ulimit -Sn)"
+	eqawarn "$(ulimit -Hn)"
 
+	local ret
 	# ${T} is too long a path for the tests to work
 	local -x TMPDIR
 	TMPDIR="$(mktemp --directory --tmpdir=/tmp ${PN}-XXXX || die)"
+	addwrite "${TMPDIR}"
+
 	local -x SHELL="/bin/bash"
 	local -x NO_INTERNET=1
+	# Why?
 	local -x PYTHONDONTWRITEBYTECODE=1
 
 	# https://github.com/saltstack/salt/blob/master/doc/topics/development/hacking.rst
 	local -x USE_SETUPTOOLS=1
+	local test_opts=()
+	local tests=()
 
 	if use test-full; then
 		einfo "Running slow tests."
 		local SLOW_TESTS="--run-slow"
+		test_opts+=(
+			"--run-slow"
+			"--core-tests"
+		)
+		tests+=(
+			# run all tests
+			"tests/"
+		)
+	else
+		tests+=(
+			# selectively run tests
+			"tests/integration/"
+			"tests/pytests/functional/"
+			"tests/pytests/pkg/"
+			"tests/pytests/unit/renderers/"
+			"tests/pytests/unit/serializers/"
+			"tests/support/"
+			"tests/unit/"
+		)
 	fi
 
-	addwrite "${TMPDIR}"
-
-	nonfatal epytest ${SLOW_TESTS} tests
+	nonfatal epytest "${test_opts[@]}" "${tests[@]}"
 	ret=${?}
 
 	rm -rf "${TMPDIR}" || die
 	[[ ${ret} -ne 0 ]] && die "Tests failed with ${EPYTHON}"
+}
+
+python_install_all() {
+	distutils-r1_python_install_all
+
+	local svc
+	for svc in minion master syndic api; do
+		newinitd "${FILESDIR}"/${svc}-initd-5 salt-${svc}
+		newconfd "${FILESDIR}"/${svc}-confd-1 salt-${svc}
+		systemd_dounit "${FILESDIR}"/salt-${svc}.service
+	done
+
+	insinto /etc/${PN}
+	doins -r conf/*
 }

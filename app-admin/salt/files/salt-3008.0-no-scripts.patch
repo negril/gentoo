@@ -1,0 +1,13 @@
+diff --git a/setup.py b/setup.py
+index a1f2654a2b..576e9ba332 100755
+--- a/setup.py
++++ b/setup.py
+@@ -1019,7 +1019,7 @@ class SaltDistribution(distutils.dist.Distribution):
+ 
+     @property
+     def _property_scripts(self):
+-        return salt_build_backend.get_scripts(self)
++        return []
+ 
+     @property
+     def _property_install_requires(self):

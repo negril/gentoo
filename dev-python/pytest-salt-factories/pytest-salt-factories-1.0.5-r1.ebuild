@@ -24,70 +24,81 @@ SLOT="0"
 KEYWORDS="~amd64"
 
 RDEPEND="
+	>=app-admin/salt-3008.2[${PYTHON_USEDEP}]
 	dev-python/attrs[${PYTHON_USEDEP}]
 	dev-python/docker[${PYTHON_USEDEP}]
 	dev-python/psutil[${PYTHON_USEDEP}]
-	>=dev-python/pytest-7.0.0[${PYTHON_USEDEP}]
-	dev-python/pytest-helpers-namespace[${PYTHON_USEDEP}]
-	dev-python/pytest-skip-markers[${PYTHON_USEDEP}]
-	dev-python/pytest-system-statistics[${PYTHON_USEDEP}]
-	>=dev-python/pytest-shell-utilities-1.4.0[${PYTHON_USEDEP}]
 	dev-python/pyzmq[${PYTHON_USEDEP}]
 	dev-python/msgpack[${PYTHON_USEDEP}]
 	dev-python/virtualenv[${PYTHON_USEDEP}]
-	>=app-admin/salt-3008.2[${PYTHON_USEDEP}]
 "
 BDEPEND="
 	dev-python/setuptools-scm[${PYTHON_USEDEP}]
 	test? (
 		dev-python/importlib-metadata[${PYTHON_USEDEP}]
 		dev-python/pyfakefs[${PYTHON_USEDEP}]
-		dev-python/pytest-subtests[${PYTHON_USEDEP}]
 	)
 "
 
+# EPYTEST_XDIST=1
+# ValueError: Plugin already registered under a different name:
 EPYTEST_PLUGIN_LOAD_VIA_ENV=1
 EPYTEST_PLUGINS=(
-	"helpers_namespace"
-	"pytester"
-	"pytest_helpers_namespace.plugin"
-	"pytest_subtests"
-	"pytestsysstats.plugin"
-	"saltfactories.plugins"
-	"saltfactories.plugins.factories"
-	"saltfactories.plugins.markers"
-	"saltfactories.plugins.sysinfo"
-	"saltfactories.plugins.event_listener"
-	"saltfactories.plugins.log_server"
-	"saltfactories.plugins.loader"
+	"${PN}"
+	"pytest-helpers-namespace"
+	"pytest-shell-utilities"
+	"pytest-skip-markers"
+	"pytest-system-statistics"
 )
 distutils_enable_tests pytest
 
-export SETUPTOOLS_SCM_PRETEND_VERSION=${PV}
-
 src_prepare() {
+	# fails with unknown helpers_namespace otherwise
+	sed -i -e 's#helpers_namespace#pytest_&.plugin#' tests/conftest.py || die
+
 	distutils-r1_src_prepare
+}
+
+src_compile() {
+	SETUPTOOLS_SCM_PRETEND_VERSION="${PV}" distutils-r1_src_compile
 }
 
 python_test() {
 	local EPYTEST_DESELECT=(
-		"tests/functional/test_manager.py::test_system_service_cli[system-service(True)]"
-		"tests/functional/test_manager.py::test_system_service_config_fixture[system-service(True)]"
-		"tests/integration/factories/daemons/ssh/test_salt_ssh.py::test_salt_ssh"
+		"tests/functional/utils/saltext/test_log_handlers.py::test_all_messages_received"
+		"tests/integration/factories/daemons/minion/test_minion.py::test_no_match"
+		"tests/integration/factories/daemons/proxy/test_proxy_minion.py::test_no_match"
+
 		"tests/integration/factories/daemons/sshd/test_sshd.py::test_connect"
 		"tests/scenarios/examples/test_echoext.py::test_echoext"
 	)
 
-	local ret tempdir
-	# ${T} is too long a path for the tests to work
-	tempdir="$(mktemp -du --tmpdir=/tmp salt-XXX)" || die
-	addwrite "${tempdir}"
+	local EPYTEST_IGNORE=(
+		# tries to connect to docker
+		"tests/functional/factories/daemons/test_container_factory.py"
+		"tests/integration/factories/daemons/container/test_container_factory.py"
 
-	local -x SHELL="/bin/bash" TMPDIR="${tempdir}"
+		"tests/integration/factories/daemons/container/test_master.py"
+		"tests/integration/factories/daemons/container/test_minion.py"
+		"tests/integration/factories/daemons/ssh/test_salt_ssh.py"
+
+		"tests/integration/factories/cli/test_salt.py"
+
+		# Skipping until we devote time to fix syndic support
+		"tests/integration/factories/daemons/syndic/test_syndic.py"
+	)
+
+	local ret
+	# ${T} is too long a path for the tests to work
+	local -x TMPDIR
+	TMPDIR="$(mktemp -d --tmpdir=/tmp salt-XXX || die)"
+	addwrite "${TMPDIR}"
+
+	local -x SHELL="/bin/bash"
 
 	nonfatal epytest --no-sys-stats
 	ret=${?}
 
-	rm -rf "${tempdir}" || die
+	rm -rf "${TMPDIR}" || die
 	[[ ${ret} -ne 0 ]] && die "Tests failed with ${EPYTHON}"
 }

@@ -4,6 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
+PYPI_VERIFY_REPO="saltext.openrc"
 PYTHON_COMPAT=( python3_{13..14} )
 
 inherit distutils-r1 pypi
@@ -20,5 +21,7 @@ BDEPEND="
 			>=dev-python/pytest-salt-factories-1.0.5-r1
 		)
 "
-EPYTEST_PLUGINS=()
+EPYTEST_PLUGINS=(
+	"pytest-salt-factories"
+)
 distutils_enable_tests pytest
